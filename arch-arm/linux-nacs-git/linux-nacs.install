@@ -1,0 +1,31 @@
+# arg 1:  the new package version
+# arg 2:  the old package version
+
+KERNEL_NAME=-nacs
+KERNEL_VERSION=3.15.0-4-nacs
+
+post_install () {
+    # updating module dependencies
+    echo ">>> Updating module dependencies. Please wait ..."
+    depmod ${KERNEL_VERSION}
+    echo ">>> Generating initial ramdisk, using mkinitcpio.  Please wait..."
+    mkinitcpio -p linux${KERNEL_NAME}
+    mkimage -A arm -O linux -T ramdisk -C gzip -d /boot/ramdisk.image.gz \
+        /boot/uramdisk.image.gz
+    rm /boot/ramdisk.image.gz
+}
+
+post_upgrade() {
+    # updating module dependencies
+    echo ">>> Updating module dependencies. Please wait ..."
+    depmod ${KERNEL_VERSION}
+    echo ">>> Generating initial ramdisk, using mkinitcpio.  Please wait..."
+    mkinitcpio -p linux${KERNEL_NAME}
+    mkimage -A arm -O linux -T ramdisk -C gzip -d /boot/ramdisk.image.gz \
+        /boot/uramdisk.image.gz
+    rm /boot/ramdisk.image.gz
+}
+
+post_remove() {
+    rm /boot/uramdisk.image.gz
+}

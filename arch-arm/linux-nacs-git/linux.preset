@@ -1,0 +1,10 @@
+# mkinitcpio preset file for the 'linux' package
+
+ALL_config="/etc/mkinitcpio.conf"
+ALL_kver=3.15.0-4-nacs
+
+PRESETS=('fallback')
+
+#fallback_config="/etc/mkinitcpio.conf"
+fallback_image="/boot/ramdisk.image.gz"
+fallback_options="-S autodetect"
