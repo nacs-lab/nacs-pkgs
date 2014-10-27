@@ -5,7 +5,7 @@ _kernelver=3.15.0
 _srcname=linux-xlnx
 
 pkgver=2014.3
-pkgrel=4
+pkgrel=5
 arch=('armv7h')
 url="https://github.com/Xilinx/linux-xlnx"
 license=('GPL2')
@@ -16,8 +16,8 @@ source=("git://github.com/Xilinx/linux-xlnx.git"
   'linux.preset'
   'config')
 md5sums=('SKIP'
-         'cc788368d4fda32896d0e63f477f8af0'
-         '5094df5ec56a66e7d8ef3a7f62e21bb6')
+         '8397f38291d3ac625523a8b1675b4f59'
+         '3f5acd54e9c718c1bb7f6bfdebbbd2b8')
 
 pkgver() {
   cd "${srcdir}/${_srcname}"
@@ -46,6 +46,8 @@ build() {
 
   export MAKEFLAGS+=' ARCH=arm LOCALVERSION='
   export PATH="${srcdir}/bin:${PATH}"
+  # # For running xconfig
+  # rm "${srcdir}/bin/"*
   # get kernel version
   make ${MAKEFLAGS} prepare
 
