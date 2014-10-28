@@ -17,7 +17,7 @@ source=("git://github.com/Xilinx/linux-xlnx.git"
   'config')
 md5sums=('SKIP'
          '8397f38291d3ac625523a8b1675b4f59'
-         '3f5acd54e9c718c1bb7f6bfdebbbd2b8')
+         'f33ae84ded882f2074eb1fd031219bf3')
 
 pkgver() {
   cd "${srcdir}/${_srcname}"
@@ -197,28 +197,28 @@ _package-headers() {
   # add dvb headers for external modules
   # in reference to:
   # http://bugs.archlinux.org/task/9912
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/dvb-core"
-  cp drivers/media/dvb-core/*.h "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/dvb-core/"
-  # and...
-  # http://bugs.archlinux.org/task/11194
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/include/config/dvb/"
-  cp include/config/dvb/*.h "${pkgdir}/usr/lib/modules/${_kernver}/build/include/config/dvb/"
+  # mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/dvb-core"
+  # cp drivers/media/dvb-core/*.h "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/dvb-core/"
+  # # and...
+  # # http://bugs.archlinux.org/task/11194
+  # mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/include/config/dvb/"
+  # cp include/config/dvb/*.h "${pkgdir}/usr/lib/modules/${_kernver}/build/include/config/dvb/"
 
   # add dvb headers for http://mcentral.de/hg/~mrec/em28xx-new
   # in reference to:
   # http://bugs.archlinux.org/task/13146
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/dvb-frontends/"
-  cp drivers/media/dvb-frontends/lgdt330x.h "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/dvb-frontends/"
+  # mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/dvb-frontends/"
+  # cp drivers/media/dvb-frontends/lgdt330x.h "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/dvb-frontends/"
   mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/i2c/"
   cp drivers/media/i2c/msp3400-driver.h "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/i2c/"
 
   # add dvb headers
   # in reference to:
   # http://bugs.archlinux.org/task/20402
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/usb/dvb-usb"
-  cp drivers/media/usb/dvb-usb/*.h "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/usb/dvb-usb/"
-  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/dvb-frontends"
-  cp drivers/media/dvb-frontends/*.h "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/dvb-frontends/"
+  # mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/usb/dvb-usb"
+  # cp drivers/media/usb/dvb-usb/*.h "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/usb/dvb-usb/"
+  # mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/dvb-frontends"
+  # cp drivers/media/dvb-frontends/*.h "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/dvb-frontends/"
   mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/tuners"
   cp drivers/media/tuners/*.h "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/media/tuners/"
 
