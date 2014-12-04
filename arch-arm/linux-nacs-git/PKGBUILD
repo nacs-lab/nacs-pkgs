@@ -1,23 +1,23 @@
 pkgbase=linux-nacs-git
 _kernelname=-nacs
 _desc="NaCs Lab"
-_kernelver=3.15.0
+_kernelver=3.17.0
 _srcname=linux-xlnx
 
-pkgver=2014.3
-pkgrel=5
+pkgver=2014.4
+pkgrel=1
 arch=('armv7h')
 url="https://github.com/Xilinx/linux-xlnx"
 license=('GPL2')
 makedepends=('xmlto' 'docbook-xsl' 'kmod' 'inetutils' 'bc'
-  'uboot-zc70x' 'git')
+             'uboot-zc70x' 'git')
 options=('!strip')
 source=("git://github.com/Xilinx/linux-xlnx.git"
-  'linux.preset'
-  'config')
+        'linux.preset'
+        'config')
 md5sums=('SKIP'
          '8397f38291d3ac625523a8b1675b4f59'
-         'f33ae84ded882f2074eb1fd031219bf3')
+         'f8c6480511a62cefff183a1131a85350')
 
 pkgver() {
   cd "${srcdir}/${_srcname}"
@@ -60,7 +60,7 @@ build() {
   # ... or manually edit .config
 
   # Copy back our configuration (use with new kernel version)
-  #cp ./.config ../${pkgbase}.config
+  # cp ./.config ../${pkgbase}.config
 
   ####################
   # stop here
@@ -69,7 +69,7 @@ build() {
   # return 1
   ####################
 
-  #yes "" | make config
+  # yes "" | make config
 
   # build!
   make ${MAKEFLAGS} UIMAGE_LOADADDR=0x8000 uImage modules zynq-zc702.dtb
@@ -102,13 +102,13 @@ _package() {
 
   # install mkinitcpio preset file for kernel
   install -D -m644 "${srcdir}/linux.preset" \
-    "${pkgdir}/etc/mkinitcpio.d/linux-nacs.preset"
+          "${pkgdir}/etc/mkinitcpio.d/linux-nacs.preset"
 
   # set correct depmod command for install
   sed \
-    -e  "s/KERNEL_NAME=.*/KERNEL_NAME=${_kernelname}/g" \
-    -e  "s/KERNEL_VERSION=.*/KERNEL_VERSION=${_kernver}/g" \
-    -i "${startdir}/linux-nacs.install"
+      -e  "s/KERNEL_NAME=.*/KERNEL_NAME=${_kernelname}/g" \
+      -e  "s/KERNEL_VERSION=.*/KERNEL_VERSION=${_kernver}/g" \
+      -i "${startdir}/linux-nacs.install"
 
   # remove build and source links
   rm -f "${pkgdir}"/lib/modules/${_kernver}/{source,build}
@@ -118,7 +118,7 @@ _package() {
   find "${pkgdir}" -name '*.ko' | xargs -P 2 -n 1 gzip -9
   # make room for external modules
   ln -s "../extramodules-${_basekernel}${_kernelname:--ARCH}" \
-    "${pkgdir}/lib/modules/${_kernver}/extramodules"
+     "${pkgdir}/lib/modules/${_kernver}/extramodules"
   # add real version for building modules and running depmod from post_install/upgrade
   mkdir -p "${pkgdir}/lib/modules/extramodules-${_basekernel}${_kernelname:--ARCH}"
   echo "${_kernver}" > "${pkgdir}/lib/modules/extramodules-${_basekernel}${_kernelname:--ARCH}/version"
@@ -144,22 +144,23 @@ _package-headers() {
 
   cd "${srcdir}/${_srcname}"
   install -D -m644 Makefile \
-    "${pkgdir}/usr/lib/modules/${_kernver}/build/Makefile"
+          "${pkgdir}/usr/lib/modules/${_kernver}/build/Makefile"
   install -D -m644 kernel/Makefile \
-    "${pkgdir}/usr/lib/modules/${_kernver}/build/kernel/Makefile"
+          "${pkgdir}/usr/lib/modules/${_kernver}/build/kernel/Makefile"
   install -D -m644 .config \
-    "${pkgdir}/usr/lib/modules/${_kernver}/build/.config"
+          "${pkgdir}/usr/lib/modules/${_kernver}/build/.config"
 
   mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/include"
 
   for i in acpi asm-generic config crypto drm generated keys linux math-emu \
-    media net pcmcia scsi sound trace uapi video xen; do
+                media net pcmcia scsi sound trace uapi video xen; do
     cp -a include/${i} "${pkgdir}/usr/lib/modules/${_kernver}/build/include/"
   done
 
   # copy arch includes for external modules
-  mkdir -p "${pkgdir}/usr/src/linux-${_kernver}/arch/$KARCH"
-  cp -a arch/$KARCH/include "${pkgdir}/usr/src/linux-${_kernver}/arch/$KARCH/"
+  mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/arch/$KARCH"
+  cp -a arch/$KARCH/include \
+     "${pkgdir}/usr/lib/modules/${_kernver}/build/arch/$KARCH/"
 
   # copy files necessary for later builds, like nvidia and vmware
   cp Module.symvers "${pkgdir}/usr/lib/modules/${_kernver}/build"
@@ -172,14 +173,14 @@ _package-headers() {
   mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/arch/${KARCH}/kernel"
 
   cp arch/${KARCH}/Makefile \
-    "${pkgdir}/usr/lib/modules/${_kernver}/build/arch/${KARCH}/"
+     "${pkgdir}/usr/lib/modules/${_kernver}/build/arch/${KARCH}/"
 
   cp arch/${KARCH}/kernel/asm-offsets.s \
-    "${pkgdir}/usr/lib/modules/${_kernver}/build/arch/${KARCH}/kernel/"
+     "${pkgdir}/usr/lib/modules/${_kernver}/build/arch/${KARCH}/kernel/"
 
   # add docbook makefile
   install -D -m644 Documentation/DocBook/Makefile \
-    "${pkgdir}/usr/lib/modules/${_kernver}/build/Documentation/DocBook/Makefile"
+          "${pkgdir}/usr/lib/modules/${_kernver}/build/Documentation/DocBook/Makefile"
 
   # add dm headers
   mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/drivers/md"
@@ -188,7 +189,7 @@ _package-headers() {
   # add inotify.h
   mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/include/linux"
   cp include/linux/inotify.h \
-    "${pkgdir}/usr/lib/modules/${_kernver}/build/include/linux/"
+     "${pkgdir}/usr/lib/modules/${_kernver}/build/include/linux/"
 
   # add wireless headers
   mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/net/mac80211/"
@@ -225,7 +226,8 @@ _package-headers() {
   # add xfs and shmem for aufs building
   mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/fs/xfs"
   mkdir -p "${pkgdir}/usr/lib/modules/${_kernver}/build/mm"
-  cp fs/xfs/xfs_sb.h "${pkgdir}/usr/lib/modules/${_kernver}/build/fs/xfs/xfs_sb.h"
+  # removed in 3.17 series
+  # cp fs/xfs/xfs_sb.h "${pkgdir}/usr/lib/modules/${_kernver}/build/fs/xfs/xfs_sb.h"
 
   # copy in Kconfig files
   for i in $(find . -name "Kconfig*"); do
@@ -238,15 +240,15 @@ _package-headers() {
 
   # strip scripts directory
   find "${pkgdir}/usr/lib/modules/${_kernver}/build/scripts" -type f -perm -u+w 2>/dev/null | while read binary ; do
-    case "$(file -bi "${binary}")" in
-      *application/x-sharedlib*) # Libraries (.so)
-        ${CROSS_COMPILE}strip ${STRIP_SHARED} "${binary}";;
-      *application/x-archive*) # Libraries (.a)
-        ${CROSS_COMPILE}strip ${STRIP_STATIC} "${binary}";;
-      *application/x-executable*) # Binaries
-        ${CROSS_COMPILE}strip ${STRIP_BINARIES} "${binary}";;
-    esac
-  done
+                                                                                                case "$(file -bi "${binary}")" in
+                                                                                                  *application/x-sharedlib*) # Libraries (.so)
+                                                                                                    ${CROSS_COMPILE}strip ${STRIP_SHARED} "${binary}";;
+                                                                                                  *application/x-archive*) # Libraries (.a)
+                                                                                                    ${CROSS_COMPILE}strip ${STRIP_STATIC} "${binary}";;
+                                                                                                  *application/x-executable*) # Binaries
+                                                                                                    ${CROSS_COMPILE}strip ${STRIP_BINARIES} "${binary}";;
+                                                                                                esac
+                                                                                              done
 
   # remove unneeded architectures
   rm -rf "${pkgdir}"/usr/lib/modules/${_kernver}/build/arch/{alpha,arc,arm26,arm64,avr32,blackfin,c6x,cris,frv,h8300,hexagon,ia64,m32r,m68k,m68knommu,metag,mips,microblaze,mn10300,openrisc,parisc,powerpc,ppc,s390,score,sh,sh64,sparc,sparc64,tile,unicore32,um,v850,x86,xtensa}
