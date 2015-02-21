@@ -1,7 +1,7 @@
 # Maintainer: Ettore Chimenti <ek5.chimenti at gmail dot com>
 # Contributor: Andrea Scarpino <andrea@archlinux.org>
 pkgname=uboot-zc70x-git
-pkgver=2014.3
+pkgver=2014.4.0.2872.g0346461
 pkgrel=1
 pkgdesc='Utilities for working with Das U-Boot Compiled for zc70x'
 arch=('armv7h')
@@ -13,8 +13,8 @@ conflicts=('uboot-zc70x')
 source=("git://github.com/Xilinx/u-boot-xlnx"
   0001-python-use-python2.patch)
 md5sums=('SKIP'
-         'eed123ded47d92fe87a80f595a1608d2')
-options=('!strip')
+         '9ce7d13cdffe3780ac108a46443625d0')
+options=('strip' 'debug')
 
 prepare() {
   cd u-boot-xlnx
@@ -24,6 +24,8 @@ prepare() {
   mkdir -p "${srcdir}/bin"
   ln -sf "$(which arm-linux-gnueabihf-gcc)" "${srcdir}/bin/gcc"
   ln -sf "$(which arm-linux-gnueabihf-g++)" "${srcdir}/bin/g++"
+  ln -sf "$(which arm-linux-gnueabihf-gcc)" "${srcdir}/bin/cc"
+  ln -sf "$(which arm-linux-gnueabihf-g++)" "${srcdir}/bin/c++"
 }
 
 pkgver() {
@@ -49,7 +51,4 @@ package() {
   install -Dm755 u-boot "${pkgdir}/boot/u-boot"
   install -Dm644 doc/mkimage.1 \
     "${pkgdir}/usr/share/man/man1/mkimage.1"
-
-  arm-linux-gnueabihf-strip "${pkgdir}/usr/bin/mkimage"
-  arm-linux-gnueabihf-strip "${pkgdir}/boot/u-boot"
 }
