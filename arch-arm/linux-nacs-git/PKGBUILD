@@ -1,10 +1,10 @@
 pkgbase=linux-nacs-git
 _kernelname=-nacs
 _desc="NaCs Lab"
-_kernelver=3.17.0
+_kernelver=3.18.0
 _srcname=linux-xlnx
 
-pkgver=2014.4
+pkgver=3.18.0.6188.gc31fb6b
 pkgrel=1
 arch=('armv7h')
 url="https://github.com/Xilinx/linux-xlnx"
@@ -17,7 +17,7 @@ source=("git://github.com/Xilinx/linux-xlnx.git"
         'config')
 md5sums=('SKIP'
          '8397f38291d3ac625523a8b1675b4f59'
-         'f8c6480511a62cefff183a1131a85350')
+         '5fbd7c244b0fd824801f440be921e1ce')
 
 pkgver() {
   cd "${srcdir}/${_srcname}"
@@ -36,9 +36,15 @@ prepare() {
   # don't run depmod on 'make install'. We'll do this ourselves in packaging
   sed -i '2iexit 0' scripts/depmod.sh
 
+  rm -rf "${srcdir}/bin"
   mkdir -p "${srcdir}/bin"
-  ln -sf "$(which arm-linux-gnueabihf-gcc)" "${srcdir}/bin/gcc"
-  ln -sf "$(which arm-linux-gnueabihf-g++)" "${srcdir}/bin/g++"
+  for c in gcc g++; do
+    cat > "${srcdir}/bin/${c}" <<EOF
+#!/bin/bash
+exec arm-linux-gnueabihf-${c} -Wl,-rpath-link,/usr/arm-linux-gnueabihf/lib "\$@"
+EOF
+    chmod +x "${srcdir}/bin/${c}"
+  done
 }
 
 build() {
@@ -115,7 +121,7 @@ _package() {
   # remove the firmware
   rm -rf "${pkgdir}/lib/firmware"
   # gzip -9 all modules to save 100MB of space
-  find "${pkgdir}" -name '*.ko' | xargs -P 2 -n 1 gzip -9
+  # find "${pkgdir}" -name '*.ko' -exec gzip -9 {} \;
   # make room for external modules
   ln -s "../extramodules-${_basekernel}${_kernelname:--ARCH}" \
      "${pkgdir}/lib/modules/${_kernver}/extramodules"
