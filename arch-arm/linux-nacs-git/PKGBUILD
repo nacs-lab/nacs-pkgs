@@ -16,7 +16,7 @@ source=("git://github.com/Xilinx/linux-xlnx.git"
         'linux.preset'
         'config')
 md5sums=('SKIP'
-         '8397f38291d3ac625523a8b1675b4f59'
+         'cf66ac85ae00b545f7eded9bab7b2b8e'
          '5fbd7c244b0fd824801f440be921e1ce')
 
 pkgver() {
