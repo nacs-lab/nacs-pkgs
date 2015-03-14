@@ -1,6 +1,6 @@
 pkgname=nacs-boot
 pkgver=1.0
-pkgrel=4
+pkgrel=5
 pkgdesc='Boot files for NaCs computer control'
 arch=('armv7h')
 url="http://github.com/nacs-lab"
