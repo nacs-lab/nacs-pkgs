@@ -1,0 +1,37 @@
+pkgname=molecube-hw
+pkgver=116.435c8a5
+pkgrel=1
+pkgdesc='NaCs control'
+arch=('armv7h')
+url='harvard.edu'
+license=('LGPL')
+options=('strip' 'debug')
+makedepends=('cmake')
+source=("git+ssh://git@bitbucket.org/nacs-lab/zynq.git#branch=mini")
+md5sums=('SKIP')
+
+pkgver() {
+  cd zynq
+
+  echo "$(git rev-list --count HEAD).$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+  cd zynq
+  rm -rf build/
+  mkdir build
+}
+
+build() {
+  cd zynq/build
+
+  cmake .. -DCMAKE_INSTALL_PREFIX=/usr
+  make
+}
+
+package() {
+  cd zynq/build
+
+  install -dm755 "${pkgdir}/boot/"
+  install -T -Dm644 system.bin "${pkgdir}/boot/system.bit.bin"
+}
