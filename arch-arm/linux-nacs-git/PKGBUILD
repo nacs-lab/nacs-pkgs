@@ -4,7 +4,7 @@ _desc="NaCs Lab"
 _kernelver=3.18.0
 _srcname=linux-xlnx
 
-pkgver=3.18.0.6188.gc31fb6b
+pkgver=3.18.0.6493.g39f07bd
 pkgrel=1
 arch=('armv7h')
 url="https://github.com/Xilinx/linux-xlnx"
@@ -17,7 +17,7 @@ source=("git://github.com/Xilinx/linux-xlnx.git"
         'config')
 md5sums=('SKIP'
          'cf66ac85ae00b545f7eded9bab7b2b8e'
-         '5fbd7c244b0fd824801f440be921e1ce')
+         '1f87d1bb03e793b929cfc8d66df30909')
 
 pkgver() {
   cd "${srcdir}/${_srcname}"
@@ -38,7 +38,7 @@ prepare() {
 
   rm -rf "${srcdir}/bin"
   mkdir -p "${srcdir}/bin"
-  for c in gcc g++; do
+  for c in cc c++ gcc g++; do
     cat > "${srcdir}/bin/${c}" <<EOF
 #!/bin/bash
 exec arm-linux-gnueabihf-${c} -Wl,-rpath-link,/usr/arm-linux-gnueabihf/lib "\$@"
