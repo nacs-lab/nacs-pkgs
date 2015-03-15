@@ -1,7 +1,7 @@
 # Maintainer: Ettore Chimenti <ek5.chimenti at gmail dot com>
 # Contributor: Andrea Scarpino <andrea@archlinux.org>
 pkgname=uboot-zc70x-git
-pkgver=2014.4.0.2872.g0346461
+pkgver=2014.4.0.3005.g171403f
 pkgrel=1
 pkgdesc='Utilities for working with Das U-Boot Compiled for zc70x'
 arch=('armv7h')
