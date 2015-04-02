@@ -1,5 +1,5 @@
 pkgname=molecube-hw
-pkgver=124.fbcdae0
+pkgver=129.f8db21a
 pkgrel=1
 pkgdesc='NaCs control'
 arch=('armv7h')
