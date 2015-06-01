@@ -1,10 +1,9 @@
 pkgbase=linux-nacs-git
 _kernelname=-nacs
 _desc="NaCs Lab"
-_kernelver=3.18.0
 _srcname=linux-xlnx
 
-pkgver=3.18.0.6493.g39f07bd
+pkgver=2015.1.0.13835.g89590cc
 pkgrel=1
 arch=('armv7h')
 url="https://github.com/Xilinx/linux-xlnx"
