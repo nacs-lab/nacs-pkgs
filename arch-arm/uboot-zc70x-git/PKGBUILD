@@ -1,7 +1,7 @@
 # Maintainer: Ettore Chimenti <ek5.chimenti at gmail dot com>
 # Contributor: Andrea Scarpino <andrea@archlinux.org>
 pkgname=uboot-zc70x-git
-pkgver=2014.4.0.3005.g171403f
+pkgver=2015.1.0.1828.g1160fbc
 pkgrel=1
 pkgdesc='Utilities for working with Das U-Boot Compiled for zc70x'
 arch=('armv7h')
@@ -21,11 +21,22 @@ prepare() {
 
   patch -Np1 < ../0001-python-use-python2.patch
 
+  rm -rf "${srcdir}/bin"
   mkdir -p "${srcdir}/bin"
-  ln -sf "$(which arm-linux-gnueabihf-gcc)" "${srcdir}/bin/gcc"
-  ln -sf "$(which arm-linux-gnueabihf-g++)" "${srcdir}/bin/g++"
-  ln -sf "$(which arm-linux-gnueabihf-gcc)" "${srcdir}/bin/cc"
-  ln -sf "$(which arm-linux-gnueabihf-g++)" "${srcdir}/bin/c++"
+  for c in cc gcc; do
+    cat > "${srcdir}/bin/${c}" <<EOF
+#!/bin/bash
+exec arm-linux-gnueabihf-gcc $CFLAGS --sysroot=$SYSROOT -Wl,-rpath-link,/usr/arm-linux-gnueabihf/lib:$SYSROOT/usr/lib "\$@"
+EOF
+    chmod +x "${srcdir}/bin/${c}"
+  done
+  for c in c++ g++; do
+    cat > "${srcdir}/bin/${c}" <<EOF
+#!/bin/bash
+exec arm-linux-gnueabihf-g++ $CXXFLAGS --sysroot=$SYSROOT -Wl,-rpath-link,/usr/arm-linux-gnueabihf/lib:$SYSROOT/usr/lib "\$@"
+EOF
+    chmod +x "${srcdir}/bin/${c}"
+  done
 }
 
 pkgver() {
