@@ -1,9 +1,10 @@
 pkgbase=linux-nacs-git
 _kernelname=-nacs
 _desc="NaCs Lab"
+_kernelver=3.18.0
 _srcname=linux-xlnx
 
-pkgver=2015.1.0.13835.g89590cc
+pkgver=2015.1.0.59.g39f07bd
 pkgrel=1
 arch=('armv7h')
 url="https://github.com/Xilinx/linux-xlnx"
@@ -11,12 +12,12 @@ license=('GPL2')
 makedepends=('xmlto' 'docbook-xsl' 'kmod' 'inetutils' 'bc'
              'uboot-zc70x' 'git')
 options=('!strip')
-source=("git://github.com/Xilinx/linux-xlnx.git"
+source=("git://github.com/Xilinx/linux-xlnx.git#commit=39f07bd"
         'linux.preset'
         'config')
 md5sums=('SKIP'
-         '6e819a9afa6fb13b126ea2243570c027'
-         '5cfb575255e7847164635078ee1c65b7')
+         'cf66ac85ae00b545f7eded9bab7b2b8e'
+         '1f87d1bb03e793b929cfc8d66df30909')
 
 pkgver() {
   cd "${srcdir}/${_srcname}"
