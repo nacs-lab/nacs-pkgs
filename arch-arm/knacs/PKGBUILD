@@ -2,14 +2,16 @@ pkgname=knacs
 _ker_ver=4.0.0-3-nacs
 _extramodules=extramodules-4.0-nacs
 pkgver=5.fc33bb0
-pkgrel=1
+pkgrel=2
 pkgdesc='Kernel driver for the NaCs control system'
 arch=('armv7h')
 url='http://github.com/nacs-lab/knacs'
 license=('LGPL')
 makedepends=('cmake' 'arm-linux-gnueabihf-gcc' 'arch-arm')
-source=("git://github.com/nacs-lab/knacs")
-md5sums=('SKIP')
+source=("git://github.com/nacs-lab/knacs"
+        99-knacs.rules)
+md5sums=('SKIP'
+         '706b8249bc7c369656efb9853b726d8c')
 install=knacs.install
 
 pkgver() {
@@ -44,4 +46,7 @@ package() {
   cd knacs/build
 
   make install DESTDIR="${pkgdir}"
+
+  install -Dm644 "${srcdir}/99-knacs.rules" \
+          "${pkgdir}/etc/udev/rules.d/99-knacs.rules"
 }
