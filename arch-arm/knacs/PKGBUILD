@@ -1,7 +1,7 @@
 pkgname=knacs
 _ker_ver=4.0.0-3-nacs
 _extramodules=extramodules-4.0-nacs
-pkgver=8.c06cd0c
+pkgver=9.098a87f
 pkgrel=1
 pkgdesc='Kernel driver for the NaCs control system'
 arch=('armv7h')
@@ -49,4 +49,7 @@ package() {
 
   install -Dm644 "${srcdir}/99-knacs.rules" \
           "${pkgdir}/etc/udev/rules.d/99-knacs.rules"
+
+  install -d -m755 "${pkgdir}/usr/lib/modules-load.d"
+  echo "knacs" >> "${pkgdir}/usr/lib/modules-load.d/knacs.conf"
 }
