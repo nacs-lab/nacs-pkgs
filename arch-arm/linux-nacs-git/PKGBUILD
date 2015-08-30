@@ -4,8 +4,8 @@ _desc="NaCs Lab"
 _kernelver=4.0.0
 _srcname=linux-xlnx
 
-pkgver=2015.2.0.11451.gac297e2
-pkgrel=3
+pkgver=2015.2.0.11494.gd329bc9
+pkgrel=1
 arch=('armv7h')
 url="https://github.com/Xilinx/linux-xlnx"
 license=('GPL2')
@@ -16,8 +16,8 @@ source=("git://github.com/Xilinx/linux-xlnx.git"
         'linux.preset'
         'config')
 md5sums=('SKIP'
-         '31c18c0a0e1cbbe64a92132f2666aec9'
-         '82d53c673c3dc8194783a54495a873cf')
+         '9aafe904fefa2929714e1c84390cbbba'
+         'e2938254a61db61d440820528a29b058')
 
 pkgver() {
   cd "${srcdir}/${_srcname}"
