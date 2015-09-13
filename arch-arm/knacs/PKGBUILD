@@ -1,7 +1,7 @@
 pkgname=knacs
-_ker_ver=4.0.0-3-nacs
+_ker_ver=4.0.0-1-nacs
 _extramodules=extramodules-4.0-nacs
-pkgver=58.f984b0c
+pkgver=61.f7ba312
 pkgrel=1
 pkgdesc='Kernel driver for the NaCs control system'
 arch=('armv7h')
