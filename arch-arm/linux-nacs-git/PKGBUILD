@@ -4,7 +4,7 @@ _desc="NaCs Lab"
 _kernelver=4.0.0
 _srcname=linux-xlnx
 
-pkgver=2015.2.0.11507.gda969d0
+pkgver=2015.2.0.11521.g6917ea1
 pkgrel=1
 arch=('armv7h')
 url="https://github.com/Xilinx/linux-xlnx"
