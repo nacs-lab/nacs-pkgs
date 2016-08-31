@@ -5,7 +5,7 @@ _kernver=4.6.0
 _srcname=linux-xlnx
 
 epoch=1
-pkgver=4.6.0.22206.gd470dfb
+pkgver=4.6.0.22262.g6290416
 pkgrel=1
 arch=('armv7h')
 url="https://github.com/Xilinx/linux-xlnx"
@@ -18,7 +18,7 @@ source=("git://github.com/Xilinx/linux-xlnx.git"
         'config')
 md5sums=('SKIP'
          'e83f3b46168518ed3388f213e525040c'
-         '108d306e51b648c6f14ee64f27f916e5')
+         '9ef6c096776630325a86b59acc2ca841')
 
 pkgver() {
   cd "${srcdir}/${_srcname}"
