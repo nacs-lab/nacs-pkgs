@@ -5,7 +5,7 @@ _kernelver=4.0.0
 _srcname=linux-xlnx
 
 pkgver=2015.4.01.0.7.g5dab41c
-pkgrel=2
+pkgrel=3
 arch=('armv7h')
 url="https://github.com/Xilinx/linux-xlnx"
 license=('GPL2')
@@ -16,8 +16,8 @@ source=("git://github.com/Xilinx/linux-xlnx.git#commit=5dab41c"
         'linux.preset'
         'config')
 md5sums=('SKIP'
-         '9aafe904fefa2929714e1c84390cbbba'
-         '27aac40ba2f3995247474bec18d481dd')
+         '31c18c0a0e1cbbe64a92132f2666aec9'
+         '9ef294932381dcd9b431d27434292115')
 
 pkgver() {
   cd "${srcdir}/${_srcname}"
