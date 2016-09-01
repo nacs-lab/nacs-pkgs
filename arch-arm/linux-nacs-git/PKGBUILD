@@ -5,7 +5,7 @@ _kernelver=4.0.0
 _srcname=linux-xlnx
 
 pkgver=2015.4.01.0.7.g5dab41c
-pkgrel=3
+pkgrel=4
 arch=('armv7h')
 url="https://github.com/Xilinx/linux-xlnx"
 license=('GPL2')
@@ -13,9 +13,11 @@ makedepends=('xmlto' 'docbook-xsl' 'kmod' 'inetutils' 'bc'
              'uboot-zc70x' 'git')
 options=('!strip')
 source=("git://github.com/Xilinx/linux-xlnx.git#commit=5dab41c"
+        'vadj-ctrl.patch'
         'linux.preset'
         'config')
 md5sums=('SKIP'
+         '8cc338fed978d4864513f84c3b971629'
          '31c18c0a0e1cbbe64a92132f2666aec9'
          '9ef294932381dcd9b431d27434292115')
 
@@ -26,7 +28,9 @@ pkgver() {
 }
 
 prepare() {
-  cd "${srcdir}/${_srcname}"
+  cd ${_srcname}
+
+  patch -Np1 < ../vadj-ctrl.patch
 
   cat "${srcdir}/config" > ./.config
 
