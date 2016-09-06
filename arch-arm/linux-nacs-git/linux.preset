@@ -1,7 +1,7 @@
 # mkinitcpio preset file for the 'linux' package
 
 ALL_config="/etc/mkinitcpio.conf"
-ALL_kver=4.0.0-4-nacs
+ALL_kver=4.6.0-1-nacs
 
 PRESETS=('fallback')
 
