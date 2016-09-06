@@ -1,25 +1,25 @@
 pkgbase=linux-nacs-git
 _kernelname=-nacs
 _desc="NaCs Lab"
-_kernelver=4.6.0
+_kernelver=4.0.0
 _srcname=linux-xlnx
 
-pkgver=4.6.0.22262.g6290416
-pkgrel=1
+pkgver=2015.4.01.0.7.g5dab41c
+pkgrel=4
 arch=('armv7h')
 url="https://github.com/Xilinx/linux-xlnx"
 license=('GPL2')
 makedepends=('xmlto' 'docbook-xsl' 'kmod' 'inetutils' 'bc'
              'uboot-zc70x' 'git')
 options=('!strip')
-source=("git://github.com/Xilinx/linux-xlnx"
+source=("git://github.com/Xilinx/linux-xlnx.git#commit=5dab41c"
         'vadj-ctrl.patch'
         'linux.preset'
         'config')
 md5sums=('SKIP'
          '8cc338fed978d4864513f84c3b971629'
-         'e83f3b46168518ed3388f213e525040c'
-         '9af7665c542bd1eb63d6391265f9384a')
+         '2b95f92cf8f8d9c97633f4adaa413574'
+         '066339f9729708e0ff51b79653b32b92')
 
 pkgver() {
   cd "${srcdir}/${_srcname}"
@@ -49,7 +49,7 @@ exec arm-linux-gnueabihf-${c} -Wl,-rpath-link,/usr/arm-linux-gnueabihf/lib "\$@"
 EOF
     chmod +x "${srcdir}/bin/${c}"
   done
-  # cp include/linux/compiler-gcc5.h include/linux/compiler-gcc6.h
+  cp include/linux/compiler-gcc5.h include/linux/compiler-gcc6.h
 }
 
 build() {
