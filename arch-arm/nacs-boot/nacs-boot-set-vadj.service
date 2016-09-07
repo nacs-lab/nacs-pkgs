@@ -1,0 +1,12 @@
+[Unit]
+Description=Set VADJ to 3.3V
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/nacs-boot/set_vadj.sh
+KillMode=process
+Restart=no
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
