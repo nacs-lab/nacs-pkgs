@@ -4,19 +4,21 @@ _desc="NaCs Lab"
 _kernelver=4.0.0
 _srcname=linux-xlnx
 
-pkgver=2015.2.0.11557.g6e21224a3
-pkgrel=1
+pkgver=2015.4.01.0.7.g5dab41c
+pkgrel=4
 arch=('armv7h')
 url="https://github.com/Xilinx/linux-xlnx"
 license=('GPL2')
 makedepends=('xmlto' 'docbook-xsl' 'kmod' 'inetutils' 'bc' 'git' 'uboot-tools')
 options=('!strip')
-source=("git://github.com/Xilinx/linux-xlnx.git"
+source=("git://github.com/Xilinx/linux-xlnx.git#commit=5dab41c"
+        'vadj-ctrl.patch'
         'linux.preset'
         'config')
 md5sums=('SKIP'
-         '9aafe904fefa2929714e1c84390cbbba'
-         'ee637a829e14236c2be005de37d65dd2')
+         '8cc338fed978d4864513f84c3b971629'
+         '2b95f92cf8f8d9c97633f4adaa413574'
+         '066339f9729708e0ff51b79653b32b92')
 
 pkgver() {
   cd "${srcdir}/${_srcname}"
@@ -25,7 +27,9 @@ pkgver() {
 }
 
 prepare() {
-  cd "${srcdir}/${_srcname}"
+  cd ${_srcname}
+
+  patch -Np1 < ../vadj-ctrl.patch
 
   cat "${srcdir}/config" > ./.config
 
@@ -44,6 +48,7 @@ exec arm-linux-gnueabihf-${c} -Wl,-rpath-link,/usr/arm-linux-gnueabihf/lib "\$@"
 EOF
     chmod +x "${srcdir}/bin/${c}"
   done
+  cp include/linux/compiler-gcc5.h include/linux/compiler-gcc6.h
 }
 
 build() {
@@ -65,7 +70,7 @@ build() {
   # ... or manually edit .config
 
   # Copy back our configuration (use with new kernel version)
-  # cp ./.config ../${pkgbase}.config
+  # cp ./.config ${startdir}/config
 
   ####################
   # stop here

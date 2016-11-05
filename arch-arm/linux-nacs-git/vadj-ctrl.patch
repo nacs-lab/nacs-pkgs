@@ -1,0 +1,15 @@
+--- a/drivers/hwmon/pmbus/pmbus_core.c
++++ b/drivers/hwmon/pmbus/pmbus_core.c
+@@ -1150,6 +1150,12 @@ static const struct pmbus_limit_attr vout_limit_attrs[] = {
+ 	}, {
+ 		.reg = PMBUS_VIRT_RESET_VOUT_HISTORY,
+ 		.attr = "reset_history",
++	}, {
++		.reg = PMBUS_VOUT_MAX,
++		.attr = "vout_max",
++	}, {
++		.reg = PMBUS_VOUT_COMMAND,
++		.attr = "vout_cmd",
+ 	}
+ };
+ 
