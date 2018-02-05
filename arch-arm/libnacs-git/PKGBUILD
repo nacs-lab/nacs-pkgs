@@ -1,0 +1,48 @@
+pkgname=libnacs-git
+pkgver=299.0f840e5
+pkgrel=1
+pkgdesc='Library used for the NaCs control system'
+arch=('armv7h')
+url='http://github.com/nacs-lab/libnacs'
+license=('LGPL')
+options=('!strip' 'debug')
+makedepends=('cmake' 'clang' 'arm-linux-gnueabihf-gcc' 'arch-arm')
+provides=(libnacs)
+source=("git://github.com/nacs-lab/libnacs")
+md5sums=('SKIP')
+
+pkgver() {
+  cd libnacs
+
+  echo "$(git rev-list --count HEAD).$(git rev-parse --short HEAD)"
+}
+
+build() {
+  cd libnacs
+
+  CFLAGS=${CFLAGS/-fvar-tracking-assignments/}
+  CXXFLAGS=${CXXFLAGS/-fvar-tracking-assignments/}
+
+  CFLAGS=${CFLAGS/-march=armv7-a/}
+  CXXFLAGS=${CXXFLAGS/-march=armv7-a/}
+
+  CFLAGS+=' -O3 -flto'
+  CXXFLAGS+=' -O3 -flto'
+  LDFLAGS+=' -O3 -flto'
+
+  mkdir -p build
+  cd build
+  cmake .. -DCMAKE_TOOLCHAIN_FILE=/usr/share/cmake/Modules/ARMv7hf.cmake \
+        -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=/usr/lib \
+        -DCMAKE_INSTALL_BINDIR=/usr/bin -DCMAKE_INSTALL_DATADIR=/usr/share \
+        -DCMAKE_INSTALL_INCLUDEDIR=/usr/include \
+        -DENABLE_KNACS=Off -DENABLE_PYWRAPPER=Off
+  make
+}
+
+package() {
+  optdepends=(knacs)
+  cd libnacs/build
+
+  make install DESTDIR="${pkgdir}"
+}
