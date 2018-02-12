@@ -4,8 +4,8 @@ _desc="NaCs Lab"
 _kernelver=4.9.0
 _srcname=linux-xlnx
 
-pkgver=4.9.0.25207.gb11f1d3fcb61
-pkgrel=2
+pkgver=2017.4.0.27.g9c2e29b2c81d
+pkgrel=3
 arch=('armv7h')
 url="https://github.com/Xilinx/linux-xlnx"
 license=('GPL2')
@@ -17,8 +17,8 @@ source=("git://github.com/Xilinx/linux-xlnx"
         'config')
 md5sums=('SKIP'
          '8cc338fed978d4864513f84c3b971629'
-         '3799902fa0de8cbd1d14e2baed0d5a19'
-         '8d9e938a60317c670c84d28b84d3361d')
+         '87e6d01a8702fa6c1ec33cbeefb5108c'
+         'e8d3e123b71b05b4b59d0fdb1302fc3f')
 
 pkgver() {
   cd "${srcdir}/${_srcname}"
@@ -53,30 +53,36 @@ EOF
 build() {
   cd "${srcdir}/${_srcname}"
 
+  run_config=0
+
   export MAKEFLAGS+=' ARCH=arm LOCALVERSION='
   export PATH="${srcdir}/bin:${PATH}"
-  # # For running xconfig
-  # rm "${srcdir}/bin/"*
+  if ((run_config)); then
+      # For running xconfig
+      rm "${srcdir}/bin/"*
+  fi
   # get kernel version
   make ${MAKEFLAGS} prepare
 
-  # load configuration
-  # Configure the kernel. Replace the line below with one of your choice.
-  # make menuconfig # CLI menu for configuration
-  # make nconfig # new CLI menu for configuration
-  # make xconfig # X-based configuration
-  # make oldconfig # using old config from previous kernel version
-  # ... or manually edit .config
+  if ((run_config)); then
+      # load configuration
+      # Configure the kernel. Replace the line below with one of your choice.
+      # make menuconfig # CLI menu for configuration
+      # make nconfig # new CLI menu for configuration
+      make xconfig # X-based configuration
+      # make oldconfig # using old config from previous kernel version
+      # ... or manually edit .config
 
-  # Copy back our configuration (use with new kernel version)
-  # cp ./.config ${startdir}/config
+      # Copy back our configuration (use with new kernel version)
+      cp ./.config "${startdir}/config"
 
-  ####################
-  # stop here
-  # this is useful to configure the kernel
-  # msg "Stopping build"
-  # return 1
-  ####################
+      ####################
+      # stop here
+      # this is useful to configure the kernel
+      msg "Stopping build"
+      return 1
+      ####################
+  fi
 
   # yes "" | make config
 
