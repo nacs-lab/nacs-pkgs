@@ -1,7 +1,7 @@
 # Maintainer: Ettore Chimenti <ek5.chimenti at gmail dot com>
 # Contributor: Andrea Scarpino <andrea@archlinux.org>
 pkgname=uboot-zc70x-git
-pkgver=2016.3.0.54.g5f38e8b
+pkgver=2017.4.0.11.ga703fb6e3c
 pkgrel=1
 pkgdesc='Utilities for working with Das U-Boot Compiled for zc70x'
 arch=('armv7h')
@@ -12,7 +12,7 @@ provides=('uboot-zc70x')
 conflicts=('uboot-zc70x')
 source=("git://github.com/Xilinx/u-boot-xlnx")
 md5sums=('SKIP')
-options=('strip' 'debug')
+options=('debug')
 
 prepare() {
   cd u-boot-xlnx
@@ -22,14 +22,14 @@ prepare() {
   for c in cc gcc; do
     cat > "${srcdir}/bin/${c}" <<EOF
 #!/bin/bash
-exec arm-linux-gnueabihf-gcc $CFLAGS --sysroot=$SYSROOT -Wl,-rpath-link,/usr/arm-linux-gnueabihf/lib:$SYSROOT/usr/lib "\$@"
+exec arm-linux-gnueabihf-gcc $CFLAGS --sysroot=$SYSROOT -Wl,-rpath-link,/usr/arm-linux-gnueabihf/lib:$SYSROOT/usr/lib -I$SYSROOT/usr/include/openssl-1.0 -L$SYSROOT/usr/lib/openssl-1.0 "\$@"
 EOF
     chmod +x "${srcdir}/bin/${c}"
   done
   for c in c++ g++; do
     cat > "${srcdir}/bin/${c}" <<EOF
 #!/bin/bash
-exec arm-linux-gnueabihf-g++ $CXXFLAGS --sysroot=$SYSROOT -Wl,-rpath-link,/usr/arm-linux-gnueabihf/lib:$SYSROOT/usr/lib "\$@"
+exec arm-linux-gnueabihf-g++ $CXXFLAGS --sysroot=$SYSROOT -Wl,-rpath-link,/usr/arm-linux-gnueabihf/lib:$SYSROOT/usr/lib -I$SYSROOT/usr/include/openssl-1.0 -L$SYSROOT/usr/lib/openssl-1.0 "\$@"
 EOF
     chmod +x "${srcdir}/bin/${c}"
   done
