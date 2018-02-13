@@ -7,7 +7,7 @@ url='harvard.edu'
 license=('LGPL')
 options=('strip' 'debug')
 makedepends=('cmake')
-source=("git+ssh://git@bitbucket.org/nacs-lab/zynq.git#branch=mini")
+source=("git+ssh://gitlab@yuyichao.com/yuyichao/zynq.git")
 md5sums=('SKIP')
 
 pkgver() {
