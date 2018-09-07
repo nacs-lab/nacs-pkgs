@@ -3,7 +3,7 @@
 pkgname=knacs
 _ker_ver=4.9.0-3-nacs
 _extramodules=extramodules-4.9-nacs
-pkgver=28.d6f2bf6
+pkgver=29.1294fac
 epoch=1
 pkgrel=1
 pkgdesc='Kernel driver for the NaCs control system'
