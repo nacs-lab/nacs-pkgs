@@ -5,20 +5,20 @@ _kernelver=4.9.0
 _srcname=linux-xlnx
 
 pkgver=2017.4.0.27.g9c2e29b2c81d
-pkgrel=3
+pkgrel=4
 arch=('armv7h')
 url="https://github.com/Xilinx/linux-xlnx"
 license=('GPL2')
 makedepends=('xmlto' 'docbook-xsl' 'kmod' 'inetutils' 'bc' 'git' 'uboot-tools')
 options=('!strip')
-source=("git://github.com/Xilinx/linux-xlnx"
+source=("git://github.com/Xilinx/linux-xlnx#commit=9c2e29b2c81d"
         'vadj-ctrl.patch'
         'linux.preset'
         'config')
 md5sums=('SKIP'
          '8cc338fed978d4864513f84c3b971629'
-         '87e6d01a8702fa6c1ec33cbeefb5108c'
-         'e8d3e123b71b05b4b59d0fdb1302fc3f')
+         '9d5d2508450a29f661751ce581c64517'
+         'bfbc550c33449e5156ba2aef95c294b4')
 
 pkgver() {
   cd "${srcdir}/${_srcname}"
