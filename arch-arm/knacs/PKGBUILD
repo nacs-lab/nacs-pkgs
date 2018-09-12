@@ -1,11 +1,11 @@
 #
 
 pkgname=knacs
-_ker_ver=4.9.0-3-nacs
+_ker_ver=4.9.0-4-nacs
 _extramodules=extramodules-4.9-nacs
 pkgver=29.1294fac
 epoch=1
-pkgrel=1
+pkgrel=2
 pkgdesc='Kernel driver for the NaCs control system'
 arch=('armv7h')
 url='http://github.com/nacs-lab/knacs'
