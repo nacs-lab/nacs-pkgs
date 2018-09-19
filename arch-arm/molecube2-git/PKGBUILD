@@ -1,5 +1,5 @@
 pkgname=molecube2-git
-pkgver=120.cf4eb80
+pkgver=167.feb947e
 pkgrel=1
 pkgdesc='NaCs control'
 arch=('armv7h')
@@ -33,13 +33,12 @@ build() {
   cd build
   cmake .. -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_TOOLCHAIN_FILE=/usr/share/cmake/Modules/ARMv7hf.cmake \
-        -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=/usr/lib \
-        -DCMAKE_INSTALL_BINDIR=/usr/bin -DCMAKE_INSTALL_DATADIR=/usr/share
+        -DCMAKE_INSTALL_PREFIX=/usr
   make
 }
 
 package() {
-  depends=('glibc' 'libnacs' 'zeromq')
+  depends=('glibc' 'libnacs' 'zeromq' 'yaml-cpp')
   cd molecube2/build
 
   make install DESTDIR="${pkgdir}"
