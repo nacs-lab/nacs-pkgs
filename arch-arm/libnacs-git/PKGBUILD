@@ -1,5 +1,5 @@
 pkgname=libnacs-git
-pkgver=570.af81ac2
+pkgver=571.30b9468
 pkgrel=1
 pkgdesc='Library used for the NaCs control system'
 arch=('armv7h')
@@ -34,9 +34,7 @@ build() {
   mkdir -p build
   cd build
   cmake .. -DCMAKE_TOOLCHAIN_FILE=/usr/share/cmake/Modules/ARMv7hf.cmake \
-        -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=/usr/lib \
-        -DCMAKE_INSTALL_BINDIR=/usr/bin -DCMAKE_INSTALL_DATADIR=/usr/share \
-        -DCMAKE_INSTALL_INCLUDEDIR=/usr/include \
+        -DCMAKE_INSTALL_PREFIX=/usr \
         -DENABLE_KNACS=On -DENABLE_PYWRAPPER=Off
   make
 }
