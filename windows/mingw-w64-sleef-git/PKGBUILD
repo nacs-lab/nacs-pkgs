@@ -4,7 +4,7 @@
 pkgbase=mingw-w64-sleef-git
 pkgname="${MINGW_PACKAGE_PREFIX}-sleef-git"
 pkgrel=1
-pkgver=r2017.bd06b24
+pkgver=3.3.1.38.gca4fd10
 pkgdesc="SIMD Library for Evaluating Elementary Functions, vectorized libm and DFT (mingw-w64)"
 provides=("${MINGW_PACKAGE_PREFIX}-sleef")
 arch=('any')
