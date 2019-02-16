@@ -35,7 +35,7 @@ build() {
 
   cygpath_prefix="$(cygpath -a "${MINGW_PREFIX}")"
 
-  CC=${MINGW_PREFIX}/bin/clang CXX=${MINGW_PREFIX}/bin/clang++ "${cygpath_prefix}" .. \
+  CC=${MINGW_PREFIX}/bin/clang CXX=${MINGW_PREFIX}/bin/clang++ "${cygpath_prefix}"/cmake .. \
     -G"MSYS Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DCMAKE_INSTALL_PREFIX="${cygpath_prefix}"
   make
