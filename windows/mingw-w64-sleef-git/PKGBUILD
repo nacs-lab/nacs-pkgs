@@ -14,7 +14,8 @@ provides=("${MINGW_PACKAGE_PREFIX}-sleef")
 conflicts=("${MINGW_PACKAGE_PREFIX}-sleef")
 replaces=("${MINGW_PACKAGE_PREFIX}-sleef")
 options=('strip' 'staticlibs')
-depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs")
+depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
+         "${MINGW_PACKAGE_PREFIX}-libwinpthread")
 makedepends=("git"
              "${MINGW_PACKAGE_PREFIX}-clang"
              "${MINGW_PACKAGE_PREFIX}-cmake")
