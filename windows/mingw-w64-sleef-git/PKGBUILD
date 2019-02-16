@@ -1,0 +1,45 @@
+# Maintainer: Alexey Pavlov <alexpux@gmail.com>
+# Contributor: Jürgen Pfeifer <juergen@familiepfeifer.de>
+
+pkgbase=mingw-w64-sleef-git
+pkgname="${MINGW_PACKAGE_PREFIX}-sleef-git"
+pkgrel=1
+pkgver=r2017.bd06b24
+pkgdesc="SIMD Library for Evaluating Elementary Functions, vectorized libm and DFT (mingw-w64)"
+provides=("${MINGW_PACKAGE_PREFIX}-sleef")
+arch=('any')
+url="http://sleef.org/"
+license=('custom')
+provides=("${MINGW_PACKAGE_PREFIX}-sleef")
+conflicts=("${MINGW_PACKAGE_PREFIX}-sleef")
+replaces=("${MINGW_PACKAGE_PREFIX}-sleef")
+options=('strip' 'staticlibs')
+depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs")
+makedepends=("git"
+             "${MINGW_PACKAGE_PREFIX}-clang")
+source=("git://github.com/shibatch/sleef")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd sleef
+
+  git describe --tags | sed -e 's/-/./g'
+}
+
+build() {
+  cd sleef
+
+  mkdir -p build
+  cd build
+
+  CC=${MINGW_PREFIX}/bin/clang CXX=${MINGW_PREFIX}/bin/clang++ cmake \
+    -G"MSYS2 Makefile" -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DCMAKE_INSTALL_PREFIX="${MINGW_PREFIX}"
+  make
+}
+
+package() {
+  cd sleef/build
+
+  make install DESTDIR="$pkgdir"
+}
