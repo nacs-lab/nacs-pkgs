@@ -33,7 +33,7 @@ build() {
   cd build
 
   CC=${MINGW_PREFIX}/bin/clang CXX=${MINGW_PREFIX}/bin/clang++ cmake \
-    -G"MSYS2 Makefile" -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -G"MSYS Makefile" -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DCMAKE_INSTALL_PREFIX="${MINGW_PREFIX}"
   make
 }
