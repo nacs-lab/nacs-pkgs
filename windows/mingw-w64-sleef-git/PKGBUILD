@@ -16,7 +16,8 @@ replaces=("${MINGW_PACKAGE_PREFIX}-sleef")
 options=('strip' 'staticlibs')
 depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs")
 makedepends=("git"
-             "${MINGW_PACKAGE_PREFIX}-clang")
+             "${MINGW_PACKAGE_PREFIX}-clang"
+             "${MINGW_PACKAGE_PREFIX}-cmake")
 source=("git://github.com/shibatch/sleef")
 sha256sums=('SKIP')
 
@@ -32,9 +33,9 @@ build() {
   mkdir -p build
   cd build
 
-  CC=${MINGW_PREFIX}/bin/clang CXX=${MINGW_PREFIX}/bin/clang++ cmake .. \
+  CC=${MINGW_PREFIX}/bin/clang CXX=${MINGW_PREFIX}/bin/clang++ "${MINGW_PREFIX}"/cmake .. \
     -G"MSYS Makefiles" -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-    -DCMAKE_INSTALL_PREFIX="${MINGW_PREFIX}"
+    -DCMAKE_INSTALL_PREFIX="$(cygpath -a "${MINGW_PREFIX}")"
   make
 }
 
