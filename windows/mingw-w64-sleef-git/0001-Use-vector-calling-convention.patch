@@ -1,4 +1,4 @@
-From 23a98411ef86b8b1a714c06b3467ee7bc6a5a743 Mon Sep 17 00:00:00 2001
+From 6f61fcad29600b2ec235ea43a7456a0b478b9c4d Mon Sep 17 00:00:00 2001
 From: Yichao Yu <yyc1992@gmail.com>
 Date: Sun, 24 Feb 2019 21:03:18 -0500
 Subject: [PATCH] Use vector calling convention
@@ -15,10 +15,10 @@ Subject: [PATCH] Use vector calling convention
  src/libm/dispavx.c.org        | 60 +++++++++++++++++++++----------------------
  src/libm/dispsse.c.org        | 60 +++++++++++++++++++++----------------------
  src/libm/mkalias.c            | 20 +++++++++++----
- src/libm/mkrename.c           |  2 +-
+ src/libm/mkrename.c           | 30 ++++++++++------------
  src/libm/sleefsimddp.c        | 16 ++++++------
  src/libm/sleefsimdsp.c        |  8 +++---
- 14 files changed, 146 insertions(+), 79 deletions(-)
+ 14 files changed, 158 insertions(+), 95 deletions(-)
 
 diff --git a/src/arch/helperavx.h b/src/arch/helperavx.h
 index 823fd01..c17c3f0 100644
@@ -388,7 +388,7 @@ index dbf9a98..3949190 100644
  #define DISPATCH_i_i(funcName, pfn, dfn, funcsse2, funcsse4, funcavx2) \
    static CONST int (*pfn)(int arg0);					\
 diff --git a/src/libm/mkalias.c b/src/libm/mkalias.c
-index 97c12b2..e9c0c84 100644
+index 97c12b2..acaf740 100644
 --- a/src/libm/mkalias.c
 +++ b/src/libm/mkalias.c
 @@ -24,7 +24,7 @@ int main(int argc, char **argv) {
@@ -404,7 +404,7 @@ index 97c12b2..e9c0c84 100644
    static char *typeSpec[] = { "d", "f" };
    static char *ulpSuffixStr[] = { "", "_u1", "_u05", "_u35", "_u15" };
    static char *vparameterStr[7] = { "v", "vv", "", "vv", "v", "vvv", "" };
-+  static int argSize[] = {2, 4, 2, fptype ? 4 : 3, 2, 6, 2, 0, 0};
++  int argSize[] = {2, 4, 2, fptype ? 4 : 3, 2, 6, 2, 0, 0};
  
    static char returnType[9][1000];
    static char argType0[9][1000];
@@ -441,7 +441,7 @@ index 97c12b2..e9c0c84 100644
        }
      }
 diff --git a/src/libm/mkrename.c b/src/libm/mkrename.c
-index 08fdf01..74aa47d 100644
+index 08fdf01..2a9ce3b 100644
 --- a/src/libm/mkrename.c
 +++ b/src/libm/mkrename.c
 @@ -136,7 +136,7 @@ int main(int argc, char **argv) {
@@ -453,6 +453,52 @@ index 08fdf01..74aa47d 100644
      #ifdef ENABLE_AAVPCS
      if (strcmp(isaname, "advsimd") == 0)
        vectorcc =" __attribute__((aarch64_vector_pcs))";
+@@ -338,12 +338,12 @@ int main(int argc, char **argv) {
+ 	  }
+ 	  break;
+ 	case 7:
+-	  printf("IMPORT CONST int Sleef_%sd%s%s%s(int)%s;\n",
+-		 funcList[i].name, wdp, isaub, isaname, vectorcc);
++	  printf("IMPORT CONST int Sleef_%sd%s%s%s(int);\n",
++		 funcList[i].name, wdp, isaub, isaname);
+ 	  break;
+ 	case 8:
+-	  printf("IMPORT CONST void *Sleef_%sd%s%s%s(int)%s;\n",
+-                 funcList[i].name, wdp, isaub, isaname, vectorcc);
++	  printf("IMPORT CONST void *Sleef_%sd%s%s%s(int);\n",
++                 funcList[i].name, wdp, isaub, isaname);
+ 	  break;
+ 	}
+       }
+@@ -496,20 +496,16 @@ int main(int argc, char **argv) {
+ 	}
+ 	break;
+       case 7:
+-	printf("IMPORT CONST int Sleef_%sf%s%s%s(int)%s;\n",
+-	       funcList[i].name, wsp, isaub, isaname,
+-               vectorcc);
+-	printf("IMPORT CONST int Sleef_%s%sf%s%s%s(int)%s;\n",
+-	       atrPrefix, funcList[i].name, wsp, isaub, isaname,
+-               vectorcc);
++	printf("IMPORT CONST int Sleef_%sf%s%s%s(int);\n",
++	       funcList[i].name, wsp, isaub, isaname);
++	printf("IMPORT CONST int Sleef_%s%sf%s%s%s(int);\n",
++	       atrPrefix, funcList[i].name, wsp, isaub, isaname);
+ 	break;
+       case 8:
+-	printf("IMPORT CONST void *Sleef_%sf%s%s%s(int)%s;\n",
+-	       funcList[i].name, wsp, isaub, isaname,
+-               vectorcc);
+-	printf("IMPORT CONST void *Sleef_%s%sf%s%s%s(int)%s;\n",
+-	       atrPrefix, funcList[i].name, wsp, isaub, isaname,
+-               vectorcc);
++	printf("IMPORT CONST void *Sleef_%sf%s%s%s(int);\n",
++	       funcList[i].name, wsp, isaub, isaname);
++	printf("IMPORT CONST void *Sleef_%s%sf%s%s%s(int);\n",
++	       atrPrefix, funcList[i].name, wsp, isaub, isaname);
+ 	break;
+       }
+     }
 diff --git a/src/libm/sleefsimddp.c b/src/libm/sleefsimddp.c
 index 9227c27..f810246 100644
 --- a/src/libm/sleefsimddp.c
