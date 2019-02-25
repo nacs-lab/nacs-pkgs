@@ -19,13 +19,24 @@ depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
 makedepends=("git"
              "${MINGW_PACKAGE_PREFIX}-clang"
              "${MINGW_PACKAGE_PREFIX}-cmake")
-source=("git://github.com/shibatch/sleef")
-sha256sums=('SKIP')
+source=("git://github.com/shibatch/sleef"
+        0001-Use-vector-calling-convention.patch)
+sha256sums=('SKIP'
+            'f5d8c454eca65464e3975924da9967d2dd718636e93951a3ab4b73200823099a')
 
 pkgver() {
   cd sleef
 
   git describe --tags | sed -e 's/-/./g'
+}
+
+prepare() {
+  cd sleef
+
+  git reset --hard HEAD
+  git clean -fdx
+
+  patch -Np1 < ../0001-Use-vector-calling-convention.patch
 }
 
 build() {

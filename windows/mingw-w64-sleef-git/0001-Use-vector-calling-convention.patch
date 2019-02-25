@@ -1,0 +1,37 @@
+From 8f939cca2011b451d32a09c2e63c9ab5ba6e3fcb Mon Sep 17 00:00:00 2001
+From: Yichao Yu <yyc1992@gmail.com>
+Date: Sun, 24 Feb 2019 21:03:18 -0500
+Subject: [PATCH] Use vector calling convention
+
+---
+ src/common/misc.h   | 2 +-
+ src/libm/mkrename.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/common/misc.h b/src/common/misc.h
+index 79e0c32..92c3217 100644
+--- a/src/common/misc.h
++++ b/src/common/misc.h
+@@ -330,5 +330,5 @@ typedef union {
+ #ifdef ENABLE_AAVPCS
+ #define VECTOR_CC __attribute__((aarch64_vector_pcs))
+ #else
+-#define VECTOR_CC
++#define VECTOR_CC __attribute__((vectorcall))
+ #endif
+diff --git a/src/libm/mkrename.c b/src/libm/mkrename.c
+index 08fdf01..41500a3 100644
+--- a/src/libm/mkrename.c
++++ b/src/libm/mkrename.c
+@@ -136,7 +136,7 @@ int main(int argc, char **argv) {
+     if (strcmp(isaname, "sve") == 0)
+       wdp = wsp = "x";
+ 
+-    char * vectorcc = "";
++    char * vectorcc = "__attribute__((vectorcall))";
+     #ifdef ENABLE_AAVPCS
+     if (strcmp(isaname, "advsimd") == 0)
+       vectorcc =" __attribute__((aarch64_vector_pcs))";
+-- 
+2.16.1
+
