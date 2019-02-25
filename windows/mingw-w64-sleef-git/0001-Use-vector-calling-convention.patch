@@ -1,4 +1,4 @@
-From 2b63ff11543848eae5483869ca7b07558ffea8d8 Mon Sep 17 00:00:00 2001
+From 12b0b867eea768aaf6bf6fa75d83e7aea185790e Mon Sep 17 00:00:00 2001
 From: Yichao Yu <yyc1992@gmail.com>
 Date: Sun, 24 Feb 2019 21:03:18 -0500
 Subject: [PATCH] Use vector calling convention
@@ -388,7 +388,7 @@ index dbf9a98..3949190 100644
  #define DISPATCH_i_i(funcName, pfn, dfn, funcsse2, funcsse4, funcavx2) \
    static CONST int (*pfn)(int arg0);					\
 diff --git a/src/libm/mkalias.c b/src/libm/mkalias.c
-index 97c12b2..edef017 100644
+index 97c12b2..a5718fc 100644
 --- a/src/libm/mkalias.c
 +++ b/src/libm/mkalias.c
 @@ -24,7 +24,7 @@ int main(int argc, char **argv) {
@@ -404,7 +404,7 @@ index 97c12b2..edef017 100644
    static char *typeSpec[] = { "d", "f" };
    static char *ulpSuffixStr[] = { "", "_u1", "_u05", "_u35", "_u15" };
    static char *vparameterStr[7] = { "v", "vv", "", "vv", "v", "vvv", "" };
-+  static int argCount[] = {1, 2, 1, 2, 1, 3, 1, 0, 0};
++  static int argSize[] = {2, 4, 2, 3, 2, 6, 2, 0, 0};
  
    static char returnType[9][1000];
    static char argType0[9][1000];
@@ -419,7 +419,7 @@ index 97c12b2..edef017 100644
  	       argType0[funcList[i].funcType],
 -	       funcList[i].name, typeSpec[fptype], vw, funcList[i].ulp, isaname, vectorcc
 +	       funcList[i].name, typeSpec[fptype], vw, funcList[i].ulp, isaname,
-+	       vw * (2 - fptype) * 4 * argCount[funcList[i].funcType], vectorcc
++	       vw * (2 - fptype) * 2 * argSize[funcList[i].funcType], vectorcc
 +	       );
 +      } else if (funcList[i].funcType == 7 || funcList[i].funcType == 8) {
 +	printf("EXPORT CONST %s Sleef_%s%s%d(%s) __attribute__((alias(\"Sleef_%s%s%d_%s\")));\n",
@@ -436,7 +436,7 @@ index 97c12b2..edef017 100644
  	       argType0[funcList[i].funcType],
 -	       funcList[i].name, typeSpec[fptype], vw, isaname, vectorcc
 +	       funcList[i].name, typeSpec[fptype], vw, isaname,
-+	       vw * (2 - fptype) * 4 * argCount[funcList[i].funcType], vectorcc
++	       vw * (2 - fptype) * 2 * argSize[funcList[i].funcType], vectorcc
  	       );
        }
      }
