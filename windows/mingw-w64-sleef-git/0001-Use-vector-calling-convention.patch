@@ -1,16 +1,20 @@
-From b0dbc7fbe162ecab4cf340ba881decd700630885 Mon Sep 17 00:00:00 2001
+From ddd94fe6819702628d380c2a1d9ba0e507c49465 Mon Sep 17 00:00:00 2001
 From: Yichao Yu <yyc1992@gmail.com>
 Date: Sun, 24 Feb 2019 21:03:18 -0500
 Subject: [PATCH] Use vector calling convention
 
 ---
- src/arch/helperavx.h   |  4 ++++
- src/common/misc.h      |  2 +-
- src/libm/mkalias.c     | 12 +++++++-----
- src/libm/mkrename.c    |  2 +-
- src/libm/sleefsimddp.c | 10 +++++-----
- src/libm/sleefsimdsp.c |  8 ++++----
- 6 files changed, 22 insertions(+), 16 deletions(-)
+ src/arch/helperavx.h      |  4 ++++
+ src/arch/helperavx2.h     |  4 ++++
+ src/arch/helperavx2_128.h |  4 ++++
+ src/arch/helperavx512f.h  |  4 ++++
+ src/arch/helpersse2.h     |  4 ++++
+ src/common/misc.h         |  2 +-
+ src/libm/mkalias.c        | 12 +++++++-----
+ src/libm/mkrename.c       |  2 +-
+ src/libm/sleefsimddp.c    | 10 +++++-----
+ src/libm/sleefsimdsp.c    |  8 ++++----
+ 10 files changed, 38 insertions(+), 16 deletions(-)
 
 diff --git a/src/arch/helperavx.h b/src/arch/helperavx.h
 index 823fd01..37cde2e 100644
@@ -26,6 +30,66 @@ index 823fd01..37cde2e 100644
 +
  typedef __m256i vmask;
  typedef __m256i vopmask;
+ 
+diff --git a/src/arch/helperavx2.h b/src/arch/helperavx2.h
+index 492c1df..5cf52cf 100644
+--- a/src/arch/helperavx2.h
++++ b/src/arch/helperavx2.h
+@@ -36,6 +36,10 @@
+ #include <stdint.h>
+ #include "misc.h"
+ 
++#define SUFFIX_V1 "@@32"
++#define SUFFIX_V2 "@@64"
++#define SUFFIX_V3 "@@96"
++
+ typedef __m256i vmask;
+ typedef __m256i vopmask;
+ 
+diff --git a/src/arch/helperavx2_128.h b/src/arch/helperavx2_128.h
+index d170a9b..79eecc4 100644
+--- a/src/arch/helperavx2_128.h
++++ b/src/arch/helperavx2_128.h
+@@ -36,6 +36,10 @@
+ #include <stdint.h>
+ #include "misc.h"
+ 
++#define SUFFIX_V1 "@@16"
++#define SUFFIX_V2 "@@32"
++#define SUFFIX_V3 "@@48"
++
+ typedef __m128i vmask;
+ typedef __m128i vopmask;
+ 
+diff --git a/src/arch/helperavx512f.h b/src/arch/helperavx512f.h
+index b411b43..e46bbd6 100644
+--- a/src/arch/helperavx512f.h
++++ b/src/arch/helperavx512f.h
+@@ -39,6 +39,10 @@
+ #include <stdint.h>
+ #include "misc.h"
+ 
++#define SUFFIX_V1 "@@64"
++#define SUFFIX_V2 "@@128"
++#define SUFFIX_V3 "@@192"
++
+ typedef __m512i vmask;
+ typedef __mmask16 vopmask;
+ 
+diff --git a/src/arch/helpersse2.h b/src/arch/helpersse2.h
+index 1bcdbf4..46adf36 100644
+--- a/src/arch/helpersse2.h
++++ b/src/arch/helpersse2.h
+@@ -44,6 +44,10 @@
+ #include <stdint.h>
+ #include "misc.h"
+ 
++#define SUFFIX_V1 "@@16"
++#define SUFFIX_V2 "@@32"
++#define SUFFIX_V3 "@@48"
++
+ typedef __m128i vmask;
+ typedef __m128i vopmask;
  
 diff --git a/src/common/misc.h b/src/common/misc.h
 index 79e0c32..92c3217 100644

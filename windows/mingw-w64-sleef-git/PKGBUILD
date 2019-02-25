@@ -22,7 +22,7 @@ makedepends=("git"
 source=("git://github.com/shibatch/sleef"
         0001-Use-vector-calling-convention.patch)
 sha256sums=('SKIP'
-            '8c47df773558e7683d5336191000e0aedfa27068e4d663fbf144a762e9309478')
+            'd2218b448f91244ac08cfde0be0cf43a99271c141244a7ea90f315d35636196b')
 
 pkgver() {
   cd sleef
