@@ -1,4 +1,4 @@
-From 89390ee446645e46cf530f732260916f1100f320 Mon Sep 17 00:00:00 2001
+From b6d69e9873d26b433578c36411def6798f61221b Mon Sep 17 00:00:00 2001
 From: Yichao Yu <yyc1992@gmail.com>
 Date: Sun, 24 Feb 2019 21:03:18 -0500
 Subject: [PATCH] Use vector calling convention
@@ -8,7 +8,7 @@ Subject: [PATCH] Use vector calling convention
  src/arch/helperavx2.h         |  7 +++++++
  src/arch/helperavx2_128.h     |  7 +++++++
  src/arch/helperavx512f.h      |  7 +++++++
- src/arch/helperpurec.h        |  7 +++++++
+ src/arch/helperpurec.h        | 18 ++++++++++++++++++
  src/arch/helperpurec_scalar.h |  7 +++++++
  src/arch/helpersse2.h         |  7 +++++++
  src/common/misc.h             |  2 +-
@@ -16,7 +16,7 @@ Subject: [PATCH] Use vector calling convention
  src/libm/mkrename.c           |  2 +-
  src/libm/sleefsimddp.c        | 10 +++++-----
  src/libm/sleefsimdsp.c        |  8 ++++----
- 12 files changed, 67 insertions(+), 16 deletions(-)
+ 12 files changed, 78 insertions(+), 16 deletions(-)
 
 diff --git a/src/arch/helperavx.h b/src/arch/helperavx.h
 index 823fd01..c17c3f0 100644
@@ -91,25 +91,36 @@ index b411b43..d329f63 100644
  typedef __mmask16 vopmask;
  
 diff --git a/src/arch/helperpurec.h b/src/arch/helperpurec.h
-index 65f0d7c..6d6d814 100644
+index 65f0d7c..ed0cacb 100644
 --- a/src/arch/helperpurec.h
 +++ b/src/arch/helperpurec.h
-@@ -24,6 +24,13 @@
+@@ -24,6 +24,24 @@
  #define DFTPRIORITY LOG2VECTLENDP
  #define ISANAME "Pure C Array"
  
-+#define SUFFIX_D1 "@@8"
-+#define SUFFIX_D2 "@@16"
-+#define SUFFIX_D3 "@@24"
-+#define SUFFIX_F1 "@@8"
-+#define SUFFIX_F2 "@@16"
-+#define SUFFIX_F3 "@@24"
++#if CONFIG == 1
++#  define SUFFIX_D1 "@@8"
++#  define SUFFIX_D2 "@@16"
++#  define SUFFIX_D3 "@@24"
++#  define SUFFIX_F1 "@@8"
++#  define SUFFIX_F2 "@@16"
++#  define SUFFIX_F3 "@@24"
++#elseif CONFIG == 2
++#  define SUFFIX_D1 "@@16"
++#  define SUFFIX_D2 "@@32"
++#  define SUFFIX_D3 "@@48"
++#  define SUFFIX_F1 "@@16"
++#  define SUFFIX_F2 "@@32"
++#  define SUFFIX_F3 "@@48"
++#else
++#  error CONFIG out of range
++#endif
 +
  typedef union {
    uint32_t u[VECTLENDP*2];
    uint64_t x[VECTLENDP];
 diff --git a/src/arch/helperpurec_scalar.h b/src/arch/helperpurec_scalar.h
-index cd86bc4..77a003b 100644
+index cd86bc4..8867708 100644
 --- a/src/arch/helperpurec_scalar.h
 +++ b/src/arch/helperpurec_scalar.h
 @@ -74,6 +74,13 @@
@@ -119,9 +130,9 @@ index cd86bc4..77a003b 100644
 +#define SUFFIX_D1 "@@8"
 +#define SUFFIX_D2 "@@16"
 +#define SUFFIX_D3 "@@24"
-+#define SUFFIX_F1 "@@4"
-+#define SUFFIX_F2 "@@8"
-+#define SUFFIX_F3 "@@12"
++#define SUFFIX_F1 "@@8"
++#define SUFFIX_F2 "@@16"
++#define SUFFIX_F3 "@@24"
 +
  typedef union {
    uint32_t u[2];
