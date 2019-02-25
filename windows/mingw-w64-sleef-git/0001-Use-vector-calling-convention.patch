@@ -1,4 +1,4 @@
-From b6d69e9873d26b433578c36411def6798f61221b Mon Sep 17 00:00:00 2001
+From 5bda8754505dc9bfe395d96e8fc30a20affdc678 Mon Sep 17 00:00:00 2001
 From: Yichao Yu <yyc1992@gmail.com>
 Date: Sun, 24 Feb 2019 21:03:18 -0500
 Subject: [PATCH] Use vector calling convention
@@ -9,14 +9,14 @@ Subject: [PATCH] Use vector calling convention
  src/arch/helperavx2_128.h     |  7 +++++++
  src/arch/helperavx512f.h      |  7 +++++++
  src/arch/helperpurec.h        | 18 ++++++++++++++++++
- src/arch/helperpurec_scalar.h |  7 +++++++
+ src/arch/helperpurec_scalar.h |  4 ++++
  src/arch/helpersse2.h         |  7 +++++++
  src/common/misc.h             |  2 +-
  src/libm/mkalias.c            | 12 +++++++-----
  src/libm/mkrename.c           |  2 +-
- src/libm/sleefsimddp.c        | 10 +++++-----
+ src/libm/sleefsimddp.c        | 16 ++++++++--------
  src/libm/sleefsimdsp.c        |  8 ++++----
- 12 files changed, 78 insertions(+), 16 deletions(-)
+ 12 files changed, 78 insertions(+), 19 deletions(-)
 
 diff --git a/src/arch/helperavx.h b/src/arch/helperavx.h
 index 823fd01..c17c3f0 100644
@@ -120,19 +120,16 @@ index 65f0d7c..ed0cacb 100644
    uint32_t u[VECTLENDP*2];
    uint64_t x[VECTLENDP];
 diff --git a/src/arch/helperpurec_scalar.h b/src/arch/helperpurec_scalar.h
-index cd86bc4..8867708 100644
+index cd86bc4..840bbfb 100644
 --- a/src/arch/helperpurec_scalar.h
 +++ b/src/arch/helperpurec_scalar.h
-@@ -74,6 +74,13 @@
+@@ -74,6 +74,10 @@
  
  #define DFTPRIORITY LOG2VECTLENDP
  
-+#define SUFFIX_D1 "@@8"
-+#define SUFFIX_D2 "@@16"
-+#define SUFFIX_D3 "@@24"
-+#define SUFFIX_F1 "@@8"
-+#define SUFFIX_F2 "@@16"
-+#define SUFFIX_F3 "@@24"
++#ifdef ENABLE_ALIAS
++#  undef ENABLE_ALIAS
++#endif
 +
  typedef union {
    uint32_t u[2];
@@ -167,7 +164,7 @@ index 79e0c32..92c3217 100644
 +#define VECTOR_CC __attribute__((vectorcall))
  #endif
 diff --git a/src/libm/mkalias.c b/src/libm/mkalias.c
-index 97c12b2..87782e2 100644
+index 97c12b2..851f474 100644
 --- a/src/libm/mkalias.c
 +++ b/src/libm/mkalias.c
 @@ -24,7 +24,7 @@ int main(int argc, char **argv) {
@@ -190,7 +187,7 @@ index 97c12b2..87782e2 100644
  	       argType0[funcList[i].funcType],
 -	       funcList[i].name, typeSpec[fptype], vw, funcList[i].ulp, isaname, vectorcc
 +	       funcList[i].name, typeSpec[fptype], vw, funcList[i].ulp, isaname,
-+	       vw * (fptype + 1) * 4, vectorcc
++	       vw * (2 - fptype) * 4, vectorcc
  	       );
        } else {
 -	printf("EXPORT CONST %s Sleef_%s%s%d(%s) __attribute__((alias(\"Sleef_%s%s%d_%s\"))) %s;\n",
@@ -200,7 +197,7 @@ index 97c12b2..87782e2 100644
  	       argType0[funcList[i].funcType],
 -	       funcList[i].name, typeSpec[fptype], vw, isaname, vectorcc
 +	       funcList[i].name, typeSpec[fptype], vw, isaname,
-+	       vw * (fptype + 1) * 4, vectorcc
++	       vw * (2 - fptype) * 4, vectorcc
  	       );
        }
      }
@@ -218,9 +215,36 @@ index 08fdf01..74aa47d 100644
      if (strcmp(isaname, "advsimd") == 0)
        vectorcc =" __attribute__((aarch64_vector_pcs))";
 diff --git a/src/libm/sleefsimddp.c b/src/libm/sleefsimddp.c
-index 9227c27..5d349f0 100644
+index 9227c27..f810246 100644
 --- a/src/libm/sleefsimddp.c
 +++ b/src/libm/sleefsimddp.c
+@@ -955,7 +955,7 @@ EXPORT CONST VECTOR_CC vdouble xcos_u1(vdouble d) {
+ #define XMODF xmodf
+ #endif
+ 
+-TYPE2_FUNCATR vdouble2 XSINCOS(vdouble d) {
++TYPE2_FUNCATR VECTOR_CC vdouble2 XSINCOS(vdouble d) {
+ #if !defined(DETERMINISTIC)
+   vopmask o;
+   vdouble u, t, rx, ry, s;
+@@ -1101,7 +1101,7 @@ TYPE2_FUNCATR vdouble2 XSINCOS(vdouble d) {
+ #endif // #if !defined(DETERMINISTIC)
+ }
+ 
+-TYPE2_FUNCATR vdouble2 XSINCOS_U1(vdouble d) {
++TYPE2_FUNCATR VECTOR_CC vdouble2 XSINCOS_U1(vdouble d) {
+ #if !defined(DETERMINISTIC)
+   vopmask o;
+   vdouble u, rx, ry;
+@@ -1262,7 +1262,7 @@ TYPE2_FUNCATR vdouble2 XSINCOS_U1(vdouble d) {
+ }
+ 
+ #if !defined(DETERMINISTIC)
+-TYPE2_FUNCATR vdouble2 XSINCOSPI_U05(vdouble d) {
++TYPE2_FUNCATR VECTOR_CC vdouble2 XSINCOSPI_U05(vdouble d) {
+   vopmask o;
+   vdouble u, s, t, rx, ry;
+   vdouble2 r, x, s2;
 @@ -3452,11 +3452,11 @@ EXPORT CONST VECTOR_CC vdouble xerfc_u15(vdouble a) {
  // Sleef_cinz_sincospid2_u05sse2) by rename*.h.
  
