@@ -1,92 +1,145 @@
-From ddd94fe6819702628d380c2a1d9ba0e507c49465 Mon Sep 17 00:00:00 2001
+From 89390ee446645e46cf530f732260916f1100f320 Mon Sep 17 00:00:00 2001
 From: Yichao Yu <yyc1992@gmail.com>
 Date: Sun, 24 Feb 2019 21:03:18 -0500
 Subject: [PATCH] Use vector calling convention
 
 ---
- src/arch/helperavx.h      |  4 ++++
- src/arch/helperavx2.h     |  4 ++++
- src/arch/helperavx2_128.h |  4 ++++
- src/arch/helperavx512f.h  |  4 ++++
- src/arch/helpersse2.h     |  4 ++++
- src/common/misc.h         |  2 +-
- src/libm/mkalias.c        | 12 +++++++-----
- src/libm/mkrename.c       |  2 +-
- src/libm/sleefsimddp.c    | 10 +++++-----
- src/libm/sleefsimdsp.c    |  8 ++++----
- 10 files changed, 38 insertions(+), 16 deletions(-)
+ src/arch/helperavx.h          |  7 +++++++
+ src/arch/helperavx2.h         |  7 +++++++
+ src/arch/helperavx2_128.h     |  7 +++++++
+ src/arch/helperavx512f.h      |  7 +++++++
+ src/arch/helperpurec.h        |  7 +++++++
+ src/arch/helperpurec_scalar.h |  7 +++++++
+ src/arch/helpersse2.h         |  7 +++++++
+ src/common/misc.h             |  2 +-
+ src/libm/mkalias.c            | 12 +++++++-----
+ src/libm/mkrename.c           |  2 +-
+ src/libm/sleefsimddp.c        | 10 +++++-----
+ src/libm/sleefsimdsp.c        |  8 ++++----
+ 12 files changed, 67 insertions(+), 16 deletions(-)
 
 diff --git a/src/arch/helperavx.h b/src/arch/helperavx.h
-index 823fd01..37cde2e 100644
+index 823fd01..c17c3f0 100644
 --- a/src/arch/helperavx.h
 +++ b/src/arch/helperavx.h
-@@ -39,6 +39,10 @@
+@@ -39,6 +39,13 @@
  #include <stdint.h>
  #include "misc.h"
  
-+#define SUFFIX_V1 "@@32"
-+#define SUFFIX_V2 "@@64"
-+#define SUFFIX_V3 "@@96"
++#define SUFFIX_D1 "@@32"
++#define SUFFIX_D2 "@@64"
++#define SUFFIX_D3 "@@96"
++#define SUFFIX_F1 "@@32"
++#define SUFFIX_F2 "@@64"
++#define SUFFIX_F3 "@@96"
 +
  typedef __m256i vmask;
  typedef __m256i vopmask;
  
 diff --git a/src/arch/helperavx2.h b/src/arch/helperavx2.h
-index 492c1df..5cf52cf 100644
+index 492c1df..6c7a2b8 100644
 --- a/src/arch/helperavx2.h
 +++ b/src/arch/helperavx2.h
-@@ -36,6 +36,10 @@
+@@ -36,6 +36,13 @@
  #include <stdint.h>
  #include "misc.h"
  
-+#define SUFFIX_V1 "@@32"
-+#define SUFFIX_V2 "@@64"
-+#define SUFFIX_V3 "@@96"
++#define SUFFIX_D1 "@@32"
++#define SUFFIX_D2 "@@64"
++#define SUFFIX_D3 "@@96"
++#define SUFFIX_F1 "@@32"
++#define SUFFIX_F2 "@@64"
++#define SUFFIX_F3 "@@96"
 +
  typedef __m256i vmask;
  typedef __m256i vopmask;
  
 diff --git a/src/arch/helperavx2_128.h b/src/arch/helperavx2_128.h
-index d170a9b..79eecc4 100644
+index d170a9b..ef046c2 100644
 --- a/src/arch/helperavx2_128.h
 +++ b/src/arch/helperavx2_128.h
-@@ -36,6 +36,10 @@
+@@ -36,6 +36,13 @@
  #include <stdint.h>
  #include "misc.h"
  
-+#define SUFFIX_V1 "@@16"
-+#define SUFFIX_V2 "@@32"
-+#define SUFFIX_V3 "@@48"
++#define SUFFIX_D1 "@@16"
++#define SUFFIX_D2 "@@32"
++#define SUFFIX_D3 "@@48"
++#define SUFFIX_F1 "@@16"
++#define SUFFIX_F2 "@@32"
++#define SUFFIX_F3 "@@48"
 +
  typedef __m128i vmask;
  typedef __m128i vopmask;
  
 diff --git a/src/arch/helperavx512f.h b/src/arch/helperavx512f.h
-index b411b43..e46bbd6 100644
+index b411b43..d329f63 100644
 --- a/src/arch/helperavx512f.h
 +++ b/src/arch/helperavx512f.h
-@@ -39,6 +39,10 @@
+@@ -39,6 +39,13 @@
  #include <stdint.h>
  #include "misc.h"
  
-+#define SUFFIX_V1 "@@64"
-+#define SUFFIX_V2 "@@128"
-+#define SUFFIX_V3 "@@192"
++#define SUFFIX_D1 "@@64"
++#define SUFFIX_D2 "@@128"
++#define SUFFIX_D3 "@@192"
++#define SUFFIX_F1 "@@64"
++#define SUFFIX_F2 "@@128"
++#define SUFFIX_F3 "@@192"
 +
  typedef __m512i vmask;
  typedef __mmask16 vopmask;
  
+diff --git a/src/arch/helperpurec.h b/src/arch/helperpurec.h
+index 65f0d7c..6d6d814 100644
+--- a/src/arch/helperpurec.h
++++ b/src/arch/helperpurec.h
+@@ -24,6 +24,13 @@
+ #define DFTPRIORITY LOG2VECTLENDP
+ #define ISANAME "Pure C Array"
+ 
++#define SUFFIX_D1 "@@8"
++#define SUFFIX_D2 "@@16"
++#define SUFFIX_D3 "@@24"
++#define SUFFIX_F1 "@@8"
++#define SUFFIX_F2 "@@16"
++#define SUFFIX_F3 "@@24"
++
+ typedef union {
+   uint32_t u[VECTLENDP*2];
+   uint64_t x[VECTLENDP];
+diff --git a/src/arch/helperpurec_scalar.h b/src/arch/helperpurec_scalar.h
+index cd86bc4..77a003b 100644
+--- a/src/arch/helperpurec_scalar.h
++++ b/src/arch/helperpurec_scalar.h
+@@ -74,6 +74,13 @@
+ 
+ #define DFTPRIORITY LOG2VECTLENDP
+ 
++#define SUFFIX_D1 "@@8"
++#define SUFFIX_D2 "@@16"
++#define SUFFIX_D3 "@@24"
++#define SUFFIX_F1 "@@4"
++#define SUFFIX_F2 "@@8"
++#define SUFFIX_F3 "@@12"
++
+ typedef union {
+   uint32_t u[2];
+   int32_t i[2];
 diff --git a/src/arch/helpersse2.h b/src/arch/helpersse2.h
-index 1bcdbf4..46adf36 100644
+index 1bcdbf4..ac5845b 100644
 --- a/src/arch/helpersse2.h
 +++ b/src/arch/helpersse2.h
-@@ -44,6 +44,10 @@
+@@ -44,6 +44,13 @@
  #include <stdint.h>
  #include "misc.h"
  
-+#define SUFFIX_V1 "@@16"
-+#define SUFFIX_V2 "@@32"
-+#define SUFFIX_V3 "@@48"
++#define SUFFIX_D1 "@@16"
++#define SUFFIX_D2 "@@32"
++#define SUFFIX_D3 "@@48"
++#define SUFFIX_F1 "@@16"
++#define SUFFIX_F2 "@@32"
++#define SUFFIX_F3 "@@48"
 +
  typedef __m128i vmask;
  typedef __m128i vopmask;
@@ -154,7 +207,7 @@ index 08fdf01..74aa47d 100644
      if (strcmp(isaname, "advsimd") == 0)
        vectorcc =" __attribute__((aarch64_vector_pcs))";
 diff --git a/src/libm/sleefsimddp.c b/src/libm/sleefsimddp.c
-index 9227c27..21791c2 100644
+index 9227c27..5d349f0 100644
 --- a/src/libm/sleefsimddp.c
 +++ b/src/libm/sleefsimddp.c
 @@ -3452,11 +3452,11 @@ EXPORT CONST VECTOR_CC vdouble xerfc_u15(vdouble a) {
@@ -166,16 +219,16 @@ index 9227c27..21791c2 100644
 -#define DALIAS_vi_vd(FUNC) EXPORT CONST VECTOR_CC vint y ## FUNC(vdouble) __attribute__((alias( stringify(x ## FUNC) )));
 -#define DALIAS_vd_vd_vd(FUNC) EXPORT CONST VECTOR_CC vdouble y ## FUNC(vdouble, vdouble) __attribute__((alias( stringify(x ## FUNC) )));
 -#define DALIAS_vd_vd_vd_vd(FUNC) EXPORT CONST VECTOR_CC vdouble y ## FUNC(vdouble, vdouble, vdouble) __attribute__((alias( stringify(x ## FUNC) )));
-+#define DALIAS_vd_vd(FUNC) EXPORT CONST VECTOR_CC vdouble y ## FUNC(vdouble) __attribute__((alias("\01" stringify(x ## FUNC) SUFFIX_V1)));
-+#define DALIAS_vd2_vd(FUNC) EXPORT CONST VECTOR_CC vdouble2 y ## FUNC(vdouble) __attribute__((alias("\01" stringify(x ## FUNC) SUFFIX_V1)));
-+#define DALIAS_vi_vd(FUNC) EXPORT CONST VECTOR_CC vint y ## FUNC(vdouble) __attribute__((alias("\01" stringify(x ## FUNC) SUFFIX_V1)));
-+#define DALIAS_vd_vd_vd(FUNC) EXPORT CONST VECTOR_CC vdouble y ## FUNC(vdouble, vdouble) __attribute__((alias("\01" stringify(x ## FUNC) SUFFIX_V2)));
-+#define DALIAS_vd_vd_vd_vd(FUNC) EXPORT CONST VECTOR_CC vdouble y ## FUNC(vdouble, vdouble, vdouble) __attribute__((alias("\01" stringify(x ## FUNC) SUFFIX_V3)));
++#define DALIAS_vd_vd(FUNC) EXPORT CONST VECTOR_CC vdouble y ## FUNC(vdouble) __attribute__((alias("\01" stringify(x ## FUNC) SUFFIX_D1)));
++#define DALIAS_vd2_vd(FUNC) EXPORT CONST VECTOR_CC vdouble2 y ## FUNC(vdouble) __attribute__((alias("\01" stringify(x ## FUNC) SUFFIX_D1)));
++#define DALIAS_vi_vd(FUNC) EXPORT CONST VECTOR_CC vint y ## FUNC(vdouble) __attribute__((alias("\01" stringify(x ## FUNC) SUFFIX_D1)));
++#define DALIAS_vd_vd_vd(FUNC) EXPORT CONST VECTOR_CC vdouble y ## FUNC(vdouble, vdouble) __attribute__((alias("\01" stringify(x ## FUNC) SUFFIX_D2)));
++#define DALIAS_vd_vd_vd_vd(FUNC) EXPORT CONST VECTOR_CC vdouble y ## FUNC(vdouble, vdouble, vdouble) __attribute__((alias("\01" stringify(x ## FUNC) SUFFIX_D3)));
  #else
  #define DALIAS_vd_vd(FUNC) EXPORT CONST VECTOR_CC vdouble y ## FUNC(vdouble d) { return x ## FUNC (d); }
  #define DALIAS_vd2_vd(FUNC) EXPORT CONST VECTOR_CC vdouble2 y ## FUNC(vdouble d) { return x ## FUNC (d); }
 diff --git a/src/libm/sleefsimdsp.c b/src/libm/sleefsimdsp.c
-index c3dc608..72ba8e8 100644
+index c3dc608..ecae431 100644
 --- a/src/libm/sleefsimdsp.c
 +++ b/src/libm/sleefsimdsp.c
 @@ -3005,10 +3005,10 @@ EXPORT CONST VECTOR_CC vfloat xerfcf_u15(vfloat a) {
@@ -186,10 +239,10 @@ index c3dc608..72ba8e8 100644
 -#define DALIAS_vf2_vf(FUNC) EXPORT CONST VECTOR_CC vfloat2 y ## FUNC(vfloat) __attribute__((alias( stringify(x ## FUNC) )));
 -#define DALIAS_vf_vf_vf(FUNC) EXPORT CONST VECTOR_CC vfloat y ## FUNC(vfloat, vfloat) __attribute__((alias( stringify(x ## FUNC) )));
 -#define DALIAS_vf_vf_vf_vf(FUNC) EXPORT CONST VECTOR_CC vfloat y ## FUNC(vfloat, vfloat, vfloat) __attribute__((alias( stringify(x ## FUNC) )));
-+#define DALIAS_vf_vf(FUNC) EXPORT CONST VECTOR_CC vfloat y ## FUNC(vfloat) __attribute__((alias("\01" stringify(x ## FUNC) SUFFIX_V1)));
-+#define DALIAS_vf2_vf(FUNC) EXPORT CONST VECTOR_CC vfloat2 y ## FUNC(vfloat) __attribute__((alias("\01" stringify(x ## FUNC) SUFFIX_V1)));
-+#define DALIAS_vf_vf_vf(FUNC) EXPORT CONST VECTOR_CC vfloat y ## FUNC(vfloat, vfloat) __attribute__((alias("\01" stringify(x ## FUNC) SUFFIX_V2)));
-+#define DALIAS_vf_vf_vf_vf(FUNC) EXPORT CONST VECTOR_CC vfloat y ## FUNC(vfloat, vfloat, vfloat) __attribute__((alias("\01" stringify(x ## FUNC) SUFFIX_V3)));
++#define DALIAS_vf_vf(FUNC) EXPORT CONST VECTOR_CC vfloat y ## FUNC(vfloat) __attribute__((alias("\01" stringify(x ## FUNC) SUFFIX_F1)));
++#define DALIAS_vf2_vf(FUNC) EXPORT CONST VECTOR_CC vfloat2 y ## FUNC(vfloat) __attribute__((alias("\01" stringify(x ## FUNC) SUFFIX_F1)));
++#define DALIAS_vf_vf_vf(FUNC) EXPORT CONST VECTOR_CC vfloat y ## FUNC(vfloat, vfloat) __attribute__((alias("\01" stringify(x ## FUNC) SUFFIX_F2)));
++#define DALIAS_vf_vf_vf_vf(FUNC) EXPORT CONST VECTOR_CC vfloat y ## FUNC(vfloat, vfloat, vfloat) __attribute__((alias("\01" stringify(x ## FUNC) SUFFIX_F3)));
  #else
  #define DALIAS_vf_vf(FUNC) EXPORT CONST VECTOR_CC vfloat y ## FUNC(vfloat d) { return x ## FUNC (d); }
  #define DALIAS_vf2_vf(FUNC) EXPORT CONST VECTOR_CC vfloat2 y ## FUNC(vfloat d) { return x ## FUNC (d); }
