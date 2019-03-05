@@ -1,8 +1,8 @@
 pkgname=libnacs-git
-pkgver=728.63caa92
+pkgver=733.b5a1576
 pkgrel=1
 pkgdesc='Library used for the NaCs control system'
-arch=('armv7h')
+arch=('armv7h' 'aarch64')
 url='http://github.com/nacs-lab/libnacs'
 license=('LGPL')
 options=('!strip' 'debug')
@@ -24,25 +24,30 @@ build() {
   CFLAGS=${CFLAGS/-fvar-tracking-assignments/}
   CXXFLAGS=${CXXFLAGS/-fvar-tracking-assignments/}
 
-  CFLAGS=${CFLAGS/-march=armv7-a/}
-  CXXFLAGS=${CXXFLAGS/-march=armv7-a/}
+  if [[ $CARCH == armv7h ]]; then
+    CFLAGS=${CFLAGS/-march=armv7-a/}
+    CXXFLAGS=${CXXFLAGS/-march=armv7-a/}
+    cmake_args=(-DCMAKE_TOOLCHAIN_FILE=/usr/share/cmake/Modules/ARMv7hf.cmake
+                -DENABLE_KNACS=On)
+  else
+    cmake_args=(-DCMAKE_TOOLCHAIN_FILE=/usr/share/cmake/Modules/ARMv8.cmake)
+  fi
 
   CFLAGS+=' -O3 -flto'
   CXXFLAGS+=' -O3 -flto'
   LDFLAGS+=' -O3 -flto'
 
-  mkdir -p build
-  cd build
-  cmake .. -DCMAKE_TOOLCHAIN_FILE=/usr/share/cmake/Modules/ARMv7hf.cmake \
+  mkdir -p build-${CARCH}
+  cd build-${CARCH}
+  cmake .. "${cmake_args[@]}" \
         -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release \
-        -DENABLE_SIMD=Off \
-        -DENABLE_KNACS=On -DENABLE_PYWRAPPER=Off
+        -DENABLE_SIMD=Off -DENABLE_PYWRAPPER=Off
   make
 }
 
 package() {
   optdepends=(knacs)
-  cd libnacs/build
+  cd libnacs/build-${CARCH}
 
   make install DESTDIR="${pkgdir}"
 }
