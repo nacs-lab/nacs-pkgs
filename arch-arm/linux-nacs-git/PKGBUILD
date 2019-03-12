@@ -44,7 +44,7 @@ prepare() {
   for c in cc c++ gcc g++; do
     cat > "${srcdir}/bin/${c}" <<EOF
 #!/bin/bash
-exec arm-linux-gnueabihf-${c} -Wl,-rpath-link,/usr/arm-linux-gnueabihf/lib "\$@"
+exec ${CHOST}-${c} -Wl,-rpath-link,/usr/${CHOST}/lib "\$@"
 EOF
     chmod +x "${srcdir}/bin/${c}"
   done
