@@ -10,7 +10,7 @@ pkgdesc='Kernel driver for the NaCs control system'
 arch=('armv7h')
 url='http://github.com/nacs-lab/knacs'
 license=('LGPL')
-makedepends=('cmake' 'arm-linux-gnueabihf-gcc' 'arch-arm')
+makedepends=('cmake' "${CHOST}-gcc" 'arch-arm')
 source=("git://github.com/nacs-lab/knacs#branch=hardcode"
         99-knacs.rules)
 md5sums=('SKIP'
