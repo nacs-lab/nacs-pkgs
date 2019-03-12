@@ -1,5 +1,5 @@
 pkgname=molecube2-git
-pkgver=186.cdb80e7
+pkgver=214.6d4fbfc
 pkgrel=1
 pkgdesc='NaCs control'
 arch=('armv7h')
