@@ -1,12 +1,12 @@
 pkgname=libnacs-git
-pkgver=747.fc69466
+pkgver=749.f372887
 pkgrel=1
 pkgdesc='Library used for the NaCs control system'
 arch=('armv7h' 'aarch64')
 url='http://github.com/nacs-lab/libnacs'
 license=('LGPL')
 options=('!strip' 'debug')
-makedepends=('cmake' 'clang' 'arm-linux-gnueabihf-gcc' 'arch-arm')
+makedepends=('cmake' 'git' 'clang' 'arm-linux-gnueabihf-gcc' 'arch-arm')
 provides=(libnacs)
 conflicts=(libnacs)
 source=("git://github.com/nacs-lab/libnacs")
