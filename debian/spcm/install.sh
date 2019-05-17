@@ -135,7 +135,17 @@ arch=${BASH_REMATCH[2]}
 pkgdir=pkg/libspcm-linux-dev_$lib_ver
 mkdir $pkgdir
 mkdir -p $pkgdir/usr/include/spcm/
-cp -v unpack/spcm_examples/c_cpp/c_header/*.{h,inc} $pkgdir/usr/include/spcm/
+cp -v unpack/spcm_examples/c_cpp/c_header/*.h $pkgdir/usr/include/spcm/
+rm $pkgdir/usr/include/spcm/{errors.h,spectrum.h}
+cat > $pkgdir/usr/include/spcm/spcm.h <<EOF
+// Header to include all needed headers since the driver library header needs to be
+// included in the right order....
+// Unclear why they are not more user friendly.
+#include "dlltyp.h"
+#include "regs.h"
+#include "spcerr.h"
+#include "spcm_drv.h"
+EOF
 mkdir $pkgdir/DEBIAN
 cat > $pkgdir/DEBIAN/control <<EOF
 Package: libspcm-linux-dev
