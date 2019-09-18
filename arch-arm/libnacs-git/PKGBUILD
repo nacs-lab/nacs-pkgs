@@ -1,6 +1,6 @@
 pkgname=libnacs-git
-pkgver=749.f372887
-pkgrel=1
+pkgver=811.d105454
+pkgrel=2
 pkgdesc='Library used for the NaCs control system'
 arch=('armv7h' 'aarch64')
 url='http://github.com/nacs-lab/libnacs'
@@ -11,6 +11,10 @@ provides=(libnacs)
 conflicts=(libnacs)
 source=("git://github.com/nacs-lab/libnacs")
 md5sums=('SKIP')
+
+if [[ $CARCH == aarch64 ]]; then
+  depends+=(llvm-libs)
+fi
 
 pkgver() {
   cd libnacs
@@ -30,7 +34,8 @@ build() {
     cmake_args=(-DCMAKE_TOOLCHAIN_FILE=/usr/share/cmake/Modules/ARMv7hf.cmake
                 -DENABLE_KNACS=On)
   else
-    cmake_args=(-DCMAKE_TOOLCHAIN_FILE=/usr/share/cmake/Modules/ARMv8.cmake)
+    cmake_args=(-DCMAKE_TOOLCHAIN_FILE=/usr/share/cmake/Modules/ARMv8.cmake
+                -DENABLE_LLVM=On)
   fi
 
   CFLAGS+=' -O3 -flto'
