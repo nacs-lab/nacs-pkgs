@@ -20,9 +20,11 @@ makedepends=("git"
              "${MINGW_PACKAGE_PREFIX}-clang"
              "${MINGW_PACKAGE_PREFIX}-cmake")
 source=("git://github.com/shibatch/sleef"
-        0001-Use-vector-calling-convention.patch)
+        0001-Use-vector-calling-convention.patch
+        0001-Use-cat-instead-of-type.patch)
 sha256sums=('SKIP'
-            'fd02eb1e09fb30dec23522c1d795d73cb7dec97971a4b4f3f65ecb1092099b57')
+            'fd02eb1e09fb30dec23522c1d795d73cb7dec97971a4b4f3f65ecb1092099b57'
+            '2d7410060e84a41862d588db8665b341ff723b5addb088e32bd9cd95c5896678')
 
 pkgver() {
   cd sleef
@@ -37,6 +39,7 @@ prepare() {
   git clean -fdx
 
   patch -Np1 < ../0001-Use-vector-calling-convention.patch
+  patch -Np1 < ../0001-Use-cat-instead-of-type.patch
 }
 
 build() {
