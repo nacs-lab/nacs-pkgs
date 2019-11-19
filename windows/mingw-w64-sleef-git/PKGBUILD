@@ -18,7 +18,8 @@ depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
          "${MINGW_PACKAGE_PREFIX}-libwinpthread")
 makedepends=("git"
              "${MINGW_PACKAGE_PREFIX}-clang"
-             "${MINGW_PACKAGE_PREFIX}-cmake")
+             "${MINGW_PACKAGE_PREFIX}-cmake"
+             patch make)
 source=("git://github.com/shibatch/sleef"
         0001-Use-vector-calling-convention.patch
         0001-Use-cat-instead-of-type.patch)
