@@ -1,7 +1,7 @@
-# mkinitcpio preset file for the 'linux' package
+# mkinitcpio preset file for the '%PKGBASE%' package
 
 ALL_config="/etc/mkinitcpio.conf"
-ALL_kver=4.9.0-4-nacs
+ALL_kver="%KERNVER%"
 
 PRESETS=('fallback')
 
