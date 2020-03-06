@@ -15,7 +15,7 @@ _kernelver=4.19.0
 _srcname=linux-xlnx
 
 pkgver=2019.2.01
-pkgrel=1
+pkgrel=2
 arch=('armv7h')
 url="https://github.com/Xilinx/linux-xlnx"
 license=('GPL2')
@@ -33,7 +33,7 @@ md5sums=('SKIP'
          '68fee8a88c12f58ac1e17f6c75124a59'
          'ce6c81ad1ad1f8b333fd6077d47abdaf'
          '05939f15b9b454aaebd696395a0e3d8f'
-         'ceb7f4f0bcd63a4311174a576c5f3051'
+         '9a1389991d4c80af237a5481dd043ace'
          'd2636ec5b5ef49e68ed068b1b2dd7c66')
 
 pkgver() {
