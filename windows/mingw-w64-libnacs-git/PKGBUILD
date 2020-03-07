@@ -41,7 +41,9 @@ build() {
   CXXFLAGS+=' -O3 -flto'
   LDFLAGS+=' -O3 -flto'
 
-  CC=${MINGW_PREFIX}/bin/gcc CXX=${MINGW_PREFIX}/bin/g++ \
+  # Currently we need the msys version of cmake
+  # even though we are compiling a mingw64 library (I hope)
+  MSYSTEM=MSYS CC=${MINGW_PREFIX}/bin/gcc CXX=${MINGW_PREFIX}/bin/g++ \
     /usr/bin/cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX="${MINGW_PREFIX}" \
