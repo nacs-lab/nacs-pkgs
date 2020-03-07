@@ -1,0 +1,58 @@
+# Maintainer: Alexey Pavlov <alexpux@gmail.com>
+# Contributor: Jürgen Pfeifer <juergen@familiepfeifer.de>
+
+pkgbase=mingw-w64-libnacs-git
+pkgname="${MINGW_PACKAGE_PREFIX}-libnacs-git"
+pkgver=873.48e5e80
+pkgrel=1
+pkgdesc='Library used for the NaCs control system'
+provides=("${MINGW_PACKAGE_PREFIX}-libnacs")
+arch=('any')
+url='http://github.com/nacs-lab/libnacs'
+license=('LGPL')
+provides=("${MINGW_PACKAGE_PREFIX}-libnacs")
+conflicts=("${MINGW_PACKAGE_PREFIX}-libnacs")
+options=('!strip')
+depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
+         "${MINGW_PACKAGE_PREFIX}-libwinpthread"
+         "${MINGW_PACKAGE_PREFIX}-llvm"
+         "${MINGW_PACKAGE_PREFIX}-polly"
+         "${MINGW_PACKAGE_PREFIX}-sleef")
+makedepends=("git"
+             cmake
+             "${MINGW_PACKAGE_PREFIX}-gcc"
+             patch make)
+source=("git://github.com/nacs-lab/libnacs")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd libnacs
+
+  echo "$(git rev-list --count HEAD).$(git rev-parse --short HEAD)"
+}
+
+build() {
+  cd libnacs
+
+  mkdir -p build
+  cd build
+
+  CFLAGS+=' -O3 -flto'
+  CXXFLAGS+=' -O3 -flto'
+  LDFLAGS+=' -O3 -flto'
+
+  CC=${MINGW_PREFIX}/bin/gcc CXX=${MINGW_PREFIX}/bin/g++ \
+    /usr/bin/cmake .. \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX="${MINGW_PREFIX}" \
+    -DENABLE_SIMD=On \
+    -DENABLE_LLVM=On \
+    -DSTATIC_LLVM=On
+  make
+}
+
+package() {
+  cd libnacs/build
+
+  make install DESTDIR="$pkgdir"
+}
