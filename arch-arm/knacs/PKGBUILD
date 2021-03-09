@@ -1,11 +1,11 @@
 #
 
 pkgname=knacs
-_ker_ver=4.9.0-4-nacs
-_extramodules=extramodules-4.9-nacs
-pkgver=29.1294fac
+_ker_ver=4.19.0-2-nacs
+_extramodules=extramodules-4.19-nacs
+pkgver=30.c5f09b1
 epoch=1
-pkgrel=2
+pkgrel=1
 pkgdesc='Kernel driver for the NaCs control system'
 arch=('armv7h')
 url='http://github.com/nacs-lab/knacs'
@@ -35,9 +35,8 @@ build() {
   mkdir -p build
   cd build
   cmake .. -DCMAKE_TOOLCHAIN_FILE=/usr/share/cmake/Modules/ARMv7hf.cmake \
-        -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=/usr/lib \
-        -DCMAKE_INSTALL_BINDIR=/usr/bin -DCMAKE_INSTALL_DATADIR=/usr/share \
-        -DCMAKE_INSTALL_INCLUDEDIR=/usr/include \
+        -DCROSS_COMPILE=${CROSS_COMPILE} \
+        -DCMAKE_INSTALL_PREFIX=/usr \
         -DKDIR=${SYSROOT}/usr/lib/modules/${_ker_ver}/build \
         -DKERNEL_VER=${_ker_ver} \
         -DEXTRAMODULES_DIR=/usr/lib/modules/${_extramodules}
