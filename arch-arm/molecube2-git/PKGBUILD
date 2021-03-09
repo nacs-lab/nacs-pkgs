@@ -1,5 +1,5 @@
 pkgname=molecube2-git
-pkgver=214.6d4fbfc
+pkgver=286.671c62d
 pkgrel=1
 pkgdesc='NaCs control'
 arch=('armv7h')
@@ -28,6 +28,9 @@ build() {
   CFLAGS+=' -O2 -flto'
   CXXFLAGS+=' -O2 -flto'
   LDFLAGS+=' -O2 -flto'
+
+  CFLAGS+=" -ffile-prefix-map=${srcdir}=${DBGSRCDIR:-/usr/src/debug}"
+  CXXFLAGS+=" -ffile-prefix-map=${srcdir}=${DBGSRCDIR:-/usr/src/debug}"
 
   mkdir -p build
   cd build
