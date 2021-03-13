@@ -1,5 +1,5 @@
 pkgname=molecube2-git
-pkgver=286.671c62d
+pkgver=291.1b155cc
 pkgrel=1
 pkgdesc='NaCs control'
 arch=('armv7h')
@@ -22,9 +22,6 @@ build() {
   CFLAGS=${CFLAGS/-fvar-tracking-assignments/}
   CXXFLAGS=${CXXFLAGS/-fvar-tracking-assignments/}
 
-  CFLAGS=${CFLAGS/-march=armv7-a/}
-  CXXFLAGS=${CXXFLAGS/-march=armv7-a/}
-
   CFLAGS+=' -O2 -flto'
   CXXFLAGS+=' -O2 -flto'
   LDFLAGS+=' -O2 -flto'
@@ -45,4 +42,9 @@ package() {
   cd molecube2/build
 
   make install DESTDIR="${pkgdir}"
+
+  # mkdir -p "${pkgdir}/usr/src/debug/molecube2/"{lib,server}
+
+  # cp ../lib/*.{h,cpp} "${pkgdir}/usr/src/debug/molecube2/lib"
+  # cp ../server/*.cpp "${pkgdir}/usr/src/debug/molecube2/server"
 }
