@@ -1,6 +1,6 @@
 pkgname=libnacs-git
-pkgver=903.6d0d02e
-pkgrel=3
+pkgver=912.a18398d
+pkgrel=1
 pkgdesc='Library used for the NaCs control system'
 arch=('armv7h' 'aarch64')
 url='http://github.com/nacs-lab/libnacs'
