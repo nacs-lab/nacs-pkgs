@@ -1,37 +1,38 @@
 pkgname=molecube-hw
-pkgver=159.92bfdeb
+pkgver=195.87c1391
 pkgrel=1
 pkgdesc='NaCs control'
 arch=('armv7h')
 url='harvard.edu'
 license=('LGPL')
-options=('strip' 'debug')
 makedepends=('cmake')
-source=("git+ssh://gitlab@yuyichao.com/yuyichao/zynq.git")
+source=("git://github.com/nacs-lab/molecube-hw")
 md5sums=('SKIP')
 
 pkgver() {
-  cd zynq
+  cd molecube-hw
 
   echo "$(git rev-list --count HEAD).$(git rev-parse --short HEAD)"
 }
 
 prepare() {
-  cd zynq
+  cd molecube-hw
+
   rm -rf build/
   mkdir build
 }
 
 build() {
-  cd zynq/build
+  cd molecube-hw
 
-  cmake .. -DCMAKE_INSTALL_PREFIX=/usr
-  make
+  vivado -mode batch -nolog -source script/build.tcl -tclargs \
+         -proj project_molecube/project_molecube.xpr \
+         -bit build/system.bit.bit
 }
 
 package() {
-  cd zynq/build
+  cd molecube-hw/build
 
   install -dm755 "${pkgdir}/boot/"
-  install -T -Dm644 system.bin "${pkgdir}/boot/system.bit.bin"
+  install -T -Dm644 system.bit.bin "${pkgdir}/boot/system.bit.bin"
 }
