@@ -1,7 +1,7 @@
-From ac976a989e3c80100189c98866bf4bf6c93f98d9 Mon Sep 17 00:00:00 2001
+From fe01322526991bdc5fc37ebdac4bbc5871c05cde Mon Sep 17 00:00:00 2001
 From: Yichao Yu <yyc1992@gmail.com>
 Date: Sun, 24 Feb 2019 21:03:18 -0500
-Subject: [PATCH] Use vector calling convention
+Subject: [PATCH 1/2] Use vector calling convention
 
 ---
  src/arch/helperavx.h          |  7 +++++++
@@ -19,12 +19,12 @@ Subject: [PATCH] Use vector calling convention
  12 files changed, 83 insertions(+), 16 deletions(-)
 
 diff --git a/src/arch/helperavx.h b/src/arch/helperavx.h
-index 5844ef0..983602e 100644
+index e33a0e7..5de88ca 100644
 --- a/src/arch/helperavx.h
 +++ b/src/arch/helperavx.h
-@@ -39,6 +39,13 @@
- #include <stdint.h>
+@@ -49,6 +49,13 @@
  #include "misc.h"
+ #endif // #if !defined(SLEEF_GENHEADER)
  
 +#define SUFFIX_D1 "@@32"
 +#define SUFFIX_D2 "@@64"
@@ -37,12 +37,12 @@ index 5844ef0..983602e 100644
  typedef __m256i vopmask;
  
 diff --git a/src/arch/helperavx2.h b/src/arch/helperavx2.h
-index 3df1c82..85db0e0 100644
+index 47fcdc6..be1abcb 100644
 --- a/src/arch/helperavx2.h
 +++ b/src/arch/helperavx2.h
-@@ -36,6 +36,13 @@
- #include <stdint.h>
+@@ -47,6 +47,13 @@
  #include "misc.h"
+ #endif // #if !defined(SLEEF_GENHEADER)
  
 +#define SUFFIX_D1 "@@32"
 +#define SUFFIX_D2 "@@64"
@@ -55,12 +55,12 @@ index 3df1c82..85db0e0 100644
  typedef __m256i vopmask;
  
 diff --git a/src/arch/helperavx2_128.h b/src/arch/helperavx2_128.h
-index 409b0ae..ca67fed 100644
+index 5233db1..c878cd5 100644
 --- a/src/arch/helperavx2_128.h
 +++ b/src/arch/helperavx2_128.h
-@@ -36,6 +36,13 @@
- #include <stdint.h>
+@@ -47,6 +47,13 @@
  #include "misc.h"
+ #endif // #if !defined(SLEEF_GENHEADER)
  
 +#define SUFFIX_D1 "@@16"
 +#define SUFFIX_D2 "@@32"
@@ -73,12 +73,12 @@ index 409b0ae..ca67fed 100644
  typedef __m128i vopmask;
  
 diff --git a/src/arch/helperavx512f.h b/src/arch/helperavx512f.h
-index 04b1fd7..af2d368 100644
+index b98f400..f3ffbda 100644
 --- a/src/arch/helperavx512f.h
 +++ b/src/arch/helperavx512f.h
-@@ -39,6 +39,13 @@
- #include <stdint.h>
+@@ -50,6 +50,13 @@
  #include "misc.h"
+ #endif // #if !defined(SLEEF_GENHEADER)
  
 +#define SUFFIX_D1 "@@64"
 +#define SUFFIX_D2 "@@128"
@@ -91,10 +91,10 @@ index 04b1fd7..af2d368 100644
  typedef __mmask16 vopmask;
  
 diff --git a/src/arch/helperpurec.h b/src/arch/helperpurec.h
-index 11e063f..16cb3ff 100644
+index fc5ed8b..b28e7af 100644
 --- a/src/arch/helperpurec.h
 +++ b/src/arch/helperpurec.h
-@@ -24,6 +24,24 @@
+@@ -31,6 +31,24 @@
  #define DFTPRIORITY LOG2VECTLENDP
  #define ISANAME "Pure C Array"
  
@@ -120,10 +120,10 @@ index 11e063f..16cb3ff 100644
    uint32_t u[VECTLENDP*2];
    uint64_t x[VECTLENDP];
 diff --git a/src/arch/helperpurec_scalar.h b/src/arch/helperpurec_scalar.h
-index 9c11ace..5399099 100644
+index d8b9c84..9b5626b 100644
 --- a/src/arch/helperpurec_scalar.h
 +++ b/src/arch/helperpurec_scalar.h
-@@ -74,6 +74,10 @@
+@@ -98,6 +98,10 @@
  
  #define DFTPRIORITY LOG2VECTLENDP
  
@@ -131,16 +131,16 @@ index 9c11ace..5399099 100644
 +#  undef ENABLE_ALIAS
 +#endif
 +
- typedef union {
-   uint32_t u[2];
-   int32_t i[2];
+ typedef uint64_t vmask;
+ typedef uint32_t vopmask;
+ typedef double vdouble;
 diff --git a/src/arch/helpersse2.h b/src/arch/helpersse2.h
-index c087578..7d433b5 100644
+index 833f5f9..0d3c23b 100644
 --- a/src/arch/helpersse2.h
 +++ b/src/arch/helpersse2.h
-@@ -44,6 +44,13 @@
- #include <stdint.h>
+@@ -53,6 +53,13 @@
  #include "misc.h"
+ #endif // #if !defined(SLEEF_GENHEADER)
  
 +#define SUFFIX_D1 "@@16"
 +#define SUFFIX_D2 "@@32"
@@ -153,22 +153,24 @@ index c087578..7d433b5 100644
  typedef __m128i vopmask;
  
 diff --git a/src/common/misc.h b/src/common/misc.h
-index 1c326a3..b8f8903 100644
+index 5d7badd..35372cb 100644
 --- a/src/common/misc.h
 +++ b/src/common/misc.h
-@@ -330,5 +330,5 @@ typedef union {
+@@ -297,7 +297,7 @@ typedef struct {
  #ifdef ENABLE_AAVPCS
  #define VECTOR_CC __attribute__((aarch64_vector_pcs))
  #else
 -#define VECTOR_CC
 +#define VECTOR_CC __attribute__((vectorcall))
  #endif
+ 
+ //
 diff --git a/src/libm/mkalias.c b/src/libm/mkalias.c
-index b677e05..560abc5 100644
+index 633786d..cf6d736 100644
 --- a/src/libm/mkalias.c
 +++ b/src/libm/mkalias.c
-@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
-   char *mangledisa = argv[4];
+@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
+   int genAliasVectorABI = (mangledisa[0] != '-');
    char *isaname = argc == 6 ? argv[5] : "";
  
 -  char * vectorcc="";
@@ -176,15 +178,15 @@ index b677e05..560abc5 100644
  #ifdef ENABLE_AAVPCS
    if (strcmp(isaname, "advsimd") == 0)
      vectorcc =" __attribute__((aarch64_vector_pcs))";
-@@ -38,6 +38,7 @@ int main(int argc, char **argv) {
+@@ -39,6 +39,7 @@ int main(int argc, char **argv) {
+   static char *typeSpecS[] = { "", "f" };
    static char *typeSpec[] = { "d", "f" };
-   static char *ulpSuffixStr[] = { "", "_u1", "_u05", "_u35", "_u15", "_u3500" };
-   static char *vparameterStr[7] = { "v", "vv", "", "vv", "v", "vvv", "" };
+   static char *vparameterStr[9] = { "v", "vv", "", "vv", "v", "vvv", "", "", "" };
 +  int argSize[] = {2, 4, 2, fptype ? 4 : 3, 2, 6, 2, 0, 0};
  
    static char returnType[9][1000];
    static char argType0[9][1000];
-@@ -86,18 +87,27 @@ int main(int argc, char **argv) {
+@@ -87,11 +88,19 @@ int main(int argc, char **argv) {
      for(int i=0;funcList[i].name != NULL;i++) {
        if (fptype == 0 && (funcList[i].flags & 2) != 0) continue;
        if (funcList[i].ulp >= 0) {
@@ -204,6 +206,11 @@ index b677e05..560abc5 100644
 +	       argType0[funcList[i].funcType],
 +	       funcList[i].name, typeSpec[fptype], vw, isaname
  	       );
+ 	if (genAliasVectorABI && vparameterStr[funcList[i].funcType] != NULL) {
+ 	  printf("EXPORT CONST VECTOR_CC %s _ZGV%sN%d%s_Sleef_%s%s_u%02d(%s) __attribute__((alias(\"Sleef_%s%s%d_u%02d%s\")))%s;\n",
+@@ -102,11 +111,12 @@ int main(int argc, char **argv) {
+ 		 );
+ 	}
        } else {
 -	printf("EXPORT CONST %s Sleef_%s%s%d(%s) __attribute__((alias(\"Sleef_%s%s%d_%s\"))) %s;\n",
 +	printf("EXPORT CONST %s Sleef_%s%s%d(%s) __attribute__((alias(\"\\01Sleef_%s%s%d_%s@@%d\"))) %s;\n",
@@ -214,26 +221,26 @@ index b677e05..560abc5 100644
 +	       funcList[i].name, typeSpec[fptype], vw, isaname,
 +	       vw * (2 - fptype) * 2 * argSize[funcList[i].funcType], vectorcc
  	       );
-       }
-     }
+ 	if (genAliasVectorABI && vparameterStr[funcList[i].funcType] != NULL) {
+ 	  printf("EXPORT CONST VECTOR_CC %s _ZGV%sN%d%s_Sleef_%s%s(%s) __attribute__((alias(\"Sleef_%s%s%d_%s\")))%s;\n",
 diff --git a/src/libm/mkrename.c b/src/libm/mkrename.c
-index 8c5fd51..e2551b4 100644
+index edae03c..a1a7f7c 100644
 --- a/src/libm/mkrename.c
 +++ b/src/libm/mkrename.c
-@@ -136,7 +136,7 @@ int main(int argc, char **argv) {
+@@ -148,7 +148,7 @@ int main(int argc, char **argv) {
      if (strcmp(isaname, "sve") == 0)
        wdp = wsp = "x";
  
 -    char * vectorcc = "";
 +    char * vectorcc = " __attribute__((vectorcall))";
-     #ifdef ENABLE_AAVPCS
+ #ifdef ENABLE_AAVPCS
      if (strcmp(isaname, "advsimd") == 0)
        vectorcc =" __attribute__((aarch64_vector_pcs))";
 diff --git a/src/libm/sleefsimddp.c b/src/libm/sleefsimddp.c
-index 4309a51..868d889 100644
+index e531495..ddc98bf 100644
 --- a/src/libm/sleefsimddp.c
 +++ b/src/libm/sleefsimddp.c
-@@ -3556,11 +3556,11 @@ EXPORT CONST VECTOR_CC vdouble xerfc_u15(vdouble a) {
+@@ -3569,11 +3569,11 @@ EXPORT CONST VECTOR_CC vdouble xerfc_u15(vdouble a) {
  // Sleef_cinz_sincospid2_u05sse2) by rename*.h.
  
  #ifdef ENABLE_ALIAS
@@ -251,10 +258,10 @@ index 4309a51..868d889 100644
  #define DALIAS_vd_vd(FUNC) EXPORT CONST VECTOR_CC vdouble y ## FUNC(vdouble d) { return x ## FUNC (d); }
  #define DALIAS_vd2_vd(FUNC) EXPORT CONST VECTOR_CC vdouble2 y ## FUNC(vdouble d) { return x ## FUNC (d); }
 diff --git a/src/libm/sleefsimdsp.c b/src/libm/sleefsimdsp.c
-index 4721f60..92c2d66 100644
+index 9e1faa2..a3f4f96 100644
 --- a/src/libm/sleefsimdsp.c
 +++ b/src/libm/sleefsimdsp.c
-@@ -3206,10 +3206,10 @@ EXPORT CONST VECTOR_CC vfloat xerfcf_u15(vfloat a) {
+@@ -3517,10 +3517,10 @@ EXPORT CONST VECTOR_CC vfloat xerfcf_u15(vfloat a) {
  // See sleefsimddp.c for explanation of these macros
  
  #ifdef ENABLE_ALIAS
@@ -270,5 +277,5 @@ index 4721f60..92c2d66 100644
  #define DALIAS_vf_vf(FUNC) EXPORT CONST VECTOR_CC vfloat y ## FUNC(vfloat d) { return x ## FUNC (d); }
  #define DALIAS_vf2_vf(FUNC) EXPORT CONST VECTOR_CC vfloat2 y ## FUNC(vfloat d) { return x ## FUNC (d); }
 -- 
-2.21.0
+2.32.0
 
