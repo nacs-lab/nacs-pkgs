@@ -1,0 +1,358 @@
+From 9e473bb351b19b80991e476e6dec8252b0bab372 Mon Sep 17 00:00:00 2001
+From: Yichao Yu <yyc1992@gmail.com>
+Date: Sun, 24 Feb 2019 21:03:18 -0500
+Subject: [PATCH 2/2] Use vector calling convention
+
+---
+ src/arch/helperavx.h          |  8 ++++++++
+ src/arch/helperavx2.h         |  8 ++++++++
+ src/arch/helperavx2_128.h     |  8 ++++++++
+ src/arch/helperavx512f.h      |  8 ++++++++
+ src/arch/helperpurec.h        |  8 ++++++++
+ src/arch/helperpurec_scalar.h |  8 ++++++++
+ src/arch/helpersse2.h         |  8 ++++++++
+ src/common/misc.h             |  2 +-
+ src/libm/dispavx.c.org        | 12 ++++++------
+ src/libm/dispscalar.c.org     |  4 ++++
+ src/libm/dispsse.c.org        |  6 +++---
+ src/libm/mkalias.c            | 30 +++++++++++++++++++++---------
+ src/libm/mkrename.c           |  2 +-
+ src/libm/sleefsimddp.c        | 10 +++++-----
+ src/libm/sleefsimdsp.c        |  8 ++++----
+ 15 files changed, 101 insertions(+), 29 deletions(-)
+
+diff --git a/src/arch/helperavx.h b/src/arch/helperavx.h
+index e33a0e7..f283ae8 100644
+--- a/src/arch/helperavx.h
++++ b/src/arch/helperavx.h
+@@ -49,6 +49,14 @@
+ #include "misc.h"
+ #endif // #if !defined(SLEEF_GENHEADER)
+ 
++#define VEC_PREFIX "\01"
++#define VEC_SUFFIX_D1 "@@32"
++#define VEC_SUFFIX_D2 "@@64"
++#define VEC_SUFFIX_D3 "@@96"
++#define VEC_SUFFIX_F1 "@@32"
++#define VEC_SUFFIX_F2 "@@64"
++#define VEC_SUFFIX_F3 "@@96"
++
+ typedef __m256i vmask;
+ typedef __m256i vopmask;
+ 
+diff --git a/src/arch/helperavx2.h b/src/arch/helperavx2.h
+index 47fcdc6..9402890 100644
+--- a/src/arch/helperavx2.h
++++ b/src/arch/helperavx2.h
+@@ -47,6 +47,14 @@
+ #include "misc.h"
+ #endif // #if !defined(SLEEF_GENHEADER)
+ 
++#define VEC_PREFIX "\01"
++#define VEC_SUFFIX_D1 "@@32"
++#define VEC_SUFFIX_D2 "@@64"
++#define VEC_SUFFIX_D3 "@@96"
++#define VEC_SUFFIX_F1 "@@32"
++#define VEC_SUFFIX_F2 "@@64"
++#define VEC_SUFFIX_F3 "@@96"
++
+ typedef __m256i vmask;
+ typedef __m256i vopmask;
+ 
+diff --git a/src/arch/helperavx2_128.h b/src/arch/helperavx2_128.h
+index 5233db1..4904adf 100644
+--- a/src/arch/helperavx2_128.h
++++ b/src/arch/helperavx2_128.h
+@@ -47,6 +47,14 @@
+ #include "misc.h"
+ #endif // #if !defined(SLEEF_GENHEADER)
+ 
++#define VEC_PREFIX "\01"
++#define VEC_SUFFIX_D1 "@@16"
++#define VEC_SUFFIX_D2 "@@32"
++#define VEC_SUFFIX_D3 "@@48"
++#define VEC_SUFFIX_F1 "@@16"
++#define VEC_SUFFIX_F2 "@@32"
++#define VEC_SUFFIX_F3 "@@48"
++
+ typedef __m128i vmask;
+ typedef __m128i vopmask;
+ 
+diff --git a/src/arch/helperavx512f.h b/src/arch/helperavx512f.h
+index b98f400..fee90f5 100644
+--- a/src/arch/helperavx512f.h
++++ b/src/arch/helperavx512f.h
+@@ -50,6 +50,14 @@
+ #include "misc.h"
+ #endif // #if !defined(SLEEF_GENHEADER)
+ 
++#define VEC_PREFIX "\01"
++#define VEC_SUFFIX_D1 "@@64"
++#define VEC_SUFFIX_D2 "@@128"
++#define VEC_SUFFIX_D3 "@@192"
++#define VEC_SUFFIX_F1 "@@64"
++#define VEC_SUFFIX_F2 "@@128"
++#define VEC_SUFFIX_F3 "@@192"
++
+ typedef __m512i vmask;
+ typedef __mmask16 vopmask;
+ 
+diff --git a/src/arch/helperpurec.h b/src/arch/helperpurec.h
+index fc5ed8b..4f8b6ee 100644
+--- a/src/arch/helperpurec.h
++++ b/src/arch/helperpurec.h
+@@ -31,6 +31,14 @@
+ #define DFTPRIORITY LOG2VECTLENDP
+ #define ISANAME "Pure C Array"
+ 
++#define VEC_PREFIX "\01"
++#define VEC_SUFFIX_D1 "@@8"
++#define VEC_SUFFIX_D2 "@@16"
++#define VEC_SUFFIX_D3 "@@24"
++#define VEC_SUFFIX_F1 "@@8"
++#define VEC_SUFFIX_F2 "@@16"
++#define VEC_SUFFIX_F3 "@@24"
++
+ typedef union {
+   uint32_t u[VECTLENDP*2];
+   uint64_t x[VECTLENDP];
+diff --git a/src/arch/helperpurec_scalar.h b/src/arch/helperpurec_scalar.h
+index d8b9c84..64281e4 100644
+--- a/src/arch/helperpurec_scalar.h
++++ b/src/arch/helperpurec_scalar.h
+@@ -98,6 +98,14 @@
+ 
+ #define DFTPRIORITY LOG2VECTLENDP
+ 
++#define VEC_PREFIX "\01"
++#define VEC_SUFFIX_D1 "@@8"
++#define VEC_SUFFIX_D2 "@@16"
++#define VEC_SUFFIX_D3 "@@24"
++#define VEC_SUFFIX_F1 "@@8"
++#define VEC_SUFFIX_F2 "@@16"
++#define VEC_SUFFIX_F3 "@@24"
++
+ typedef uint64_t vmask;
+ typedef uint32_t vopmask;
+ typedef double vdouble;
+diff --git a/src/arch/helpersse2.h b/src/arch/helpersse2.h
+index 833f5f9..3365f57 100644
+--- a/src/arch/helpersse2.h
++++ b/src/arch/helpersse2.h
+@@ -53,6 +53,14 @@
+ #include "misc.h"
+ #endif // #if !defined(SLEEF_GENHEADER)
+ 
++#define VEC_PREFIX "\01"
++#define VEC_SUFFIX_D1 "@@16"
++#define VEC_SUFFIX_D2 "@@32"
++#define VEC_SUFFIX_D3 "@@48"
++#define VEC_SUFFIX_F1 "@@16"
++#define VEC_SUFFIX_F2 "@@32"
++#define VEC_SUFFIX_F3 "@@48"
++
+ typedef __m128i vmask;
+ typedef __m128i vopmask;
+ 
+diff --git a/src/common/misc.h b/src/common/misc.h
+index 5d7badd..35372cb 100644
+--- a/src/common/misc.h
++++ b/src/common/misc.h
+@@ -297,7 +297,7 @@ typedef struct {
+ #ifdef ENABLE_AAVPCS
+ #define VECTOR_CC __attribute__((aarch64_vector_pcs))
+ #else
+-#define VECTOR_CC
++#define VECTOR_CC __attribute__((vectorcall))
+ #endif
+ 
+ //
+diff --git a/src/libm/dispavx.c.org b/src/libm/dispavx.c.org
+index b50ff0a..8b080e6 100644
+--- a/src/libm/dispavx.c.org
++++ b/src/libm/dispavx.c.org
+@@ -57,14 +57,14 @@ static int cpuSupportsFMA4() {
+ 
+ #ifdef ENABLE_ALIAS
+ #define VECALIAS_vf_vf(fptype, funcNameS, funcName, veclen)		\
+-  EXPORT CONST VECTOR_CC fptype _ZGVcN ## veclen ## v_ ## funcNameS(fptype) __attribute__((alias(stringify(funcName)))); \
+-  EXPORT CONST VECTOR_CC fptype _ZGVdN ## veclen ## v_ ## funcNameS(fptype) __attribute__((alias(stringify(funcName))));
++  EXPORT CONST VECTOR_CC fptype _ZGVcN ## veclen ## v_ ## funcNameS(fptype) __attribute__((alias("\01" stringify(funcName) "@@32"))); \
++  EXPORT CONST VECTOR_CC fptype _ZGVdN ## veclen ## v_ ## funcNameS(fptype) __attribute__((alias("\01" stringify(funcName) "@@32")));
+ #define VECALIAS_vf_vf_vf(fptype, funcNameS, funcName, veclen)		\
+-  EXPORT CONST VECTOR_CC fptype _ZGVcN ## veclen ## vv_ ## funcNameS(fptype, fptype) __attribute__((alias(stringify(funcName)))); \
+-  EXPORT CONST VECTOR_CC fptype _ZGVdN ## veclen ## vv_ ## funcNameS(fptype, fptype) __attribute__((alias(stringify(funcName))));
++  EXPORT CONST VECTOR_CC fptype _ZGVcN ## veclen ## vv_ ## funcNameS(fptype, fptype) __attribute__((alias("\01" stringify(funcName) "@@64"))); \
++  EXPORT CONST VECTOR_CC fptype _ZGVdN ## veclen ## vv_ ## funcNameS(fptype, fptype) __attribute__((alias("\01" stringify(funcName) "@@64")));
+ #define VECALIAS_vf_vf_vf_vf(fptype, funcNameS, funcName, veclen)	\
+-  EXPORT CONST VECTOR_CC fptype _ZGVcN ## veclen ## vvv_ ## funcNameS(fptype, fptype, fptype) __attribute__((alias(stringify(funcName)))); \
+-  EXPORT CONST VECTOR_CC fptype _ZGVdN ## veclen ## vvv_ ## funcNameS(fptype, fptype, fptype) __attribute__((alias(stringify(funcName))));
++  EXPORT CONST VECTOR_CC fptype _ZGVcN ## veclen ## vvv_ ## funcNameS(fptype, fptype, fptype) __attribute__((alias("\01" stringify(funcName) "@@96"))); \
++  EXPORT CONST VECTOR_CC fptype _ZGVdN ## veclen ## vvv_ ## funcNameS(fptype, fptype, fptype) __attribute__((alias("\01" stringify(funcName) "@@96")));
+ #endif
+ 
+ #include "dispatcher.h"
+diff --git a/src/libm/dispscalar.c.org b/src/libm/dispscalar.c.org
+index 461e266..42fe70e 100644
+--- a/src/libm/dispscalar.c.org
++++ b/src/libm/dispscalar.c.org
+@@ -13,6 +13,10 @@
+ #define SLEEF_IMPORT_IS_EXPORT
+ #include "sleef.h"
+ 
++#ifdef ENABLE_ALIAS
++#  undef ENABLE_ALIAS
++#endif
++
+ #include "dispatcher.h"
+ 
+ NOEXPORT double sleef_cpuidtmp2;
+diff --git a/src/libm/dispsse.c.org b/src/libm/dispsse.c.org
+index a6ca65a..f273a0e 100644
+--- a/src/libm/dispsse.c.org
++++ b/src/libm/dispsse.c.org
+@@ -53,11 +53,11 @@ static int cpuSupportsFMA() {
+ 
+ #ifdef ENABLE_ALIAS
+ #define VECALIAS_vf_vf(fptype, funcNameS, funcName, veclen)		\
+-  EXPORT CONST VECTOR_CC fptype _ZGVbN ## veclen ## v_ ## funcNameS(fptype) __attribute__((alias(stringify(funcName))));
++  EXPORT CONST VECTOR_CC fptype _ZGVbN ## veclen ## v_ ## funcNameS(fptype) __attribute__((alias("\01" stringify(funcName) "@@16")));
+ #define VECALIAS_vf_vf_vf(fptype, funcNameS, funcName, veclen)		\
+-  EXPORT CONST VECTOR_CC fptype _ZGVbN ## veclen ## vv_ ## funcNameS(fptype, fptype) __attribute__((alias(stringify(funcName))));
++  EXPORT CONST VECTOR_CC fptype _ZGVbN ## veclen ## vv_ ## funcNameS(fptype, fptype) __attribute__((alias("\01" stringify(funcName) "@@32")));
+ #define VECALIAS_vf_vf_vf_vf(fptype, funcNameS, funcName, veclen)	\
+-  EXPORT CONST VECTOR_CC fptype _ZGVbN ## veclen ## vvv_ ## funcNameS(fptype, fptype, fptype) __attribute__((alias(stringify(funcName))));
++  EXPORT CONST VECTOR_CC fptype _ZGVbN ## veclen ## vvv_ ## funcNameS(fptype, fptype, fptype) __attribute__((alias("\01" stringify(funcName) "@@48")));
+ #endif
+ 
+ #include "dispatcher.h"
+diff --git a/src/libm/mkalias.c b/src/libm/mkalias.c
+index 633786d..d3af121 100644
+--- a/src/libm/mkalias.c
++++ b/src/libm/mkalias.c
+@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
+   int genAliasVectorABI = (mangledisa[0] != '-');
+   char *isaname = argc == 6 ? argv[5] : "";
+ 
+-  char * vectorcc="";
++  char * vectorcc=" __attribute__((vectorcall))";
+ #ifdef ENABLE_AAVPCS
+   if (strcmp(isaname, "advsimd") == 0)
+     vectorcc =" __attribute__((aarch64_vector_pcs))";
+@@ -39,6 +39,7 @@ int main(int argc, char **argv) {
+   static char *typeSpecS[] = { "", "f" };
+   static char *typeSpec[] = { "d", "f" };
+   static char *vparameterStr[9] = { "v", "vv", "", "vv", "v", "vvv", "", "", "" };
++  int argSize[] = {2, 4, 2, fptype ? 4 : 3, 2, 6, 2, 0, 0};
+ 
+   static char returnType[9][1000];
+   static char argType0[9][1000];
+@@ -87,33 +88,44 @@ int main(int argc, char **argv) {
+     for(int i=0;funcList[i].name != NULL;i++) {
+       if (fptype == 0 && (funcList[i].flags & 2) != 0) continue;
+       if (funcList[i].ulp >= 0) {
+-	printf("EXPORT CONST %s Sleef_%s%s%d_u%02d(%s) __attribute__((alias(\"Sleef_%s%s%d_u%02d%s\"))) %s;\n",
++	printf("EXPORT CONST %s Sleef_%s%s%d_u%02d(%s) __attribute__((alias(\"\\01Sleef_%s%s%d_u%02d%s@@%d\"))) %s;\n",
+ 	       returnType[funcList[i].funcType],
+ 	       funcList[i].name, typeSpec[fptype], vw, funcList[i].ulp,
+ 	       argType0[funcList[i].funcType],
+-	       funcList[i].name, typeSpec[fptype], vw, funcList[i].ulp, isaname, vectorcc
++	       funcList[i].name, typeSpec[fptype], vw, funcList[i].ulp, isaname,
++	       vw * (2 - fptype) * 2 * argSize[funcList[i].funcType], vectorcc
+ 	       );
+ 	if (genAliasVectorABI && vparameterStr[funcList[i].funcType] != NULL) {
+-	  printf("EXPORT CONST VECTOR_CC %s _ZGV%sN%d%s_Sleef_%s%s_u%02d(%s) __attribute__((alias(\"Sleef_%s%s%d_u%02d%s\")))%s;\n",
++	  printf("EXPORT CONST VECTOR_CC %s _ZGV%sN%d%s_Sleef_%s%s_u%02d(%s) __attribute__((alias(\"\\01Sleef_%s%s%d_u%02d%s@@%d\")))%s;\n",
+ 		 returnType[funcList[i].funcType],
+ 		 mangledisa, vw, vparameterStr[funcList[i].funcType], funcList[i].name, typeSpecS[fptype], funcList[i].ulp,
+ 		 argType0[funcList[i].funcType],
+-		 funcList[i].name, typeSpec[fptype], vw, funcList[i].ulp, isaname, vectorcc
++		 funcList[i].name, typeSpec[fptype], vw, funcList[i].ulp, isaname,
++		 vw * (2 - fptype) * 2 * argSize[funcList[i].funcType], vectorcc
+ 		 );
+ 	}
++      } else if (funcList[i].funcType == 7 || funcList[i].funcType == 8) {
++	printf("EXPORT CONST %s Sleef_%s%s%d(%s) __attribute__((alias(\"Sleef_%s%s%d_%s\")));\n",
++	       returnType[funcList[i].funcType],
++	       funcList[i].name, typeSpec[fptype], vw,
++	       argType0[funcList[i].funcType],
++	       funcList[i].name, typeSpec[fptype], vw, isaname
++	       );
+       } else {
+-	printf("EXPORT CONST %s Sleef_%s%s%d(%s) __attribute__((alias(\"Sleef_%s%s%d_%s\"))) %s;\n",
++	printf("EXPORT CONST %s Sleef_%s%s%d(%s) __attribute__((alias(\"\\01Sleef_%s%s%d_%s@@%d\"))) %s;\n",
+ 	       returnType[funcList[i].funcType],
+ 	       funcList[i].name, typeSpec[fptype], vw,
+ 	       argType0[funcList[i].funcType],
+-	       funcList[i].name, typeSpec[fptype], vw, isaname, vectorcc
++	       funcList[i].name, typeSpec[fptype], vw, isaname,
++	       vw * (2 - fptype) * 2 * argSize[funcList[i].funcType], vectorcc
+ 	       );
+ 	if (genAliasVectorABI && vparameterStr[funcList[i].funcType] != NULL) {
+-	  printf("EXPORT CONST VECTOR_CC %s _ZGV%sN%d%s_Sleef_%s%s(%s) __attribute__((alias(\"Sleef_%s%s%d_%s\")))%s;\n",
++	  printf("EXPORT CONST VECTOR_CC %s _ZGV%sN%d%s_Sleef_%s%s(%s) __attribute__((alias(\"\\01Sleef_%s%s%d_%s@@%d\")))%s;\n",
+ 		 returnType[funcList[i].funcType],
+ 		 mangledisa, vw, vparameterStr[funcList[i].funcType], funcList[i].name, typeSpecS[fptype],
+ 		 argType0[funcList[i].funcType],
+-		 funcList[i].name, typeSpec[fptype], vw, isaname, vectorcc
++		 funcList[i].name, typeSpec[fptype], vw, isaname,
++		 vw * (2 - fptype) * 2 * argSize[funcList[i].funcType], vectorcc
+ 		 );
+ 	}
+       }
+diff --git a/src/libm/mkrename.c b/src/libm/mkrename.c
+index edae03c..a1a7f7c 100644
+--- a/src/libm/mkrename.c
++++ b/src/libm/mkrename.c
+@@ -148,7 +148,7 @@ int main(int argc, char **argv) {
+     if (strcmp(isaname, "sve") == 0)
+       wdp = wsp = "x";
+ 
+-    char * vectorcc = "";
++    char * vectorcc = " __attribute__((vectorcall))";
+ #ifdef ENABLE_AAVPCS
+     if (strcmp(isaname, "advsimd") == 0)
+       vectorcc =" __attribute__((aarch64_vector_pcs))";
+diff --git a/src/libm/sleefsimddp.c b/src/libm/sleefsimddp.c
+index e531495..6301ee5 100644
+--- a/src/libm/sleefsimddp.c
++++ b/src/libm/sleefsimddp.c
+@@ -3569,11 +3569,11 @@ EXPORT CONST VECTOR_CC vdouble xerfc_u15(vdouble a) {
+ // Sleef_cinz_sincospid2_u05sse2) by rename*.h.
+ 
+ #ifdef ENABLE_ALIAS
+-#define DALIAS_vd_vd(FUNC) EXPORT CONST VECTOR_CC vdouble y ## FUNC(vdouble) __attribute__((alias( stringify(x ## FUNC) )));
+-#define DALIAS_vd2_vd(FUNC) EXPORT CONST VECTOR_CC vdouble2 y ## FUNC(vdouble) __attribute__((alias( stringify(x ## FUNC) )));
+-#define DALIAS_vi_vd(FUNC) EXPORT CONST VECTOR_CC vint y ## FUNC(vdouble) __attribute__((alias( stringify(x ## FUNC) )));
+-#define DALIAS_vd_vd_vd(FUNC) EXPORT CONST VECTOR_CC vdouble y ## FUNC(vdouble, vdouble) __attribute__((alias( stringify(x ## FUNC) )));
+-#define DALIAS_vd_vd_vd_vd(FUNC) EXPORT CONST VECTOR_CC vdouble y ## FUNC(vdouble, vdouble, vdouble) __attribute__((alias( stringify(x ## FUNC) )));
++#define DALIAS_vd_vd(FUNC) EXPORT CONST VECTOR_CC vdouble y ## FUNC(vdouble) __attribute__((alias(VEC_PREFIX stringify(x ## FUNC) VEC_SUFFIX_D1)));
++#define DALIAS_vd2_vd(FUNC) EXPORT CONST VECTOR_CC vdouble2 y ## FUNC(vdouble) __attribute__((alias(VEC_PREFIX stringify(x ## FUNC) VEC_SUFFIX_D1)));
++#define DALIAS_vi_vd(FUNC) EXPORT CONST VECTOR_CC vint y ## FUNC(vdouble) __attribute__((alias(VEC_PREFIX stringify(x ## FUNC) VEC_SUFFIX_D1)));
++#define DALIAS_vd_vd_vd(FUNC) EXPORT CONST VECTOR_CC vdouble y ## FUNC(vdouble, vdouble) __attribute__((alias(VEC_PREFIX stringify(x ## FUNC) VEC_SUFFIX_D2)));
++#define DALIAS_vd_vd_vd_vd(FUNC) EXPORT CONST VECTOR_CC vdouble y ## FUNC(vdouble, vdouble, vdouble) __attribute__((alias(VEC_PREFIX stringify(x ## FUNC) VEC_SUFFIX_D3)));
+ #else
+ #define DALIAS_vd_vd(FUNC) EXPORT CONST VECTOR_CC vdouble y ## FUNC(vdouble d) { return x ## FUNC (d); }
+ #define DALIAS_vd2_vd(FUNC) EXPORT CONST VECTOR_CC vdouble2 y ## FUNC(vdouble d) { return x ## FUNC (d); }
+diff --git a/src/libm/sleefsimdsp.c b/src/libm/sleefsimdsp.c
+index 9e1faa2..741f73e 100644
+--- a/src/libm/sleefsimdsp.c
++++ b/src/libm/sleefsimdsp.c
+@@ -3517,10 +3517,10 @@ EXPORT CONST VECTOR_CC vfloat xerfcf_u15(vfloat a) {
+ // See sleefsimddp.c for explanation of these macros
+ 
+ #ifdef ENABLE_ALIAS
+-#define DALIAS_vf_vf(FUNC) EXPORT CONST VECTOR_CC vfloat y ## FUNC(vfloat) __attribute__((alias( stringify(x ## FUNC) )));
+-#define DALIAS_vf2_vf(FUNC) EXPORT CONST VECTOR_CC vfloat2 y ## FUNC(vfloat) __attribute__((alias( stringify(x ## FUNC) )));
+-#define DALIAS_vf_vf_vf(FUNC) EXPORT CONST VECTOR_CC vfloat y ## FUNC(vfloat, vfloat) __attribute__((alias( stringify(x ## FUNC) )));
+-#define DALIAS_vf_vf_vf_vf(FUNC) EXPORT CONST VECTOR_CC vfloat y ## FUNC(vfloat, vfloat, vfloat) __attribute__((alias( stringify(x ## FUNC) )));
++#define DALIAS_vf_vf(FUNC) EXPORT CONST VECTOR_CC vfloat y ## FUNC(vfloat) __attribute__((alias(VEC_PREFIX stringify(x ## FUNC) VEC_SUFFIX_F1)));
++#define DALIAS_vf2_vf(FUNC) EXPORT CONST VECTOR_CC vfloat2 y ## FUNC(vfloat) __attribute__((alias(VEC_PREFIX stringify(x ## FUNC) VEC_SUFFIX_F1)));
++#define DALIAS_vf_vf_vf(FUNC) EXPORT CONST VECTOR_CC vfloat y ## FUNC(vfloat, vfloat) __attribute__((alias(VEC_PREFIX stringify(x ## FUNC) VEC_SUFFIX_F2)));
++#define DALIAS_vf_vf_vf_vf(FUNC) EXPORT CONST VECTOR_CC vfloat y ## FUNC(vfloat, vfloat, vfloat) __attribute__((alias(VEC_PREFIX stringify(x ## FUNC) VEC_SUFFIX_F3)));
+ #else
+ #define DALIAS_vf_vf(FUNC) EXPORT CONST VECTOR_CC vfloat y ## FUNC(vfloat d) { return x ## FUNC (d); }
+ #define DALIAS_vf2_vf(FUNC) EXPORT CONST VECTOR_CC vfloat2 y ## FUNC(vfloat d) { return x ## FUNC (d); }
+-- 
+2.32.0
+
