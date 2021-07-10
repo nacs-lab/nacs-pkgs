@@ -1,5 +1,5 @@
 pkgname=python-libnacs-git
-pkgver=50.fc29788
+pkgver=51.d7554f6
 pkgrel=1
 pkgdesc='Library used for the NaCs control system'
 arch=(any)
@@ -7,7 +7,7 @@ url='http://github.com/nacs-lab/python-libnacs'
 license=('LGPL')
 depends=(python libnacs)
 makedepends=(cmake git)
-source=("git://github.com/nacs-lab/python-libnacs")
+source=("git://github.com/nacs-lab/python-libnacs#branch=seq")
 md5sums=('SKIP')
 
 pkgver() {
