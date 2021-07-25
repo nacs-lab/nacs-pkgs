@@ -1,0 +1,45 @@
+name: MSYS2
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  CC: /mingw64/bin/gcc
+  CXX: /mingw64/bin/g++
+
+jobs:
+  build-sleef:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW64
+        install: >-
+          git
+          make
+          patch
+          mingw-w64-x86_64-cmake
+          mingw-w64-x86_64-clang
+          mingw-w64-x86_64-toolchain
+          mingw-w64-x86_64-libwinpthread
+
+    - name: Build
+      shell: msys2 {0}
+      run: |
+        cd windows/mingw-w64-sleef-git
+        MAKEFLAGS="-j$(nproc)" MINGW_ARCH=MINGW64 makepkg-mingw
+
+    - name: "Upload binaries"
+      uses: actions/upload-artifact@v2
+      with:
+        name: mingw-w64-x86_64-sleef-git-packages
+        path: ${{github.workspace}}/windows/mingw-w64-sleef-git/*.pkg.tar.*

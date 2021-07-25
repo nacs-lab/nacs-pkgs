@@ -21,11 +21,11 @@ makedepends=("git"
              "${MINGW_PACKAGE_PREFIX}-cmake"
              patch make)
 source=("git://github.com/shibatch/sleef"
-        0001-Use-vector-calling-convention.patch
-        0001-Use-cat-instead-of-type.patch)
+        0001-Use-addSuffix-in-place-of-cat-type.patch
+        0002-Use-vector-calling-convention.patch)
 sha256sums=('SKIP'
-            'fd02eb1e09fb30dec23522c1d795d73cb7dec97971a4b4f3f65ecb1092099b57'
-            '2d7410060e84a41862d588db8665b341ff723b5addb088e32bd9cd95c5896678')
+            '8992b4b0c01d8639c84c05ebb759cacb131298d3756df933b76bc6011a556249'
+            '66813be9393f05c60ce2d87c5bcc8156ace4cfa753ed99abac3655a61af6a18d')
 
 pkgver() {
   cd sleef
@@ -39,8 +39,8 @@ prepare() {
   git reset --hard HEAD
   git clean -fdx
 
-  patch -Np1 < ../0001-Use-vector-calling-convention.patch
-  patch -Np1 < ../0001-Use-cat-instead-of-type.patch
+  patch -Np1 < ../0001-Use-addSuffix-in-place-of-cat-type.patch
+  patch -Np1 < ../0002-Use-vector-calling-convention.patch
 }
 
 build() {
@@ -60,6 +60,4 @@ package() {
   cd sleef/build
 
   make install DESTDIR="$pkgdir"
-  mkdir -p "${pkgdir}${MINGW_PREFIX}/bin"
-  mv "${pkgdir}${MINGW_PREFIX}/lib/"libsleef.dll "${pkgdir}${MINGW_PREFIX}/bin/"
 }

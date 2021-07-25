@@ -14,15 +14,18 @@ provides=("${MINGW_PACKAGE_PREFIX}-libnacs")
 conflicts=("${MINGW_PACKAGE_PREFIX}-libnacs")
 options=('!strip')
 depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
+         "${MINGW_PACKAGE_PREFIX}-intel-tbb"
          "${MINGW_PACKAGE_PREFIX}-libwinpthread"
          "${MINGW_PACKAGE_PREFIX}-llvm"
+         "${MINGW_PACKAGE_PREFIX}-openlibm"
          "${MINGW_PACKAGE_PREFIX}-polly"
-         "${MINGW_PACKAGE_PREFIX}-sleef")
-makedepends=("git"
-             cmake
-             "${MINGW_PACKAGE_PREFIX}-gcc"
-             patch make)
-source=("git://github.com/nacs-lab/libnacs")
+         "${MINGW_PACKAGE_PREFIX}-sleef"
+         "${MINGW_PACKAGE_PREFIX}-yaml-cpp"
+         "${MINGW_PACKAGE_PREFIX}-zeromq")
+makedepends=(git make
+             "${MINGW_PACKAGE_PREFIX}-cmake"
+             "${MINGW_PACKAGE_PREFIX}-gcc")
+source=("git://github.com/nacs-lab/libnacs#branch=seq")
 sha256sums=('SKIP')
 
 pkgver() {
@@ -41,10 +44,8 @@ build() {
   CXXFLAGS+=' -O3 -flto'
   LDFLAGS+=' -O3 -flto'
 
-  # Currently we need the msys version of cmake
-  # even though we are compiling a mingw64 library (I hope)
-  MSYSTEM=MSYS CC=${MINGW_PREFIX}/bin/gcc CXX=${MINGW_PREFIX}/bin/g++ \
-    /usr/bin/cmake .. \
+  CC=${MINGW_PREFIX}/bin/gcc CXX=${MINGW_PREFIX}/bin/g++ \
+    cmake .. -G 'MSYS Makefiles' \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX="${MINGW_PREFIX}" \
     -DENABLE_SIMD=On \
