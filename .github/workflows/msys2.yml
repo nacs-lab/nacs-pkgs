@@ -13,6 +13,7 @@ env:
 
 jobs:
   build-sleef:
+    name: Build Sleef
     runs-on: windows-latest
     strategy:
       fail-fast: false
@@ -43,3 +44,53 @@ jobs:
       with:
         name: mingw-w64-x86_64-sleef-git-packages
         path: ${{github.workspace}}/windows/mingw-w64-sleef-git/*.pkg.tar.*
+
+  build-libnacs:
+    name: Build libnacs
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+    needs: build-sleef
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW64
+        install: >-
+          git
+          make
+          patch
+          mingw-w64-x86_64-cmake
+          mingw-w64-x86_64-clang
+          mingw-w64-x86_64-toolchain
+          mingw-w64-x86_64-intel-tbb
+          mingw-w64-x86_64-libwinpthread
+          mingw-w64-x86_64-llvm
+          mingw-w64-x86_64-openlibm
+          mingw-w64-x86_64-polly
+          mingw-w64-x86_64-yaml-cpp
+          mingw-w64-x86_64-zeromq
+
+    - name: Download Sleef
+      uses: actions/download-artifact@v2
+      with:
+        name: mingw-w64-x86_64-sleef-git-packages
+        path: sleef-package
+
+    - name: Install Sleef
+      shell: msys2 {0}
+      run: |
+        pacman -U --noconfirm sleef-package/*.pkg.tar.*
+
+    - name: Build
+      shell: msys2 {0}
+      run: |
+        cd windows/mingw-w64-libnacs-git
+        MAKEFLAGS="-j$(nproc)" MINGW_ARCH=MINGW64 makepkg-mingw
+
+    - name: "Upload binaries"
+      uses: actions/upload-artifact@v2
+      with:
+        name: mingw-w64-x86_64-libnacs-git-packages
+        path: ${{github.workspace}}/windows/mingw-w64-libnacs-git/*.pkg.tar.*
