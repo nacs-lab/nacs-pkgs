@@ -14,6 +14,7 @@ provides=("${MINGW_PACKAGE_PREFIX}-libnacs")
 conflicts=("${MINGW_PACKAGE_PREFIX}-libnacs")
 options=('!strip')
 depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
+         "${MINGW_PACKAGE_PREFIX}-intel-tbb"
          "${MINGW_PACKAGE_PREFIX}-libwinpthread"
          "${MINGW_PACKAGE_PREFIX}-llvm"
          "${MINGW_PACKAGE_PREFIX}-openlibm"
