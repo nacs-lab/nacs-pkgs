@@ -19,11 +19,12 @@ depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
          "${MINGW_PACKAGE_PREFIX}-openlibm"
          "${MINGW_PACKAGE_PREFIX}-polly"
          "${MINGW_PACKAGE_PREFIX}-sleef"
+         "${MINGW_PACKAGE_PREFIX}-yaml-cpp"
          "${MINGW_PACKAGE_PREFIX}-zeromq")
 makedepends=(git make
              "${MINGW_PACKAGE_PREFIX}-cmake"
              "${MINGW_PACKAGE_PREFIX}-gcc")
-source=("git://github.com/nacs-lab/libnacs")
+source=("git://github.com/nacs-lab/libnacs#branch=seq")
 sha256sums=('SKIP')
 
 pkgver() {
