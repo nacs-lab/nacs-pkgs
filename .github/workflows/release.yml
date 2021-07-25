@@ -1,0 +1,36 @@
+name: Release
+
+on:
+  push:
+    tags:
+    - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Download MSYS2 packages
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        workflow: msys2.yml
+        workflow_conclusion: success
+        branch: master
+
+    - name: Install dependencies
+      run: sudo apt-get install zip
+
+    - name: Create msys2 package tarball
+      run: |
+        mkdir msys2-packages
+        mv mingw-w64-x86_64-sleef-git-packages/*.pkg.tar.* msys2-packages/
+        mv mingw-w64-x86_64-libnacs-git-packages/*.pkg.tar.* msys2-packages/
+        zip -r msys2-packages.zip msys2-packages/
+
+    - name: Tag release
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: msys2-packages.zip
+        body: Packages
+        token: ${{ secrets.GITHUB_TOKEN }}
