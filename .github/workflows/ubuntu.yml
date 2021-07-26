@@ -10,9 +10,15 @@ on:
 jobs:
   build-libnacs:
     name: Build libnacs
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-${{matrix.UBUNTU_VER}}
     strategy:
       fail-fast: false
+      matrix:
+        include:
+          - UBUNTU_VER: 18.04
+            LLVM_VER: 10
+          - UBUNTU_VER: 20.04
+            LLVM_VER: 11
     steps:
     - uses: actions/checkout@v2
       with:
@@ -20,10 +26,14 @@ jobs:
         ref: seq
 
     - name: Install dependencies
-      run: sudo apt-get install libopenlibm-dev libsleef-dev libzmq3-dev libyaml-cpp-dev libtbb-dev llvm-11-dev
+      run: sudo apt-get install libopenlibm-dev ${{matrix.UBUNTU_VER != '18.04' && 'libsleef-dev' || ''}} libzmq3-dev libyaml-cpp-dev libtbb-dev llvm-${{matrix.LLVM_VER}}-dev
+
+    - name: Fix zmq include path
+      if: ${{matrix.UBUNTU_VER == '18.04'}} # zmq returns a non-existing include path
+      run: sudo mkdir -p /usr/lib/x86_64-linux-gnu/pgm-5.2/include
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release -DENABLE_SIMD=On -DENABLE_LLVM=On -DENABLE_TESTING=Off
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release -DENABLE_SIMD=${{matrix.UBUNTU_VER != '18.04' && 'On' || 'Off'}} -DENABLE_LLVM=On -DENABLE_TESTING=Off
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Release -j $(nproc)
@@ -36,5 +46,5 @@ jobs:
     - name: "Upload binaries"
       uses: actions/upload-artifact@v2
       with:
-        name: libnacs-git-package
+        name: libnacs-git-package-ubuntu-${{matrix.UBUNTU_VER}}
         path: ${{github.workspace}}/build/libnacs*.deb
