@@ -18,8 +18,15 @@ jobs:
         workflow_conclusion: success
         branch: master
 
+    - name: Download Ubuntu packages
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        workflow: ubuntu.yml
+        workflow_conclusion: success
+        branch: master
+
     - name: Install dependencies
-      run: sudo apt-get install zip
+      run: sudo apt-get install tar zip zstd
 
     - name: Create msys2 package tarball
       run: |
@@ -28,9 +35,21 @@ jobs:
         mv mingw-w64-x86_64-libnacs-git-packages/*.pkg.tar.* msys2-packages/
         zip -r msys2-packages.zip msys2-packages/
 
+    - name: Create ubuntu package tarball
+      run: |
+        mkdir ubuntu-18.04-packages
+        mv libnacs-git-package-ubuntu-18.04/*.deb ubuntu-18.04-packages/
+        mv python-libnacs-git-package-ubuntu-18.04/*.deb ubuntu-18.04-packages/
+        tar -cvf ubuntu-18.04-packages.tar.zst --zstd ubuntu-18.04-packages/
+
+        mkdir ubuntu-20.04-packages
+        mv libnacs-git-package-ubuntu-20.04/*.deb ubuntu-20.04-packages/
+        mv python-libnacs-git-package-ubuntu-20.04/*.deb ubuntu-20.04-packages/
+        tar -cvf ubuntu-20.04-packages.tar.zst --zstd ubuntu-20.04-packages/
+
     - name: Tag release
       uses: ncipollo/release-action@v1
       with:
-        artifacts: msys2-packages.zip
+        artifacts: msys2-packages.zip,ubuntu-18.04-packages.tar.zst,ubuntu-20.04-packages.tar.zst
         body: Packages
         token: ${{ secrets.GITHUB_TOKEN }}
