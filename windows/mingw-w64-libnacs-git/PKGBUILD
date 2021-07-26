@@ -44,9 +44,9 @@ build() {
   CXXFLAGS+=' -O3 -flto'
   LDFLAGS+=' -O3 -flto'
 
-  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
   CC=${MINGW_PREFIX}/bin/gcc CXX=${MINGW_PREFIX}/bin/g++ \
-    cmake .. -G 'MSYS Makefiles' \
+    MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" "${MINGW_PREFIX}"/bin/cmake .. \
+    -G 'MSYS Makefiles' \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX="${MINGW_PREFIX}" \
     -DENABLE_SIMD=On \
