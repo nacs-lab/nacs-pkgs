@@ -23,7 +23,7 @@ jobs:
       run: sudo apt-get install libopenlibm-dev libsleef-dev libzmq3-dev libyaml-cpp-dev libtbb-dev llvm-11-dev
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release -DENABLE_SIMD=On -DENABLE_LLVM=On
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release -DENABLE_SIMD=On -DENABLE_LLVM=On -DENABLE_TESTING=Off
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Release -j $(nproc)
