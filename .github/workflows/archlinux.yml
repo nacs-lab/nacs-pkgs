@@ -1,0 +1,114 @@
+name: ArchLinux
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-libnacs:
+    name: Build libnacs
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    container:
+      image: archlinux:base-devel
+      options: --privileged
+      volumes:
+        - /sys/fs/cgroup:/sys/fs/cgroup
+    steps:
+      - uses: actions/checkout@v1
+      - name: Initialize ArchLinux
+        run: |
+          bash github/setup-archlinux.sh
+          chown -R user .
+      - name: Setup ArchLinux CN repo
+        # For sleef
+        run: |
+          bash github/setup-archlinux-cn.sh
+      - name: Create package
+        run: |
+          cd arch/libnacs-git
+          sudo archlinuxcn-x86_64-build -- -U user
+          rm -v *.log
+
+      - name: "Upload binaries"
+        uses: actions/upload-artifact@v2
+        with:
+          name: libnacs-git-package-archlinux
+          path: ${{github.workspace}}/arch/libnacs-git/*.pkg.*
+
+  build-python-libnacs:
+    name: Build python-libnacs
+    needs: build-libnacs
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    container:
+      image: archlinux:base-devel
+      options: --privileged
+      volumes:
+        - /sys/fs/cgroup:/sys/fs/cgroup
+    steps:
+      - uses: actions/checkout@v1
+      - name: Initialize ArchLinux
+        run: |
+          bash github/setup-archlinux.sh
+          chown -R user .
+      - name: Setup ArchLinux CN repo
+        # For sleef
+        run: |
+          bash github/setup-archlinux-cn.sh
+
+      - name: Download libnacs
+        uses: actions/download-artifact@v2
+        with:
+          name: libnacs-git-package-archlinux
+          path: libnacs-package
+
+      - name: Create package
+        run: |
+          cd arch/python-libnacs-git
+          deps_args=()
+          for f in ../../libnacs-package/*.pkg.*; do
+              echo "Adding dependency: $f"
+              deps_args=("${deps_args[@]}" -I "$f")
+          done
+          sudo archlinuxcn-x86_64-build -- -U user "${deps_args[@]}"
+          rm -v *.log
+
+      - name: "Upload binaries"
+        uses: actions/upload-artifact@v2
+        with:
+          name: python-libnacs-git-package-archlinux
+          path: ${{github.workspace}}/arch/python-libnacs-git/*.pkg.*
+
+  build-libspcm:
+    name: Build libspcm
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    container:
+      image: archlinux:base-devel
+      options: --privileged
+      volumes:
+        - /sys/fs/cgroup:/sys/fs/cgroup
+    steps:
+      - uses: actions/checkout@v1
+      - name: Initialize ArchLinux
+        run: |
+          bash github/setup-archlinux.sh
+          chown -R user .
+      - name: Create package
+        run: |
+          cd arch/libspcm
+          sudo extra-x86_64-build -- -U user
+          rm -v *.log
+
+      - name: "Upload binaries"
+        uses: actions/upload-artifact@v2
+        with:
+          name: libspcm-package-archlinux
+          path: ${{github.workspace}}/arch/libspcm/*.pkg.*
