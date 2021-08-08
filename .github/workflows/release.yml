@@ -11,6 +11,13 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Download ArchLinux packages
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        workflow: archlinux.yml
+        workflow_conclusion: success
+        branch: master
+
     - name: Download MSYS2 packages
       uses: dawidd6/action-download-artifact@v2
       with:
@@ -27,6 +34,14 @@ jobs:
 
     - name: Install dependencies
       run: sudo apt-get install tar zip zstd
+
+    - name: Create archlinux package tarball
+      run: |
+        mkdir archlinux-packages
+        mv libnacs-git-package-archlinux/*.pkg.tar.* archlinux-packages/
+        mv python-libnacs-git-package-archlinux/*.pkg.tar.* archlinux-packages/
+        mv libspcm-package-archlinux/*.pkg.tar.* archlinux-packages/
+        tar -cvf archlinux-packages.tar.zst --zstd archlinux-packages/
 
     - name: Create msys2 package tarball
       run: |
@@ -50,6 +65,6 @@ jobs:
     - name: Tag release
       uses: ncipollo/release-action@v1
       with:
-        artifacts: msys2-packages.zip,ubuntu-18.04-packages.tar.zst,ubuntu-20.04-packages.tar.zst
+        artifacts: archlinux-packages.tar.zst,msys2-packages.zip,ubuntu-18.04-packages.tar.zst,ubuntu-20.04-packages.tar.zst
         body: Packages
         token: ${{ secrets.GITHUB_TOKEN }}
