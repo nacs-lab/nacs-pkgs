@@ -6,8 +6,8 @@ arch=(x86_64 armv7h aarch64)
 url='http://github.com/nacs-lab/libnacs'
 license=('LGPL')
 options=('!strip' 'debug')
-depends=(llvm-libs)
-makedepends=(cmake git llvm openlibm)
+depends=(intel-tbb llvm-libs openlibm sleef yaml-cpp zeromq)
+makedepends=(cmake git llvm)
 source=("git://github.com/nacs-lab/libnacs#branch=seq")
 md5sums=('SKIP')
 
