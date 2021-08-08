@@ -1,5 +1,5 @@
 pkgname=libnacs-git
-pkgver=1062.2313392
+pkgver=1067.94386de
 pkgrel=1
 pkgdesc='Library used for the NaCs control system'
 arch=(x86_64 armv7h aarch64)
@@ -34,6 +34,13 @@ build() {
         -DENABLE_KNACS=Off \
         -DENABLE_LLVM=On
   make
+}
+
+check() {
+  cd libnacs/build
+
+  tools/nacs-cpudump
+  ctest -E /excluded --output-on-failure -j $(nproc)
 }
 
 package() {
