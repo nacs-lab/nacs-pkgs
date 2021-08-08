@@ -1,7 +1,7 @@
 # Maintainer: Yichao Yu <yyc1992@gmail.com>
 pkgname=libspcm
-pkgver=509.16219.0
-_pkgver=v509b16219_0
+pkgver=525.17926
+_pkgver=v525b17926
 pkgrel=1
 pkgdesc="Userspace driver libraies for the Spectrum Instrumentation AWG"
 arch=('x86_64')
@@ -9,8 +9,8 @@ url="https://spectrum-instrumentation.com"
 license=('custom')
 source=(https://spectrum-instrumentation.com/sites/default/files/download/spcm_linux_libs_${_pkgver}.tgz
         https://spectrum-instrumentation.com/sites/default/files/download/spcm_examples.tgz)
-sha256sums=('cb5fd85e9e388aeea128ab3d4eb5bb4dfc51ce5c3bb14cb5cbb7f3f92560b043'
-            'f180ffcc677797fe9bdb0a9ddf88c9eb815a1d96dff33cc00394c52d4d6877dd')
+sha256sums=('4cce37a634e6fc39eccaaf6595fd8825739bf26b7a6fcd12083f1c7f55a0f278'
+            '4eb50f755c5f28c964c976bc38aa8de097610f85e7e2dc3088152010eaed9dc8')
 
 package() {
   install -dm755 "$pkgdir"/usr/{lib,include/spcm}
