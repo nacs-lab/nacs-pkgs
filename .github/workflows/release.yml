@@ -44,7 +44,7 @@ jobs:
     - name: Create msys2 package tarball
       run: |
         mkdir msys2-packages
-        mv mingw-w64-x86_64-*-packages/*.pkg.tar.* msys2-packages/
+        mv mingw-*-package-msys2/*.pkg.tar.* msys2-packages/
         zip -r msys2-packages.zip msys2-packages/
 
     - name: Create ubuntu package tarball
