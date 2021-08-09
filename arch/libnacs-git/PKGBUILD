@@ -21,7 +21,7 @@ build() {
   cd libnacs
 
   CFLAGS+=' -O3 -flto'
-  CXXFLAGS+=' -O3 -flto'
+  CXXFLAGS+=' -O3 -flto -U_GLIBCXX_ASSERTIONS'
   LDFLAGS+=' -O3 -flto'
 
   CFLAGS+=" -ffile-prefix-map=${srcdir}=${DBGSRCDIR:-/usr/src/debug}"
