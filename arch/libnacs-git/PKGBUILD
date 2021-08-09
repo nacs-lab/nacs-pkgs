@@ -24,6 +24,9 @@ build() {
   CXXFLAGS+=' -O3 -flto'
   LDFLAGS+=' -O3 -flto'
 
+  CFLAGS+=" -ffile-prefix-map=${srcdir}=${DBGSRCDIR:-/usr/src/debug}"
+  CXXFLAGS+=" -ffile-prefix-map=${srcdir}=${DBGSRCDIR:-/usr/src/debug}"
+
   mkdir -p build
   cd build
   cmake .. \
