@@ -31,7 +31,7 @@ jobs:
       - name: Create package
         run: |
           cd arch/libnacs-git
-          sudo archlinuxcn-x86_64-build -- -U user
+          MAKEFLAGS="-j$(nproc)" archlinuxcn-x86_64-build -- -U user
           rm -v *.log
 
       - name: "Upload binaries"
@@ -76,7 +76,7 @@ jobs:
               echo "Adding dependency: $f"
               deps_args=("${deps_args[@]}" -I "$f")
           done
-          sudo archlinuxcn-x86_64-build -- -U user "${deps_args[@]}"
+          MAKEFLAGS="-j$(nproc)" archlinuxcn-x86_64-build -- -U user "${deps_args[@]}"
           rm -v *.log
 
       - name: "Upload binaries"
@@ -121,7 +121,7 @@ jobs:
               echo "Adding dependency: $f"
               deps_args=("${deps_args[@]}" -I "$f")
           done
-          sudo archlinuxcn-x86_64-build -- -U user "${deps_args[@]}"
+          MAKEFLAGS="-j$(nproc)" archlinuxcn-x86_64-build -- -U user "${deps_args[@]}"
           rm -v *.log
 
       - name: "Upload binaries"
@@ -149,7 +149,7 @@ jobs:
       - name: Create package
         run: |
           cd arch/libspcm
-          sudo extra-x86_64-build -- -U user
+          MAKEFLAGS="-j$(nproc)" extra-x86_64-build -- -U user
           rm -v *.log
 
       - name: "Upload binaries"
