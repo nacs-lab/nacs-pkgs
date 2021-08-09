@@ -32,16 +32,17 @@ build() {
         -DCMAKE_INSTALL_BINDIR=/usr/bin -DCMAKE_INSTALL_DATADIR=/usr/share \
         -DCMAKE_INSTALL_INCLUDEDIR=/usr/include \
         -DENABLE_KNACS=Off \
-        -DENABLE_LLVM=On
+        -DENABLE_LLVM=On \
+        -DENABLE_TESTING=Off
   make
 }
 
-check() {
-  cd libnacs/build
+# check() {
+#   cd libnacs/build
 
-  tools/nacs-cpudump
-  ctest -E /excluded --output-on-failure -j $(nproc)
-}
+#   tools/nacs-cpudump
+#   ctest -E /excluded --output-on-failure -j $(nproc)
+# }
 
 package() {
   optdepends=(openlibm)
