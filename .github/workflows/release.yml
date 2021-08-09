@@ -38,28 +38,23 @@ jobs:
     - name: Create archlinux package tarball
       run: |
         mkdir archlinux-packages
-        mv libnacs-git-package-archlinux/*.pkg.tar.* archlinux-packages/
-        mv python-libnacs-git-package-archlinux/*.pkg.tar.* archlinux-packages/
-        mv libspcm-package-archlinux/*.pkg.tar.* archlinux-packages/
+        mv *-package-archlinux/*.pkg.tar.* archlinux-packages/
         tar -cvf archlinux-packages.tar.zst --zstd archlinux-packages/
 
     - name: Create msys2 package tarball
       run: |
         mkdir msys2-packages
-        mv mingw-w64-x86_64-sleef-git-packages/*.pkg.tar.* msys2-packages/
-        mv mingw-w64-x86_64-libnacs-git-packages/*.pkg.tar.* msys2-packages/
+        mv mingw-w64-x86_64-*-packages/*.pkg.tar.* msys2-packages/
         zip -r msys2-packages.zip msys2-packages/
 
     - name: Create ubuntu package tarball
       run: |
         mkdir ubuntu-18.04-packages
-        mv libnacs-git-package-ubuntu-18.04/*.deb ubuntu-18.04-packages/
-        mv python-libnacs-git-package-ubuntu-18.04/*.deb ubuntu-18.04-packages/
+        mv *-package-ubuntu-18.04/*.deb ubuntu-18.04-packages/
         tar -cvf ubuntu-18.04-packages.tar.zst --zstd ubuntu-18.04-packages/
 
         mkdir ubuntu-20.04-packages
-        mv libnacs-git-package-ubuntu-20.04/*.deb ubuntu-20.04-packages/
-        mv python-libnacs-git-package-ubuntu-20.04/*.deb ubuntu-20.04-packages/
+        mv *-package-ubuntu-20.04/*.deb ubuntu-20.04-packages/
         tar -cvf ubuntu-20.04-packages.tar.zst --zstd ubuntu-20.04-packages/
 
     - name: Tag release
