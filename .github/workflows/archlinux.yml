@@ -85,6 +85,51 @@ jobs:
           name: python-libnacs-git-package-archlinux
           path: ${{github.workspace}}/arch/python-libnacs-git/*.pkg.*
 
+  build-molecube2:
+    name: Build molecube2
+    needs: build-libnacs
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    container:
+      image: archlinux:base-devel
+      options: --privileged
+      volumes:
+        - /sys/fs/cgroup:/sys/fs/cgroup
+    steps:
+      - uses: actions/checkout@v1
+      - name: Initialize ArchLinux
+        run: |
+          bash github/setup-archlinux.sh
+          chown -R user .
+      - name: Setup ArchLinux CN repo
+        # For sleef
+        run: |
+          bash github/setup-archlinux-cn.sh
+
+      - name: Download libnacs
+        uses: actions/download-artifact@v2
+        with:
+          name: libnacs-git-package-archlinux
+          path: libnacs-package
+
+      - name: Create package
+        run: |
+          cd arch/molecube2-git
+          deps_args=()
+          for f in ../../libnacs-package/*.pkg.*; do
+              echo "Adding dependency: $f"
+              deps_args=("${deps_args[@]}" -I "$f")
+          done
+          sudo archlinuxcn-x86_64-build -- -U user "${deps_args[@]}"
+          rm -v *.log
+
+      - name: "Upload binaries"
+        uses: actions/upload-artifact@v2
+        with:
+          name: molecube2-git-package-archlinux
+          path: ${{github.workspace}}/arch/molecube2-git/*.pkg.*
+
   build-libspcm:
     name: Build libspcm
     runs-on: ubuntu-latest
