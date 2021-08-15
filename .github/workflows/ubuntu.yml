@@ -19,6 +19,10 @@ jobs:
             LLVM_VER: 10
           - UBUNTU_VER: 20.04
             LLVM_VER: 11
+
+    env:
+      DEB_REL: 0ubuntu1
+
     steps:
     - uses: actions/checkout@v2
       with:
@@ -33,7 +37,7 @@ jobs:
       run: sudo mkdir -p /usr/lib/x86_64-linux-gnu/pgm-5.2/include
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release -DENABLE_SIMD=${{matrix.UBUNTU_VER != '18.04' && 'On' || 'Off'}} -DENABLE_LLVM=On -DENABLE_TESTING=Off
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release -DENABLE_SIMD=${{matrix.UBUNTU_VER != '18.04' && 'On' || 'Off'}} -DENABLE_LLVM=On -DENABLE_TESTING=Off -DCPACK_DEBIAN_PACKAGE_RELEASE=${{env.DEB_REL}}
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Release -j $(nproc)
@@ -61,6 +65,10 @@ jobs:
             LLVM_VER: 10
           - UBUNTU_VER: 20.04
             LLVM_VER: 11
+
+    env:
+      DEB_REL: 0ubuntu1
+
     steps:
     - uses: actions/checkout@v2
       with:
@@ -80,7 +88,7 @@ jobs:
       run: sudo dpkg -i libnacs-package/*.deb
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=/usr/bin/python3
+      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=/usr/bin/python3 -DCPACK_DEBIAN_PACKAGE_RELEASE=${{env.DEB_REL}}
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config Release -j $(nproc)
