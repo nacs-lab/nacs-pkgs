@@ -130,6 +130,51 @@ jobs:
           name: molecube2-git-package-archlinux
           path: ${{github.workspace}}/arch/molecube2-git/*.pkg.*
 
+  build-labctrl-node:
+    name: Build labctrl-node
+    needs: build-libnacs
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    container:
+      image: archlinux:base-devel
+      options: --privileged
+      volumes:
+        - /sys/fs/cgroup:/sys/fs/cgroup
+    steps:
+      - uses: actions/checkout@v1
+      - name: Initialize ArchLinux
+        run: |
+          bash github/setup-archlinux.sh
+          chown -R user .
+      - name: Setup ArchLinux CN repo
+        # For sleef
+        run: |
+          bash github/setup-archlinux-cn.sh
+
+      - name: Download libnacs
+        uses: actions/download-artifact@v2
+        with:
+          name: libnacs-git-package-archlinux
+          path: libnacs-package
+
+      - name: Create package
+        run: |
+          cd arch/labctrl-node-git
+          deps_args=()
+          for f in ../../libnacs-package/*.pkg.*; do
+              echo "Adding dependency: $f"
+              deps_args=("${deps_args[@]}" -I "$f")
+          done
+          MAKEFLAGS="-j$(nproc)" archlinuxcn-x86_64-build -- -U user "${deps_args[@]}"
+          rm -v *.log
+
+      - name: "Upload binaries"
+        uses: actions/upload-artifact@v2
+        with:
+          name: labctrl-node-git-package-archlinux
+          path: ${{github.workspace}}/arch/labctrl-node-git/*.pkg.*
+
   build-libspcm:
     name: Build libspcm
     runs-on: ubuntu-latest

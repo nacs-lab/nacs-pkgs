@@ -1,0 +1,47 @@
+pkgname=labctrl-node-git
+pkgver=224.e694c0f
+pkgrel=1
+pkgdesc='NaCs Control Web Interface'
+arch=(x86_64 armv7h aarch64)
+url='http://github.com/nacs-lab/labctrl-node'
+license=('LGPL')
+options=('!strip' 'debug')
+makedepends=(cmake git nodejs)
+depends=(libnacs npm sqlite zeromq)
+source=("git://github.com/nacs-lab/labctrl-node#branch=seq")
+md5sums=('SKIP')
+
+pkgver() {
+  cd labctrl-node
+
+  echo "$(git rev-list --count HEAD).$(git rev-parse --short HEAD)"
+}
+
+build() {
+  cd labctrl-node
+
+  CFLAGS+=' -O3 -flto'
+  CXXFLAGS+=' -O3 -flto'
+  LDFLAGS+=' -O3 -flto'
+
+  CFLAGS+=" -ffile-prefix-map=${srcdir}=${DBGSRCDIR:-/usr/src/debug}"
+  CXXFLAGS+=" -ffile-prefix-map=${srcdir}=${DBGSRCDIR:-/usr/src/debug}"
+
+  mkdir -p build
+  cd build
+  cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release \
+        -DSYSTEMD_TMPFILES_DIR='/usr/lib/tmpfiles.d' \
+        -DSYSTEMD_SERVICE_DIR='/usr/lib/systemd/system' \
+        -DSYSTEMD_SYSUSERS_DIR='/usr/lib/sysusers.d'
+  make
+  make deploy
+}
+
+package() {
+  cd labctrl-node/build
+  _nodever=$(node --version | sed -ne 's/^v\([0-9]*\)\..*/\1/p')
+  _nodever_next=$((_nodever + 1))
+  depends+=("nodejs>=$_nodever" "nodejs<$_nodever_next")
+
+  make install DESTDIR="${pkgdir}"
+}
