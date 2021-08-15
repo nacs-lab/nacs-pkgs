@@ -1,0 +1,3 @@
+post_remove() {
+    rm /boot/uramdisk.image.gz
+}
