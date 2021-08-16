@@ -1,0 +1,50 @@
+pkgname=molecube2-git
+pkgver=295.36db3e2
+pkgrel=1
+pkgdesc='NaCs control'
+arch=('armv7h')
+url='harvard.edu'
+license=('LGPL')
+options=('!strip' 'debug')
+makedepends=('cmake' "${CHOST}-gcc" 'arch-arm')
+source=("git://github.com/nacs-lab/molecube2#branch=seq")
+md5sums=('SKIP')
+
+pkgver() {
+  cd molecube2
+
+  echo "$(git rev-list --count HEAD).$(git rev-parse --short HEAD)"
+}
+
+build() {
+  cd molecube2
+
+  CFLAGS=${CFLAGS/-fvar-tracking-assignments/}
+  CXXFLAGS=${CXXFLAGS/-fvar-tracking-assignments/}
+
+  CFLAGS+=' -O2 -flto'
+  CXXFLAGS+=' -O2 -flto'
+  LDFLAGS+=' -O2 -flto'
+
+  CFLAGS+=" -ffile-prefix-map=${srcdir}=${DBGSRCDIR:-/usr/src/debug}"
+  CXXFLAGS+=" -ffile-prefix-map=${srcdir}=${DBGSRCDIR:-/usr/src/debug}"
+
+  mkdir -p build
+  cd build
+  cmake .. -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_TOOLCHAIN_FILE=/usr/share/cmake/Modules/ARMv7hf.cmake \
+        -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=lib
+  make
+}
+
+package() {
+  depends=('glibc' 'libnacs' 'zeromq' 'yaml-cpp')
+  cd molecube2/build
+
+  make install DESTDIR="${pkgdir}"
+
+  # mkdir -p "${pkgdir}/usr/src/debug/molecube2/"{lib,server}
+
+  # cp ../lib/*.{h,cpp} "${pkgdir}/usr/src/debug/molecube2/lib"
+  # cp ../server/*.cpp "${pkgdir}/usr/src/debug/molecube2/server"
+}
