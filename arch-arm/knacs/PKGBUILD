@@ -47,9 +47,12 @@ build() {
     echo "Cannot find kernel module directory in ${SYSROOT}/usr/lib/modules/" >&2
     exit
   fi
+  krel=${kver%-${_ker_ver_suffix}}
+  krel=${krel##*-}
 
   mkdir -p build
   cd build
+  echo "${krel}" > .kernel_pkgrel
   cmake .. -DCMAKE_TOOLCHAIN_FILE=/usr/share/cmake/Modules/ARMv7hf.cmake \
         -DCROSS_COMPILE=${CROSS_COMPILE} \
         -DCMAKE_INSTALL_PREFIX=/usr \
@@ -62,6 +65,9 @@ build() {
 
 package() {
   cd knacs/build
+  # Fool the makepkg pre-scanner since it'll otherwise complain about wrong depends
+  _depends=("linux-nacs=${_ker_ver_prefix}-$(cat .kernel_pkgrel)")
+  depends=("${_depends[@]}")
 
   make install DESTDIR="${pkgdir}"
 

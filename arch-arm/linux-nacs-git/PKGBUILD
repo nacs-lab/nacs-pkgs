@@ -14,7 +14,7 @@ _desc="NaCs Lab"
 _kernelver=4.19.0
 _srcname=linux-xlnx
 
-pkgver=2019.2.01
+pkgver=${_kernelver}
 pkgrel=3
 arch=('armv7h')
 url="https://github.com/Xilinx/linux-xlnx"
@@ -37,12 +37,6 @@ md5sums=('SKIP'
          '05939f15b9b454aaebd696395a0e3d8f'
          '9a1389991d4c80af237a5481dd043ace'
          'd2636ec5b5ef49e68ed068b1b2dd7c66')
-
-pkgver() {
-  cd "${srcdir}/${_srcname}"
-
-  git describe | sed -e 's/^[^0-9]*//' -e 's/-/.0./' -e 's/-/./g'
-}
 
 prepare() {
   cd ${_srcname}
@@ -113,7 +107,7 @@ _package() {
   pkgdesc="The Linux Kernel and modules - ${_desc}"
   depends=('coreutils' 'linux-firmware' 'kmod' 'mkinitcpio>=0.7' 'uboot-zc70x')
   optdepends=('crda: to set the correct wireless channels of your country')
-  provides=('kernel26' "linux=${pkgver}")
+  provides=('kernel26' "linux=${pkgver}" "linux-nacs=${pkgver}-${pkgrel}")
   backup=("etc/mkinitcpio.d/${pkgbase}.preset")
   conflicts=('linux')
   install=linux-nacs.install
@@ -171,7 +165,7 @@ _package() {
 
 _package-headers() {
   pkgdesc="Header files and scripts for building modules for linux kernel - ${_desc}"
-  provides=("linux-headers=${pkgver}")
+  provides=("linux-headers=${pkgver}" "linux-nacs-headers=${pkgver}-${pkgrel}")
   conflicts=('linux-headers')
 
   export MAKEFLAGS+=' ARCH=arm LOCALVERSION='
