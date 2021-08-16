@@ -203,6 +203,7 @@ jobs:
           cd arch-arm/libnacs-git
           pacman -S --noconfirm cmake
           pacman-armv7 -U --noconfirm ../../linux-nacs-package/linux-nacs-* ../../knacs-git-package/knacs-git-* ../../uboot-zc70x-git-package/uboot-zc70x-git-*
+          pacman-armv7 -S --noconfirm openlibm zeromq
           MAKEFLAGS="-j$(nproc)" su user -p -c makepkg-armv7
 
       - name: "Upload binaries"
@@ -261,6 +262,7 @@ jobs:
           cd arch-arm/molecube2-git
           pacman -S --noconfirm cmake
           pacman-armv7 -U --noconfirm ../../linux-nacs-package/linux-nacs-* ../../knacs-git-package/knacs-git-* ../../uboot-zc70x-git-package/uboot-zc70x-git-* ../../libnacs-git-package/libnacs-git-*
+          pacman-armv7 -S --noconfirm zeromq yaml-cpp
           MAKEFLAGS="-j$(nproc)" su user -p -c makepkg-armv7
 
       - name: "Upload binaries"

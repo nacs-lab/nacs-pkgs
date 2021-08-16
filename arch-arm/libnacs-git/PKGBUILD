@@ -1,5 +1,5 @@
 pkgname=libnacs-git
-pkgver=1047.cafeb4a
+pkgver=1074.7e56ba2
 pkgrel=1
 pkgdesc='Library used for the NaCs control system'
 arch=('armv7h' 'aarch64')
@@ -54,7 +54,7 @@ build() {
 }
 
 package() {
-  optdepends=(knacs)
+  optdepends=(knacs openlibm zeromq)
   cd libnacs/build-${CARCH}
 
   make install DESTDIR="${pkgdir}"
