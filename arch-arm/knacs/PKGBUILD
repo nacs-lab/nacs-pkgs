@@ -1,11 +1,12 @@
 #
 
 pkgname=knacs
-_ker_ver=4.19.0-2-nacs
+_ker_ver_prefix=4.19.0
+_ker_ver_suffix=nacs
 _extramodules=extramodules-4.19-nacs
 pkgver=30.c5f09b1
 epoch=1
-pkgrel=1
+pkgrel=2
 pkgdesc='Kernel driver for the NaCs control system'
 arch=('armv7h')
 url='http://github.com/nacs-lab/knacs'
@@ -32,13 +33,28 @@ build() {
   CFLAGS=${CFLAGS/-march=armv7-a/}
   CXXFLAGS=${CXXFLAGS/-march=armv7-a/}
 
+  kdirs=("${SYSROOT}/usr/lib/modules/"${_ker_ver_prefix}-*-${_ker_ver_suffix})
+  if [[ ${#kdirs[@]} = 0 ]]; then
+    echo "Cannot find kernel module directory in ${SYSROOT}/usr/lib/modules/" >&2
+    exit
+  elif [[ ${#kdirs[@]} != 1 ]]; then
+    echo "Find multiple kernel module directory in ${SYSROOT}/usr/lib/modules/" >&2
+    exit
+  fi
+  kdir=${kdirs[0]}
+  kver=${kdir##*/}
+  if [[ "$kver" = "${_ker_ver_prefix}-*-${_ker_ver_suffix}" ]]; then
+    echo "Cannot find kernel module directory in ${SYSROOT}/usr/lib/modules/" >&2
+    exit
+  fi
+
   mkdir -p build
   cd build
   cmake .. -DCMAKE_TOOLCHAIN_FILE=/usr/share/cmake/Modules/ARMv7hf.cmake \
         -DCROSS_COMPILE=${CROSS_COMPILE} \
         -DCMAKE_INSTALL_PREFIX=/usr \
-        -DKDIR=${SYSROOT}/usr/lib/modules/${_ker_ver}/build \
-        -DKERNEL_VER=${_ker_ver} \
+        -DKDIR=${kdir}/build \
+        -DKERNEL_VER=${kver} \
         -DEXTRAMODULES_DIR=/usr/lib/modules/${_extramodules}
 
   make
