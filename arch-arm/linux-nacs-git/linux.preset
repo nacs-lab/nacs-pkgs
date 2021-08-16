@@ -1,0 +1,10 @@
+# mkinitcpio preset file for the '%PKGBASE%' package
+
+ALL_config="/etc/mkinitcpio.conf"
+ALL_kver="%KERNVER%"
+
+PRESETS=('fallback')
+
+#fallback_config="/etc/mkinitcpio.conf"
+fallback_image="/boot/ramdisk.image.gz"
+fallback_options="-S autodetect"
