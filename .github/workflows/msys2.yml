@@ -10,6 +10,7 @@ on:
 env:
   CC: /mingw64/bin/gcc
   CXX: /mingw64/bin/g++
+  PACKAGER: "Ni Lab <niharvardlab@gmail.com>"
 
 jobs:
   build-sleef:

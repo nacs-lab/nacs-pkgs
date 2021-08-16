@@ -7,6 +7,9 @@ on:
   pull_request:
     branches: [ master ]
 
+env:
+  PACKAGER: "Ni Lab <niharvardlab@gmail.com>"
+
 jobs:
   build-libnacs:
     name: Build libnacs
