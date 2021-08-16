@@ -18,6 +18,13 @@ jobs:
         workflow_conclusion: success
         branch: master
 
+    - name: Download ArchLinuxARM packages
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        workflow: archlinux-arm.yml
+        workflow_conclusion: success
+        branch: master
+
     - name: Download MSYS2 packages
       uses: dawidd6/action-download-artifact@v2
       with:
@@ -40,6 +47,12 @@ jobs:
         mkdir archlinux-packages
         mv *-package-archlinux/*.pkg.tar.* archlinux-packages/
         tar -cvf archlinux-packages.tar.zst --zstd archlinux-packages/
+
+    - name: Create archlinux-arm package tarball
+      run: |
+        mkdir archlinux-arm-packages
+        mv *-package-archlinux-arm/*.pkg.tar.* archlinux-arm-packages/
+        tar -cvf archlinux-arm-packages.tar.zst --zstd archlinux-arm-packages/
 
     - name: Create msys2 package tarball
       run: |
