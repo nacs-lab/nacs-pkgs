@@ -1,0 +1,61 @@
+pkgname=libnacs-git
+pkgver=1047.cafeb4a
+pkgrel=1
+pkgdesc='Library used for the NaCs control system'
+arch=('armv7h' 'aarch64')
+url='http://github.com/nacs-lab/libnacs'
+license=('LGPL')
+options=('!strip' 'debug')
+makedepends=('cmake' 'git' "${CHOST}-gcc" 'arch-arm')
+provides=(libnacs)
+conflicts=(libnacs)
+source=("git://github.com/nacs-lab/libnacs#branch=seq")
+md5sums=('SKIP')
+
+if [[ $CARCH == aarch64 ]]; then
+  depends+=(llvm-libs)
+fi
+
+pkgver() {
+  cd libnacs
+
+  echo "$(git rev-list --count HEAD).$(git rev-parse --short HEAD)"
+}
+
+build() {
+  cd libnacs
+
+  CFLAGS=${CFLAGS/-fvar-tracking-assignments/}
+  CXXFLAGS=${CXXFLAGS/-fvar-tracking-assignments/}
+
+  if [[ $CARCH == armv7h ]]; then
+    CFLAGS=${CFLAGS/-march=armv7-a/}
+    CXXFLAGS=${CXXFLAGS/-march=armv7-a/}
+    cmake_args=(-DCMAKE_TOOLCHAIN_FILE=/usr/share/cmake/Modules/ARMv7hf.cmake
+                -DENABLE_KNACS=On)
+  else
+    cmake_args=(-DCMAKE_TOOLCHAIN_FILE=/usr/share/cmake/Modules/ARMv8.cmake
+                -DENABLE_LLVM=On)
+  fi
+
+  CFLAGS+=' -O3 -flto'
+  CXXFLAGS+=' -O3 -flto'
+  LDFLAGS+=' -O3 -flto'
+
+  CFLAGS+=" -ffile-prefix-map=${srcdir}=${DBGSRCDIR:-/usr/src/debug}"
+  CXXFLAGS+=" -ffile-prefix-map=${srcdir}=${DBGSRCDIR:-/usr/src/debug}"
+
+  mkdir -p build-${CARCH}
+  cd build-${CARCH}
+  cmake .. "${cmake_args[@]}" \
+        -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release \
+        -DENABLE_SIMD=Off
+  make
+}
+
+package() {
+  optdepends=(knacs)
+  cd libnacs/build-${CARCH}
+
+  make install DESTDIR="${pkgdir}"
+}

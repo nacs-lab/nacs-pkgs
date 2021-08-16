@@ -1,0 +1,57 @@
+#
+
+pkgname=knacs
+_ker_ver=4.19.0-2-nacs
+_extramodules=extramodules-4.19-nacs
+pkgver=30.c5f09b1
+epoch=1
+pkgrel=1
+pkgdesc='Kernel driver for the NaCs control system'
+arch=('armv7h')
+url='http://github.com/nacs-lab/knacs'
+license=('LGPL')
+makedepends=('cmake' "${CHOST}-gcc" 'arch-arm')
+source=("git://github.com/nacs-lab/knacs#branch=hardcode"
+        99-knacs.rules)
+md5sums=('SKIP'
+         '706b8249bc7c369656efb9853b726d8c')
+install=knacs.install
+
+pkgver() {
+  cd knacs
+
+  echo "$(git rev-list --count HEAD).$(git rev-parse --short HEAD)"
+}
+
+build() {
+  cd knacs
+
+  CFLAGS=${CFLAGS/-fvar-tracking-assignments/}
+  CXXFLAGS=${CXXFLAGS/-fvar-tracking-assignments/}
+
+  CFLAGS=${CFLAGS/-march=armv7-a/}
+  CXXFLAGS=${CXXFLAGS/-march=armv7-a/}
+
+  mkdir -p build
+  cd build
+  cmake .. -DCMAKE_TOOLCHAIN_FILE=/usr/share/cmake/Modules/ARMv7hf.cmake \
+        -DCROSS_COMPILE=${CROSS_COMPILE} \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DKDIR=${SYSROOT}/usr/lib/modules/${_ker_ver}/build \
+        -DKERNEL_VER=${_ker_ver} \
+        -DEXTRAMODULES_DIR=/usr/lib/modules/${_extramodules}
+
+  make
+}
+
+package() {
+  cd knacs/build
+
+  make install DESTDIR="${pkgdir}"
+
+  install -Dm644 "${srcdir}/99-knacs.rules" \
+          "${pkgdir}/etc/udev/rules.d/99-knacs.rules"
+
+  install -d -m755 "${pkgdir}/usr/lib/modules-load.d"
+  echo "knacs" >> "${pkgdir}/usr/lib/modules-load.d/knacs.conf"
+}

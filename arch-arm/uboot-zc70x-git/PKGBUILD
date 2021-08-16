@@ -1,0 +1,62 @@
+# Maintainer: Ettore Chimenti <ek5.chimenti at gmail dot com>
+# Contributor: Andrea Scarpino <andrea@archlinux.org>
+pkgname=uboot-zc70x-git
+pkgver=2021.1.0.51.g88cb3bc3f9
+pkgrel=1
+pkgdesc='Utilities for working with Das U-Boot Compiled for zc70x'
+arch=('armv7h')
+url="http://www.denx.de/wiki/U-Boot/WebHome"
+license=('GPL2')
+makedepends=('armv7l-linux-gnueabihf-gcc' 'dtc')
+provides=('uboot-zc70x')
+conflicts=('uboot-zc70x')
+source=("git://github.com/Xilinx/u-boot-xlnx")
+md5sums=('SKIP')
+options=('debug')
+
+prepare() {
+  cd u-boot-xlnx
+
+  rm -rf "${srcdir}/bin"
+  mkdir -p "${srcdir}/bin"
+  for c in cc gcc; do
+    cat > "${srcdir}/bin/${c}" <<EOF
+#!/bin/bash
+exec armv7l-linux-gnueabihf-gcc $CFLAGS --sysroot=$SYSROOT -Wl,-rpath-link,/usr/armv7l-linux-gnueabihf/lib:$SYSROOT/usr/lib -I$SYSROOT/usr/include/openssl-1.0 -L$SYSROOT/usr/lib/openssl-1.0 "\$@"
+EOF
+    chmod +x "${srcdir}/bin/${c}"
+  done
+  for c in c++ g++; do
+    cat > "${srcdir}/bin/${c}" <<EOF
+#!/bin/bash
+exec armv7l-linux-gnueabihf-g++ $CXXFLAGS --sysroot=$SYSROOT -Wl,-rpath-link,/usr/armv7l-linux-gnueabihf/lib:$SYSROOT/usr/lib -I$SYSROOT/usr/include/openssl-1.0 -L$SYSROOT/usr/lib/openssl-1.0 "\$@"
+EOF
+    chmod +x "${srcdir}/bin/${c}"
+  done
+}
+
+pkgver() {
+  cd u-boot-xlnx
+
+  git describe | sed -e 's/^[^0-9]*//' -e 's/-/.0./' -e 's/-/./g'
+}
+
+build(){
+  cd u-boot-xlnx
+  export PATH="${srcdir}/bin:${PATH}"
+
+  export DEVICE_TREE=zynq-zc702
+  make xilinx_zynq_virt_defconfig ARCH=arm CROSS_COMPILE=armv7l-linux-gnueabihf-
+
+  make ARCH=arm CROSS_COMPILE=armv7l-linux-gnueabihf-
+}
+
+package() {
+  cd u-boot-xlnx
+  export PATH="${srcdir}/bin:${PATH}"
+
+  install -Dm755 tools/mkimage "${pkgdir}/usr/bin/mkimage"
+  install -Dm755 u-boot "${pkgdir}/boot/u-boot"
+  install -Dm644 doc/mkimage.1 \
+    "${pkgdir}/usr/share/man/man1/mkimage.1"
+}
