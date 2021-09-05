@@ -21,13 +21,16 @@ jobs:
             LLVM_VER: 11
 
     env:
-      DEB_REL: 0ubuntu1
+      UBUNTU_VER: ${{matrix.UBUNTU_VER}}
 
     steps:
+    - uses: actions/checkout@v2
+
     - uses: actions/checkout@v2
       with:
         repository: nacs-lab/libnacs
         ref: seq
+        path: ubuntu/libnacs/libnacs
 
     - name: Install dependencies
       run: sudo apt-get install libopenlibm-dev ${{matrix.UBUNTU_VER != '18.04' && 'libsleef-dev' || ''}} libzmq3-dev libyaml-cpp-dev libtbb-dev llvm-${{matrix.LLVM_VER}}-dev
@@ -36,22 +39,15 @@ jobs:
       if: ${{matrix.UBUNTU_VER == '18.04'}} # zmq returns a non-existing include path
       run: sudo mkdir -p /usr/lib/x86_64-linux-gnu/pgm-5.2/include
 
-    - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release -DENABLE_SIMD=${{matrix.UBUNTU_VER != '18.04' && 'On' || 'Off'}} -DENABLE_LLVM=On -DENABLE_TESTING=Off -DCPACK_DEBIAN_PACKAGE_RELEASE=${{env.DEB_REL}}
-
-    - name: Build
-      run: cmake --build ${{github.workspace}}/build --config Release -j $(nproc)
-
     - name: Create package
-      run: |
-        cd ${{github.workspace}}/build
-        cpack ..
+      working-directory: ${{github.workspace}}/ubuntu/libnacs
+      run: bash build.sh
 
     - name: "Upload binaries"
       uses: actions/upload-artifact@v2
       with:
         name: libnacs-git-package-ubuntu-${{matrix.UBUNTU_VER}}
-        path: ${{github.workspace}}/build/libnacs*.deb
+        path: ${{github.workspace}}/ubuntu/libnacs/libnacs/build/libnacs*.deb
 
   build-python-libnacs:
     name: Build python-libnacs
@@ -67,13 +63,16 @@ jobs:
             LLVM_VER: 11
 
     env:
-      DEB_REL: 0ubuntu1
+      UBUNTU_VER: ${{matrix.UBUNTU_VER}}
 
     steps:
+    - uses: actions/checkout@v2
+
     - uses: actions/checkout@v2
       with:
         repository: nacs-lab/python-libnacs
         ref: seq
+        path: ubuntu/python-libnacs/python-libnacs
 
     - name: Install dependencies
       run: sudo apt-get install libopenlibm-dev ${{matrix.UBUNTU_VER != '18.04' && 'libsleef-dev' || ''}} libzmq3-dev libyaml-cpp-dev libtbb-dev llvm-${{matrix.LLVM_VER}}-dev python3
@@ -87,22 +86,15 @@ jobs:
     - name: Install libnacs
       run: sudo dpkg -i libnacs-package/*.deb
 
-    - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=/usr/bin/python3 -DCPACK_DEBIAN_PACKAGE_RELEASE=${{env.DEB_REL}}
-
-    - name: Build
-      run: cmake --build ${{github.workspace}}/build --config Release -j $(nproc)
-
     - name: Create package
-      run: |
-        cd ${{github.workspace}}/build
-        cpack ..
+      working-directory: ${{github.workspace}}/ubuntu/python-libnacs
+      run: bash build.sh
 
     - name: "Upload binaries"
       uses: actions/upload-artifact@v2
       with:
         name: python-libnacs-git-package-ubuntu-${{matrix.UBUNTU_VER}}
-        path: ${{github.workspace}}/build/python-libnacs*.deb
+        path: ${{github.workspace}}/ubuntu/python-libnacs/python-libnacs/build/python-libnacs*.deb
 
   build-labctrl-node:
     name: Build labctrl-node
@@ -126,13 +118,18 @@ jobs:
             NODE_VER: 16
 
     env:
-      DEB_REL: 0ubuntu1~node${{matrix.NODE_VER}}
+      UBUNTU_VER: ${{matrix.UBUNTU_VER}}
+      NODE_VER: ${{matrix.NODE_VER}}
 
     steps:
+    - uses: actions/checkout@v2
+
     - uses: actions/checkout@v2
       with:
         repository: nacs-lab/labctrl-node
         ref: seq
+        path: ubuntu/labctrl-node/labctrl-node
+        fetch-depth: 0 # for version/hash computation
 
     - name: Install dependencies
       run: sudo apt-get install libopenlibm-dev ${{matrix.UBUNTU_VER != '18.04' && 'libsleef-dev' || ''}} libzmq3-dev libyaml-cpp-dev libtbb-dev llvm-${{matrix.LLVM_VER}}-dev
@@ -151,21 +148,12 @@ jobs:
     - name: Install libnacs
       run: sudo dpkg -i libnacs-package/*.deb
 
-    - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=Release -DCPACK_DEBIAN_PACKAGE_RELEASE=${{env.DEB_REL}}
-
-    - name: Build
-      run: |
-        cmake --build ${{github.workspace}}/build --config Release -j $(nproc)
-        make -C ${{github.workspace}}/build deploy -j $(nproc)
-
     - name: Create package
-      run: |
-        cd ${{github.workspace}}/build
-        cpack ..
+      working-directory: ${{github.workspace}}/ubuntu/labctrl-node
+      run: bash build.sh
 
     - name: "Upload binaries"
       uses: actions/upload-artifact@v2
       with:
         name: labctrl-node-git-nodejs${{matrix.NODE_VER}}-package-ubuntu-${{matrix.UBUNTU_VER}}
-        path: ${{github.workspace}}/build/labctrl-node*.deb
+        path: ${{github.workspace}}/ubuntu/labctrl-node/labctrl-node/build/labctrl-node*.deb
