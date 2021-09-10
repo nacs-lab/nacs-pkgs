@@ -1,22 +1,23 @@
 #
 
 pkgname=knacs-git
-_ker_ver_prefix=4.19.0
+_ker_ver_prefix=5.4.0
 _ker_ver_suffix=nacs
-_extramodules=extramodules-4.19-nacs
-pkgver=30.c5f09b1
-pkgrel=2
+_extramodules=extramodules-5.4-nacs
+pkgver=33.0ca72d1
+pkgrel=1
 pkgdesc='Kernel driver for the NaCs control system'
 arch=('armv7h')
 url='http://github.com/nacs-lab/knacs'
 license=('LGPL')
 makedepends=('cmake' "${CHOST}-gcc" 'arch-arm')
 provides=("knacs=1:${pkgver}-${pkgrel}")
-source=("git://github.com/nacs-lab/knacs#branch=hardcode"
+source=("git://github.com/nacs-lab/knacs"
         99-knacs.rules)
 md5sums=('SKIP'
          '706b8249bc7c369656efb9853b726d8c')
 install=knacs.install
+options=(!strip)
 
 pkgver() {
   cd knacs
