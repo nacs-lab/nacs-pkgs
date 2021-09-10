@@ -11,8 +11,8 @@
 pkgbase=linux-nacs
 _kernelname=-nacs
 _desc="NaCs Lab"
-_kernelver=4.19.0
-_xilinx_ver=v2019.2.01
+_kernelver=5.4.0
+_xilinx_ver=v2020.1
 _srcname=linux-xlnx-xilinx-${_xilinx_ver}
 
 pkgver=${_kernelver}
@@ -30,14 +30,14 @@ source=(https://github.com/Xilinx/linux-xlnx/archive/refs/tags/xilinx-${_xilinx_
         '90-linux.hook'
         mkuramdisk.sh
         'config')
-md5sums=('7b8ab4f25062bb22001d640c2e8b4d2f'
+md5sums=('a0c4e16c9e89f656fbecd1948f49a602'
          '8cc338fed978d4864513f84c3b971629'
          '62183ca2680c7664a1e4ab32dc0147fc'
          '68fee8a88c12f58ac1e17f6c75124a59'
          'ce6c81ad1ad1f8b333fd6077d47abdaf'
          '05939f15b9b454aaebd696395a0e3d8f'
          '9a1389991d4c80af237a5481dd043ace'
-         'd2636ec5b5ef49e68ed068b1b2dd7c66')
+         'be25be7799505e8d5aa16eb2cca3092e')
 
 prepare() {
   cd ${_srcname}
@@ -58,7 +58,7 @@ prepare() {
   for c in cc c++ gcc g++; do
     cat > "${srcdir}/bin/${c}" <<EOF
 #!/bin/bash
-exec ${CHOST}-${c} -Wl,-rpath-link,/usr/${CHOST}/lib "\$@"
+exec ${CHOST}-${c} -Wl,-rpath-link,/usr/${CHOST}/lib "\$@" --sysroot ${SYSROOT}
 EOF
     chmod +x "${srcdir}/bin/${c}"
   done
