@@ -36,16 +36,16 @@ build() {
   kdirs=("${SYSROOT}/usr/lib/modules/"${_ker_ver_prefix}-*-${_ker_ver_suffix})
   if [[ ${#kdirs[@]} = 0 ]]; then
     echo "Cannot find kernel module directory in ${SYSROOT}/usr/lib/modules/" >&2
-    exit
+    exit 1
   elif [[ ${#kdirs[@]} != 1 ]]; then
     echo "Find multiple kernel module directory in ${SYSROOT}/usr/lib/modules/" >&2
-    exit
+    exit 1
   fi
   kdir=${kdirs[0]}
   kver=${kdir##*/}
   if [[ "$kver" = "${_ker_ver_prefix}-*-${_ker_ver_suffix}" ]]; then
     echo "Cannot find kernel module directory in ${SYSROOT}/usr/lib/modules/" >&2
-    exit
+    exit 1
   fi
   krel=${kver%-${_ker_ver_suffix}}
   krel=${krel##*-}
