@@ -16,7 +16,7 @@ _xilinx_ver=v2020.1
 _srcname=linux-xlnx-xilinx-${_xilinx_ver}
 
 pkgver=${_kernelver}
-pkgrel=3
+pkgrel=4
 arch=('armv7h')
 url="https://github.com/Xilinx/linux-xlnx"
 license=('GPL2')
@@ -127,7 +127,8 @@ _package() {
   mkdir -p "${pkgdir}"/{boot,usr/lib/{modules,$pkgbase}}
   make INSTALL_MOD_PATH="${pkgdir}/usr" modules_install
   # make INSTALL_DTBS_PATH="${pkgdir}/boot/dtbs" dtbs_install
-  cp arch/$KARCH/boot/dts/zynq-zc702.dtb "${pkgdir}/boot/devicetree.dtb"
+  # Provided by molecube-hw
+  # cp arch/$KARCH/boot/dts/zynq-zc702.dtb "${pkgdir}/boot/devicetree.dtb"
   cp arch/$KARCH/boot/uImage "${pkgdir}/boot/uImage"
 
   # make room for external modules
