@@ -1,5 +1,5 @@
 pkgname=molecube-hw
-pkgver=197.75ca484
+pkgver=210.660cccf
 pkgrel=1
 pkgdesc='NaCs control'
 arch=('armv7h')
@@ -25,6 +25,8 @@ prepare() {
 build() {
   cd molecube-hw
 
+  vivado -mode batch -nolog -source script/init.tcl -tclargs \
+         -repo .
   vivado -mode batch -nolog -source script/build.tcl -tclargs \
          -proj project_molecube/project_molecube.xpr \
          -bit build/system.bit.bit
