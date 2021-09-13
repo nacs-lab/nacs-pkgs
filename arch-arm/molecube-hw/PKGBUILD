@@ -1,16 +1,14 @@
 pkgname=molecube-hw
-pkgver=210.660cccf
-pkgrel=2
+pkgver=213.5b4d744
+pkgrel=1
 pkgdesc='NaCs control'
 arch=('armv7h')
 url='harvard.edu'
 license=('LGPL')
 _vitis_ver=2020.1
 makedepends=('cmake' "vitis=$_vitis_ver")
-source=("git://github.com/nacs-lab/molecube-hw"
-        "git://github.com/Xilinx/device-tree-xlnx#tag=xilinx-v$_vitis_ver")
-md5sums=('SKIP'
-         'SKIP')
+source=("git://github.com/nacs-lab/molecube-hw")
+md5sums=('SKIP')
 
 pkgver() {
   cd molecube-hw
@@ -20,6 +18,9 @@ pkgver() {
 
 prepare() {
   cd molecube-hw
+
+  git submodule init
+  git submodule update
 
   rm -rf build/
   mkdir build
@@ -31,20 +32,9 @@ build() {
   (
     unset LANG
     unset QT_PLUGIN_PATH
-    . /opt/Xilinx/Vivado/$_vitis_ver/settings64.sh
     . /opt/Xilinx/Vitis/$_vitis_ver/settings64.sh
 
-    vivado -mode batch -nolog -source script/init.tcl -tclargs \
-           -repo .
-    vivado -mode batch -nolog -source script/build.tcl -tclargs \
-           -proj project_molecube/project_molecube.xpr \
-           -bit build/system.bit.bit \
-           -hw build/system.xsa
-
-    xsct script/gen_dts.tcl -hw build/system.xsa \
-         -repo_dir ../device-tree-xlnx -out_dir build/dts/
-
-    script/compile_dts.sh build/dts/system-top.dts build/dts/system.dtb
+    script/build.sh build/
   )
 }
 
@@ -54,4 +44,5 @@ package() {
   install -dm755 "${pkgdir}/boot/"
   install -T -Dm644 system.bit.bin "${pkgdir}/boot/system.bit.bin"
   install -T -Dm644 dts/system.dtb "${pkgdir}/boot/devicetree.dtb"
+  # install -T -Dm644 boot/boot.bin "${pkgdir}/boot/boot.bin"
 }
