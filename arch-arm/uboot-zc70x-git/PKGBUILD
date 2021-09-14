@@ -1,7 +1,7 @@
 # Maintainer: Ettore Chimenti <ek5.chimenti at gmail dot com>
 # Contributor: Andrea Scarpino <andrea@archlinux.org>
 pkgname=uboot-zc70x-git
-pkgver=2021.1.0.87.g2f6ad027b6
+pkgver=2021.1.0.90.g7a0ec4fd69
 pkgrel=1
 pkgdesc='Utilities for working with Das U-Boot Compiled for zc70x'
 arch=('armv7h')
@@ -12,29 +12,7 @@ provides=('uboot-zc70x')
 conflicts=('uboot-zc70x')
 source=("git://github.com/Xilinx/u-boot-xlnx")
 md5sums=('SKIP')
-# debug seems to cause the stripping to produce an empty u-boot file...
-# options=('debug')
-
-prepare() {
-  cd u-boot-xlnx
-
-  rm -rf "${srcdir}/bin"
-  mkdir -p "${srcdir}/bin"
-  for c in cc gcc; do
-    cat > "${srcdir}/bin/${c}" <<EOF
-#!/bin/bash
-exec armv7l-linux-gnueabihf-gcc $CFLAGS --sysroot=$SYSROOT -Wl,-rpath-link,/usr/armv7l-linux-gnueabihf/lib:$SYSROOT/usr/lib -I$SYSROOT/usr/include/openssl-1.0 -L$SYSROOT/usr/lib/openssl-1.0 "\$@"
-EOF
-    chmod +x "${srcdir}/bin/${c}"
-  done
-  for c in c++ g++; do
-    cat > "${srcdir}/bin/${c}" <<EOF
-#!/bin/bash
-exec armv7l-linux-gnueabihf-g++ $CXXFLAGS --sysroot=$SYSROOT -Wl,-rpath-link,/usr/armv7l-linux-gnueabihf/lib:$SYSROOT/usr/lib -I$SYSROOT/usr/include/openssl-1.0 -L$SYSROOT/usr/lib/openssl-1.0 "\$@"
-EOF
-    chmod +x "${srcdir}/bin/${c}"
-  done
-}
+options=('!strip')
 
 pkgver() {
   cd u-boot-xlnx
@@ -44,7 +22,6 @@ pkgver() {
 
 build(){
   cd u-boot-xlnx
-  export PATH="${srcdir}/bin:${PATH}"
 
   export DEVICE_TREE=zynq-zc702
   make xilinx_zynq_virt_defconfig ARCH=arm CROSS_COMPILE=armv7l-linux-gnueabihf-
@@ -54,11 +31,6 @@ build(){
 
 package() {
   cd u-boot-xlnx
-  export PATH="${srcdir}/bin:${PATH}"
 
-  install -Dm755 tools/mkimage "${pkgdir}/usr/bin/mkimage"
-  armv7l-linux-gnueabihf-strip u-boot
   install -Dm755 u-boot "${pkgdir}/boot/u-boot"
-  install -Dm644 doc/mkimage.1 \
-    "${pkgdir}/usr/share/man/man1/mkimage.1"
 }
