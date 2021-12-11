@@ -304,8 +304,14 @@ jobs:
           pacman -S --noconfirm cmake
           MAKEFLAGS="-j$(nproc)" su user -p -c makepkg-armv7
 
+      - name: Wrapping package
+        # Github doesn't like the colon (:) in the package file name...
+        run: |
+          cd arch-arm/molecube-hw
+          tar cf ../molecube-hw.tar *.pkg.*
+
       - name: "Upload binaries"
         uses: actions/upload-artifact@v2
         with:
           name: molecube-hw-package-archlinux-arm
-          path: ${{github.workspace}}/arch-arm/molecube-hw/*.pkg.*
+          path: ${{github.workspace}}/arch-arm/molecube-hw.tar
