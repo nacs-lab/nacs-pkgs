@@ -22,6 +22,7 @@ jobs:
 
     env:
       UBUNTU_VER: ${{matrix.UBUNTU_VER}}
+      LLVM_VER: ${{matrix.LLVM_VER}}
 
     steps:
     - uses: actions/checkout@v2
