@@ -1,48 +1,20 @@
 pkgname=molecube-hw
-pkgver=213.5b4d744
+pkgver=0.0.1
+epoch=1
 pkgrel=1
 pkgdesc='NaCs control'
 arch=('armv7h')
 url='harvard.edu'
 license=('LGPL')
-_vitis_ver=2020.1
-makedepends=('cmake' "vitis=$_vitis_ver")
-source=("git://github.com/nacs-lab/molecube-hw")
-md5sums=('SKIP')
-
-pkgver() {
-  cd molecube-hw
-
-  echo "$(git rev-list --count HEAD).$(git rev-parse --short HEAD)"
-}
-
-prepare() {
-  cd molecube-hw
-
-  git submodule init
-  git submodule update
-
-  rm -rf build/
-  mkdir build
-}
-
-build() {
-  cd molecube-hw
-
-  (
-    unset LANG
-    unset QT_PLUGIN_PATH
-    . /opt/Xilinx/Vitis/$_vitis_ver/settings64.sh
-
-    script/build.sh build/
-  )
-}
+makedepends=('cmake')
+source=("https://github.com/nacs-lab/molecube-hw/releases/download/$pkgver/molecube-hw-$pkgver.tar.zst")
+sha256sums=('0799c9b62c70d2bc8c53b5d583da19f4d9f72895c42e4f34581489487fe1becb')
 
 package() {
-  cd molecube-hw/build
+  cd molecube-hw-$pkgver/
 
   install -dm755 "${pkgdir}/boot/"
   install -T -Dm644 system.bit.bin "${pkgdir}/boot/system.bit.bin"
-  install -T -Dm644 dts/system.dtb "${pkgdir}/boot/devicetree.dtb"
-  # install -T -Dm644 boot/boot.bin "${pkgdir}/boot/boot.bin"
+  install -T -Dm644 devicetree.dtb "${pkgdir}/boot/devicetree.dtb"
+  # install -T -Dm644 boot.bin "${pkgdir}/boot/boot.bin"
 }

@@ -1,0 +1,49 @@
+pkgname=molecube-hw-git
+pkgver=0.0.1
+epoch=1
+pkgrel=1
+pkgdesc='NaCs control'
+arch=('armv7h')
+url='harvard.edu'
+license=('LGPL')
+_vitis_ver=2020.1
+makedepends=(git cmake "vitis=$_vitis_ver")
+source=("git://github.com/nacs-lab/molecube-hw")
+md5sums=('SKIP')
+
+pkgver() {
+  cd molecube-hw
+
+  git describe --tags | sed -e 's/^[^0-9]*//' -e 's/-/.0./' -e 's/-/./g'
+}
+
+prepare() {
+  cd molecube-hw
+
+  git submodule init
+  git submodule update
+
+  rm -rf build/
+  mkdir build
+}
+
+build() {
+  cd molecube-hw
+
+  (
+    unset LANG
+    unset QT_PLUGIN_PATH
+    . /opt/Xilinx/Vitis/$_vitis_ver/settings64.sh
+
+    script/build.sh build/
+  )
+}
+
+package() {
+  cd molecube-hw/build
+
+  install -dm755 "${pkgdir}/boot/"
+  install -T -Dm644 system.bit.bin "${pkgdir}/boot/system.bit.bin"
+  install -T -Dm644 dts/system.dtb "${pkgdir}/boot/devicetree.dtb"
+  # install -T -Dm644 boot/boot.bin "${pkgdir}/boot/boot.bin"
+}
