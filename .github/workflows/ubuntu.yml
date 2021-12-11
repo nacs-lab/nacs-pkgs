@@ -157,3 +157,29 @@ jobs:
       with:
         name: labctrl-node-git-nodejs${{matrix.NODE_VER}}-package-ubuntu-${{matrix.UBUNTU_VER}}
         path: ${{github.workspace}}/ubuntu/labctrl-node/labctrl-node/build/labctrl-node*.deb
+
+  build-spcm:
+    name: Build spcm
+    runs-on: ubuntu-${{matrix.UBUNTU_VER}}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - UBUNTU_VER: 18.04
+          - UBUNTU_VER: 20.04
+
+    env:
+      UBUNTU_VER: ${{matrix.UBUNTU_VER}}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Create package
+      working-directory: ${{github.workspace}}/ubuntu/spcm
+      run: bash build.sh ${{matrix.UBUNTU_VER}}
+
+    - name: "Upload binaries"
+      uses: actions/upload-artifact@v2
+      with:
+        name: spcm-package-ubuntu-${{matrix.UBUNTU_VER}}
+        path: ${{github.workspace}}/ubuntu/spcm/deb/*.deb
