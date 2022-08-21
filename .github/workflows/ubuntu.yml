@@ -30,7 +30,6 @@ jobs:
     - uses: actions/checkout@v2
       with:
         repository: nacs-lab/libnacs
-        ref: seq
         path: ubuntu/libnacs/libnacs
 
     - name: Install dependencies

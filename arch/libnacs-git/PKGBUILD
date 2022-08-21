@@ -1,5 +1,5 @@
 pkgname=libnacs-git
-pkgver=1101.7789861
+pkgver=1137.19a8c2b
 pkgrel=1
 pkgdesc='Library used for the NaCs control system'
 arch=(x86_64 armv7h aarch64)
@@ -9,7 +9,7 @@ options=('!strip' 'debug')
 depends=(intel-tbb llvm-libs libopenlibm.so sleef libyaml-cpp.so libzmq.so)
 provides=(libnacs-utils.so libnacs-seq.so)
 makedepends=(cmake git llvm)
-source=("git://github.com/nacs-lab/libnacs#branch=seq")
+source=("git+https://github.com/nacs-lab/libnacs")
 md5sums=('SKIP')
 
 pkgver() {
