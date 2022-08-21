@@ -20,7 +20,7 @@ makedepends=("git"
              "${MINGW_PACKAGE_PREFIX}-clang"
              "${MINGW_PACKAGE_PREFIX}-cmake"
              patch make)
-source=("git://github.com/shibatch/sleef"
+source=("git+https://github.com/shibatch/sleef"
         0001-Use-addSuffix-in-place-of-cat-type.patch
         0002-Use-vector-calling-convention.patch)
 sha256sums=('SKIP'

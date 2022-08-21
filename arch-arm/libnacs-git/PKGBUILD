@@ -9,7 +9,7 @@ options=('!strip' 'debug')
 makedepends=('cmake' 'git' "${CHOST}-gcc" 'arch-arm')
 provides=(libnacs)
 conflicts=(libnacs)
-source=("git://github.com/nacs-lab/libnacs")
+source=("git+https://github.com/nacs-lab/libnacs")
 md5sums=('SKIP')
 
 if [[ $CARCH == aarch64 ]]; then

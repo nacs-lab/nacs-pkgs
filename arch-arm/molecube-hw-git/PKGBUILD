@@ -8,7 +8,7 @@ url='harvard.edu'
 license=('LGPL')
 _vitis_ver=2020.1
 makedepends=(git cmake "vitis=$_vitis_ver")
-source=("git://github.com/nacs-lab/molecube-hw")
+source=("git+https://github.com/nacs-lab/molecube-hw")
 md5sums=('SKIP')
 
 pkgver() {

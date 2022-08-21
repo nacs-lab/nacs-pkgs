@@ -8,7 +8,7 @@ license=('LGPL')
 options=('!strip' 'debug')
 makedepends=(cmake git)
 depends=(libnacs zeromq yaml-cpp)
-source=("git://github.com/nacs-lab/molecube2#branch=seq")
+source=("git+https://github.com/nacs-lab/molecube2#branch=seq")
 md5sums=('SKIP')
 
 pkgver() {

@@ -7,7 +7,7 @@ url='http://github.com/nacs-lab/python-libnacs'
 license=('LGPL')
 depends=(python libnacs)
 makedepends=(cmake git)
-source=("git://github.com/nacs-lab/python-libnacs#branch=seq")
+source=("git+https://github.com/nacs-lab/python-libnacs#branch=seq")
 md5sums=('SKIP')
 
 pkgver() {
