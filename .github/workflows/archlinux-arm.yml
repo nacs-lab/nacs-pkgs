@@ -38,6 +38,9 @@ jobs:
         run: |
           cd arch-arm/linux-nacs
           pacman -S --noconfirm xmlto docbook-xsl kmod inetutils bc uboot-tools
+          for ((i = 0; i < 10; i++)); do
+              pacman-armv7 -S --noconfirm dtc libyaml && break
+          done
           MAKEFLAGS="-j$(nproc)" su user -p -c makepkg-armv7
 
       - name: "Upload binaries"
