@@ -207,7 +207,7 @@ jobs:
           pacman -S --noconfirm cmake
           pacman-armv7 -U --noconfirm ../../linux-nacs-package/linux-nacs-* ../../knacs-git-package/knacs-git-* ../../uboot-zc70x-git-package/uboot-zc70x-git-*
           for ((i = 0; i < 10; i++)); do
-              pacman-armv7 -S --noconfirm openlibm zeromq && break
+              pacman-armv7 -S --noconfirm openlibm zeromq cppzmq && break
           done
           MAKEFLAGS="-j$(nproc)" su user -p -c makepkg-armv7
 

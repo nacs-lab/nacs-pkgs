@@ -8,7 +8,7 @@ license=('LGPL')
 options=('!strip' 'debug')
 depends=(intel-tbb llvm-libs libopenlibm.so sleef libyaml-cpp.so libzmq.so)
 provides=(libnacs-utils.so libnacs-seq.so)
-makedepends=(cmake git llvm)
+makedepends=(cmake git llvm cppzmq)
 source=("git+https://github.com/nacs-lab/libnacs")
 md5sums=('SKIP')
 
