@@ -126,44 +126,9 @@ jobs:
           name: nacs-boot-package-archlinux-arm
           path: ${{github.workspace}}/arch-arm/nacs-boot/*.pkg.*
 
-  build-uboot-zc70x:
-    name: Build uboot-zc70x
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-    container:
-      image: archlinux:base-devel
-      options: --privileged
-      volumes:
-        - /sys/fs/cgroup:/sys/fs/cgroup
-    steps:
-      - uses: actions/checkout@v1
-      - name: Initialize ArchLinux
-        run: |
-          bash github/setup-archlinux.sh
-          chown -R user .
-      - name: Setup ArchLinux CN repo
-        # For cross compiling tools
-        run: |
-          bash github/setup-archlinux-cn.sh
-      - name: Setup Cross-compiling environment
-        run: |
-          bash github/setup-archlinux-arm.sh
-      - name: Create package
-        run: |
-          cd arch-arm/uboot-zc70x-git
-          pacman -S --noconfirm dtc bc cmake
-          MAKEFLAGS="-j$(nproc)" su user -p -c makepkg-armv7
-
-      - name: "Upload binaries"
-        uses: actions/upload-artifact@v2
-        with:
-          name: uboot-zc70x-git-package-archlinux-arm
-          path: ${{github.workspace}}/arch-arm/uboot-zc70x-git/*.pkg.*
-
   build-libnacs:
     name: Build libnacs
-    needs: [build-linux-nacs, build-knacs, build-uboot-zc70x]
+    needs: [build-linux-nacs, build-knacs]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -195,17 +160,12 @@ jobs:
         with:
           name: knacs-git-package-archlinux-arm
           path: knacs-git-package
-      - name: Download uboot-zc70x
-        uses: actions/download-artifact@v2
-        with:
-          name: uboot-zc70x-git-package-archlinux-arm
-          path: uboot-zc70x-git-package
 
       - name: Create package
         run: |
           cd arch-arm/libnacs-git
           pacman -S --noconfirm cmake
-          pacman-armv7 -U --noconfirm ../../linux-nacs-package/linux-nacs-* ../../knacs-git-package/knacs-git-* ../../uboot-zc70x-git-package/uboot-zc70x-git-*
+          pacman-armv7 -U --noconfirm ../../linux-nacs-package/linux-nacs-* ../../knacs-git-package/knacs-git-*
           for ((i = 0; i < 10; i++)); do
               pacman-armv7 -S --noconfirm openlibm zeromq cppzmq && break
           done
@@ -219,7 +179,7 @@ jobs:
 
   build-molecube2:
     name: Build molecube2
-    needs: [build-linux-nacs, build-knacs, build-uboot-zc70x, build-libnacs]
+    needs: [build-linux-nacs, build-knacs, build-libnacs]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -251,11 +211,6 @@ jobs:
         with:
           name: knacs-git-package-archlinux-arm
           path: knacs-git-package
-      - name: Download uboot-zc70x
-        uses: actions/download-artifact@v2
-        with:
-          name: uboot-zc70x-git-package-archlinux-arm
-          path: uboot-zc70x-git-package
       - name: Download libnacs
         uses: actions/download-artifact@v2
         with:
@@ -266,7 +221,7 @@ jobs:
         run: |
           cd arch-arm/molecube2-git
           pacman -S --noconfirm cmake
-          pacman-armv7 -U --noconfirm ../../linux-nacs-package/linux-nacs-* ../../knacs-git-package/knacs-git-* ../../uboot-zc70x-git-package/uboot-zc70x-git-* ../../libnacs-git-package/libnacs-git-*
+          pacman-armv7 -U --noconfirm ../../linux-nacs-package/linux-nacs-* ../../knacs-git-package/knacs-git-* ../../libnacs-git-package/libnacs-git-*
           for ((i = 0; i < 10; i++)); do
               pacman-armv7 -S --noconfirm zeromq yaml-cpp && break
           done
@@ -277,44 +232,3 @@ jobs:
         with:
           name: molecube2-git-package-archlinux-arm
           path: ${{github.workspace}}/arch-arm/molecube2-git/*.pkg.*
-
-  build-molecube-hw:
-    name: Build molecube-hw
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-    container:
-      image: archlinux:base-devel
-      options: --privileged
-      volumes:
-        - /sys/fs/cgroup:/sys/fs/cgroup
-    steps:
-      - uses: actions/checkout@v1
-      - name: Initialize ArchLinux
-        run: |
-          bash github/setup-archlinux.sh
-          chown -R user .
-      - name: Setup ArchLinux CN repo
-        # For cross compiling tools
-        run: |
-          bash github/setup-archlinux-cn.sh
-      - name: Setup Cross-compiling environment
-        run: |
-          bash github/setup-archlinux-arm.sh
-      - name: Create package
-        run: |
-          cd arch-arm/molecube-hw
-          pacman -S --noconfirm cmake
-          MAKEFLAGS="-j$(nproc)" su user -p -c makepkg-armv7
-
-      - name: Wrapping package
-        # Github doesn't like the colon (:) in the package file name...
-        run: |
-          cd arch-arm/molecube-hw
-          tar cf ../molecube-hw.tar *.pkg.*
-
-      - name: "Upload binaries"
-        uses: actions/upload-artifact@v2
-        with:
-          name: molecube-hw-package-archlinux-arm
-          path: ${{github.workspace}}/arch-arm/molecube-hw.tar

@@ -52,7 +52,6 @@ jobs:
     - name: Create archlinux-arm package tarball
       run: |
         mkdir archlinux-arm-packages
-        (cd molecube-hw-package-archlinux-arm; tar xf molecube-hw.tar)
         mv *-package-archlinux-arm/*.pkg.tar.* archlinux-arm-packages/
         tar -cvf archlinux-arm-packages.tar.zst --zstd archlinux-arm-packages/
 
