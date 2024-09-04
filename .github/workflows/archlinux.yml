@@ -66,7 +66,7 @@ jobs:
           bash github/setup-archlinux-cn.sh
 
       - name: Download libnacs
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: libnacs-git-package-archlinux
           path: libnacs-package
@@ -111,7 +111,7 @@ jobs:
           bash github/setup-archlinux-cn.sh
 
       - name: Download libnacs
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: libnacs-git-package-archlinux
           path: libnacs-package
@@ -156,7 +156,7 @@ jobs:
           bash github/setup-archlinux-cn.sh
 
       - name: Download libnacs
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: libnacs-git-package-archlinux
           path: libnacs-package
