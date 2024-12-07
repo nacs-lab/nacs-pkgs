@@ -25,9 +25,9 @@ jobs:
       LLVM_VER: ${{matrix.LLVM_VER}}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         repository: nacs-lab/libnacs
         path: ubuntu/libnacs/libnacs
@@ -66,9 +66,9 @@ jobs:
       UBUNTU_VER: ${{matrix.UBUNTU_VER}}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         repository: nacs-lab/python-libnacs
         ref: seq
@@ -122,9 +122,9 @@ jobs:
       NODE_VER: ${{matrix.NODE_VER}}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         repository: nacs-lab/labctrl-node
         ref: seq
@@ -172,7 +172,7 @@ jobs:
       UBUNTU_VER: ${{matrix.UBUNTU_VER}}
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
     - name: Create package
       working-directory: ${{github.workspace}}/ubuntu/spcm
