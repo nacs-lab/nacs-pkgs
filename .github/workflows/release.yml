@@ -63,17 +63,21 @@ jobs:
 
     - name: Create ubuntu package tarball
       run: |
-        mkdir ubuntu-18.04-packages
-        mv *-package-ubuntu-18.04/*.deb ubuntu-18.04-packages/
-        tar -cvf ubuntu-18.04-packages.tar.zst --zstd ubuntu-18.04-packages/
-
         mkdir ubuntu-20.04-packages
         mv *-package-ubuntu-20.04/*.deb ubuntu-20.04-packages/
         tar -cvf ubuntu-20.04-packages.tar.zst --zstd ubuntu-20.04-packages/
 
+        mkdir ubuntu-22.04-packages
+        mv *-package-ubuntu-22.04/*.deb ubuntu-22.04-packages/
+        tar -cvf ubuntu-22.04-packages.tar.zst --zstd ubuntu-22.04-packages/
+
+        mkdir ubuntu-24.04-packages
+        mv *-package-ubuntu-24.04/*.deb ubuntu-24.04-packages/
+        tar -cvf ubuntu-24.04-packages.tar.zst --zstd ubuntu-24.04-packages/
+
     - name: Tag release
       uses: ncipollo/release-action@v1
       with:
-        artifacts: archlinux-packages.tar.zst,archlinux-arm-packages.tar.zst,msys2-packages.zip,ubuntu-18.04-packages.tar.zst,ubuntu-20.04-packages.tar.zst
+        artifacts: archlinux-packages.tar.zst,archlinux-arm-packages.tar.zst,msys2-packages.zip,ubuntu-20.04-packages.tar.zst,ubuntu-22.04-packages.tar.zst,ubuntu-24.04-packages.tar.zst
         body: Packages
         token: ${{ secrets.GITHUB_TOKEN }}
