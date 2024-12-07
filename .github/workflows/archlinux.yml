@@ -38,7 +38,7 @@ jobs:
           rm -v *.log
 
       - name: "Upload binaries"
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: libnacs-git-package-archlinux
           path: ${{github.workspace}}/arch/libnacs-git/*.pkg.*
@@ -66,7 +66,7 @@ jobs:
           bash github/setup-archlinux-cn.sh
 
       - name: Download libnacs
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v4
         with:
           name: libnacs-git-package-archlinux
           path: libnacs-package
@@ -83,7 +83,7 @@ jobs:
           rm -v *.log
 
       - name: "Upload binaries"
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: python-libnacs-git-package-archlinux
           path: ${{github.workspace}}/arch/python-libnacs-git/*.pkg.*
@@ -111,7 +111,7 @@ jobs:
           bash github/setup-archlinux-cn.sh
 
       - name: Download libnacs
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v4
         with:
           name: libnacs-git-package-archlinux
           path: libnacs-package
@@ -128,7 +128,7 @@ jobs:
           rm -v *.log
 
       - name: "Upload binaries"
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: molecube2-git-package-archlinux
           path: ${{github.workspace}}/arch/molecube2-git/*.pkg.*
@@ -156,7 +156,7 @@ jobs:
           bash github/setup-archlinux-cn.sh
 
       - name: Download libnacs
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v4
         with:
           name: libnacs-git-package-archlinux
           path: libnacs-package
@@ -173,7 +173,7 @@ jobs:
           rm -v *.log
 
       - name: "Upload binaries"
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: labctrl-node-git-package-archlinux
           path: ${{github.workspace}}/arch/labctrl-node-git/*.pkg.*
@@ -201,7 +201,7 @@ jobs:
           rm -v *.log
 
       - name: "Upload binaries"
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: libspcm-package-archlinux
           path: ${{github.workspace}}/arch/libspcm/*.pkg.*

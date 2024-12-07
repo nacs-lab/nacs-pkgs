@@ -44,7 +44,7 @@ jobs:
           MAKEFLAGS="-j$(nproc)" su user -p -c makepkg-armv7
 
       - name: "Upload binaries"
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: linux-nacs-package-archlinux-arm
           path: ${{github.workspace}}/arch-arm/linux-nacs/*.pkg.*
@@ -74,7 +74,7 @@ jobs:
         run: |
           bash github/setup-archlinux-arm.sh
       - name: Download linux-nacs
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v4
         with:
           name: linux-nacs-package-archlinux-arm
           path: linux-nacs-package
@@ -87,7 +87,7 @@ jobs:
           MAKEFLAGS="-j$(nproc)" su user -p -c makepkg-armv7
 
       - name: "Upload binaries"
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: knacs-git-package-archlinux-arm
           path: ${{github.workspace}}/arch-arm/knacs-git/*.pkg.*
@@ -121,7 +121,7 @@ jobs:
           MAKEFLAGS="-j$(nproc)" su user -p -c makepkg-armv7
 
       - name: "Upload binaries"
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: nacs-boot-package-archlinux-arm
           path: ${{github.workspace}}/arch-arm/nacs-boot/*.pkg.*
@@ -151,12 +151,12 @@ jobs:
         run: |
           bash github/setup-archlinux-arm.sh
       - name: Download linux-nacs
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v4
         with:
           name: linux-nacs-package-archlinux-arm
           path: linux-nacs-package
       - name: Download knacs
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v4
         with:
           name: knacs-git-package-archlinux-arm
           path: knacs-git-package
@@ -172,7 +172,7 @@ jobs:
           MAKEFLAGS="-j$(nproc)" su user -p -c makepkg-armv7
 
       - name: "Upload binaries"
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: libnacs-git-package-archlinux-arm
           path: ${{github.workspace}}/arch-arm/libnacs-git/*.pkg.*
@@ -202,17 +202,17 @@ jobs:
         run: |
           bash github/setup-archlinux-arm.sh
       - name: Download linux-nacs
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v4
         with:
           name: linux-nacs-package-archlinux-arm
           path: linux-nacs-package
       - name: Download knacs
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v4
         with:
           name: knacs-git-package-archlinux-arm
           path: knacs-git-package
       - name: Download libnacs
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v4
         with:
           name: libnacs-git-package-archlinux-arm
           path: libnacs-git-package
@@ -228,7 +228,7 @@ jobs:
           MAKEFLAGS="-j$(nproc)" su user -p -c makepkg-armv7
 
       - name: "Upload binaries"
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: molecube2-git-package-archlinux-arm
           path: ${{github.workspace}}/arch-arm/molecube2-git/*.pkg.*

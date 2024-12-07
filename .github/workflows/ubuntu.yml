@@ -44,7 +44,7 @@ jobs:
       run: bash build.sh
 
     - name: "Upload binaries"
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: libnacs-git-package-ubuntu-${{matrix.UBUNTU_VER}}
         path: ${{github.workspace}}/ubuntu/libnacs/libnacs/build/libnacs*.deb
@@ -78,7 +78,7 @@ jobs:
       run: sudo apt-get install libopenlibm-dev ${{matrix.UBUNTU_VER != '18.04' && 'libsleef-dev' || ''}} libzmq3-dev libyaml-cpp-dev libtbb-dev llvm-${{matrix.LLVM_VER}}-dev python3
 
     - name: Download libnacs
-      uses: actions/download-artifact@v4.1.7
+      uses: actions/download-artifact@v4
       with:
         name: libnacs-git-package-ubuntu-${{matrix.UBUNTU_VER}}
         path: libnacs-package
@@ -91,7 +91,7 @@ jobs:
       run: bash build.sh
 
     - name: "Upload binaries"
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: python-libnacs-git-package-ubuntu-${{matrix.UBUNTU_VER}}
         path: ${{github.workspace}}/ubuntu/python-libnacs/python-libnacs/build/python-libnacs*.deb
@@ -140,7 +140,7 @@ jobs:
         sudo apt-get install -y nodejs
 
     - name: Download libnacs
-      uses: actions/download-artifact@v4.1.7
+      uses: actions/download-artifact@v4
       with:
         name: libnacs-git-package-ubuntu-${{matrix.UBUNTU_VER}}
         path: libnacs-package
@@ -153,7 +153,7 @@ jobs:
       run: bash build.sh
 
     - name: "Upload binaries"
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: labctrl-node-git-nodejs${{matrix.NODE_VER}}-package-ubuntu-${{matrix.UBUNTU_VER}}
         path: ${{github.workspace}}/ubuntu/labctrl-node/labctrl-node/build/labctrl-node*.deb
@@ -179,7 +179,7 @@ jobs:
       run: bash build.sh ${{matrix.UBUNTU_VER}}
 
     - name: "Upload binaries"
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: spcm-package-ubuntu-${{matrix.UBUNTU_VER}}
         path: ${{github.workspace}}/ubuntu/spcm/deb/*.deb

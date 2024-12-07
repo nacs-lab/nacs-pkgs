@@ -41,7 +41,7 @@ jobs:
         MAKEFLAGS="-j$(nproc)" MINGW_ARCH=MINGW64 makepkg-mingw
 
     - name: "Upload binaries"
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: mingw-w64-x86_64-sleef-git-package-msys2
         path: ${{github.workspace}}/windows/mingw-w64-sleef-git/*.pkg.tar.*
@@ -74,7 +74,7 @@ jobs:
           mingw-w64-x86_64-zeromq
 
     - name: Download Sleef
-      uses: actions/download-artifact@v4.1.7
+      uses: actions/download-artifact@v4
       with:
         name: mingw-w64-x86_64-sleef-git-package-msys2
         path: sleef-package
@@ -91,7 +91,7 @@ jobs:
         MAKEFLAGS="-j$(nproc)" MINGW_ARCH=MINGW64 makepkg-mingw
 
     - name: "Upload binaries"
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: mingw-w64-x86_64-libnacs-git-package-msys2
         path: ${{github.workspace}}/windows/mingw-w64-libnacs-git/*.pkg.tar.*
