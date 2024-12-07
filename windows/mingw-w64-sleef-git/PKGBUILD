@@ -21,10 +21,8 @@ makedepends=("git"
              "${MINGW_PACKAGE_PREFIX}-cmake"
              patch make)
 source=("git+https://github.com/shibatch/sleef"
-        0001-Use-addSuffix-in-place-of-cat-type.patch
         0002-Use-vector-calling-convention.patch)
 sha256sums=('SKIP'
-            '8992b4b0c01d8639c84c05ebb759cacb131298d3756df933b76bc6011a556249'
             '66813be9393f05c60ce2d87c5bcc8156ace4cfa753ed99abac3655a61af6a18d')
 
 pkgver() {
@@ -39,7 +37,6 @@ prepare() {
   git reset --hard HEAD
   git clean -fdx
 
-  patch -Np1 < ../0001-Use-addSuffix-in-place-of-cat-type.patch
   patch -Np1 < ../0002-Use-vector-calling-convention.patch
 }
 
