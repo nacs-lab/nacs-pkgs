@@ -22,7 +22,7 @@ jobs:
       volumes:
         - /sys/fs/cgroup:/sys/fs/cgroup
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - name: Initialize ArchLinux
         run: |
           bash github/setup-archlinux.sh
@@ -55,7 +55,7 @@ jobs:
       volumes:
         - /sys/fs/cgroup:/sys/fs/cgroup
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - name: Initialize ArchLinux
         run: |
           bash github/setup-archlinux.sh
@@ -100,7 +100,7 @@ jobs:
       volumes:
         - /sys/fs/cgroup:/sys/fs/cgroup
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - name: Initialize ArchLinux
         run: |
           bash github/setup-archlinux.sh
@@ -145,7 +145,7 @@ jobs:
       volumes:
         - /sys/fs/cgroup:/sys/fs/cgroup
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - name: Initialize ArchLinux
         run: |
           bash github/setup-archlinux.sh
@@ -189,7 +189,7 @@ jobs:
       volumes:
         - /sys/fs/cgroup:/sys/fs/cgroup
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - name: Initialize ArchLinux
         run: |
           bash github/setup-archlinux.sh
