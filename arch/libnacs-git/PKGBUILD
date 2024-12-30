@@ -1,16 +1,31 @@
 pkgname=libnacs-git
-pkgver=1147.3250a12
+pkgver=1192.d3fd75b
 pkgrel=1
 pkgdesc='Library used for the NaCs control system'
 arch=(x86_64 armv7h aarch64)
 url='http://github.com/nacs-lab/libnacs'
 license=('LGPL')
 options=('!strip' 'debug')
-depends=(intel-tbb llvm-libs libopenlibm.so sleef libyaml-cpp.so libzmq.so)
+depends=(libopenlibm.so libyaml-cpp.so libzmq.so)
 provides=(libnacs-utils.so libnacs-seq.so)
-makedepends=(cmake git llvm cppzmq)
+makedepends=(cmake git cppzmq)
 source=("git+https://github.com/nacs-lab/libnacs")
 md5sums=('SKIP')
+
+if [[ $CARCH == armv7h ]]; then
+  cmake_args=(-DENABLE_KNACS=On
+              -DENABLE_SIMD=Off
+              -DENABLE_LLVM=Off)
+  depends+=(knacs)
+  provides+=(libnacs-kernel.so)
+else
+  cmake_args=(-DENABLE_KNACS=Off
+              -DENABLE_SIMD=On
+              -DENABLE_LLVM=On)
+  depends+=(intel-tbb llvm-libs sleef)
+  makedepends+=(llvm)
+fi
+
 
 pkgver() {
   cd libnacs
@@ -30,23 +45,14 @@ build() {
 
   mkdir -p build
   cd build
-  cmake .. \
+  cmake .. "${cmake_args[@]}" \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=/usr/lib \
         -DCMAKE_INSTALL_BINDIR=/usr/bin -DCMAKE_INSTALL_DATADIR=/usr/share \
         -DCMAKE_INSTALL_INCLUDEDIR=/usr/include \
-        -DENABLE_KNACS=Off \
-        -DENABLE_LLVM=On \
         -DENABLE_TESTING=Off
   make
 }
-
-# check() {
-#   cd libnacs/build
-
-#   tools/nacs-cpudump
-#   ctest -E /excluded --output-on-failure -j $(nproc)
-# }
 
 package() {
   optdepends=(openlibm)
