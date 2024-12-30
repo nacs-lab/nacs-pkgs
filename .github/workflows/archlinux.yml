@@ -34,7 +34,7 @@ jobs:
       - name: Create package
         run: |
           cd arch/libnacs-git
-          MAKEFLAGS="-j$(nproc)" makepkg -si
+          MAKEFLAGS="-j$(nproc)" sudo -u user makepkg -si
           rm -v *.log
 
       - name: "Upload binaries"
@@ -75,7 +75,7 @@ jobs:
         run: |
           cd arch/python-libnacs-git
           pacman -U ../../libnacs-package/*.pkg.*
-          MAKEFLAGS="-j$(nproc)" makepkg -si
+          MAKEFLAGS="-j$(nproc)" sudo -u user makepkg -si
           rm -v *.log
 
       - name: "Upload binaries"
@@ -116,7 +116,7 @@ jobs:
         run: |
           cd arch/molecube2-git
           pacman -U ../../libnacs-package/*.pkg.*
-          MAKEFLAGS="-j$(nproc)" makepkg -si
+          MAKEFLAGS="-j$(nproc)" sudo -u user makepkg -si
           rm -v *.log
 
       - name: "Upload binaries"
@@ -157,7 +157,7 @@ jobs:
         run: |
           cd arch/labctrl-node-git
           pacman -U ../../libnacs-package/*.pkg.*
-          MAKEFLAGS="-j$(nproc)" makepkg -si
+          MAKEFLAGS="-j$(nproc)" sudo -u user makepkg -si
           rm -v *.log
 
       - name: "Upload binaries"
@@ -185,7 +185,7 @@ jobs:
       - name: Create package
         run: |
           cd arch/libspcm
-          MAKEFLAGS="-j$(nproc)" makepkg -si
+          MAKEFLAGS="-j$(nproc)" sudo -u user makepkg -si
           rm -v *.log
 
       - name: "Upload binaries"
