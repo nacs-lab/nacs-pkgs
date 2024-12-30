@@ -34,7 +34,7 @@ jobs:
       - name: Create package
         run: |
           cd arch/libnacs-git
-          MAKEFLAGS="-j$(nproc)" archlinuxcn-x86_64-build -- -U user
+          MAKEFLAGS="-j$(nproc)" makepkg -si
           rm -v *.log
 
       - name: "Upload binaries"
@@ -74,12 +74,8 @@ jobs:
       - name: Create package
         run: |
           cd arch/python-libnacs-git
-          deps_args=()
-          for f in ../../libnacs-package/*.pkg.*; do
-              echo "Adding dependency: $f"
-              deps_args=("${deps_args[@]}" -I "$f")
-          done
-          MAKEFLAGS="-j$(nproc)" archlinuxcn-x86_64-build -- -U user "${deps_args[@]}"
+          pacman -U ../../libnacs-package/*.pkg.*
+          MAKEFLAGS="-j$(nproc)" makepkg -si
           rm -v *.log
 
       - name: "Upload binaries"
@@ -119,12 +115,8 @@ jobs:
       - name: Create package
         run: |
           cd arch/molecube2-git
-          deps_args=()
-          for f in ../../libnacs-package/*.pkg.*; do
-              echo "Adding dependency: $f"
-              deps_args=("${deps_args[@]}" -I "$f")
-          done
-          MAKEFLAGS="-j$(nproc)" archlinuxcn-x86_64-build -- -U user "${deps_args[@]}"
+          pacman -U ../../libnacs-package/*.pkg.*
+          MAKEFLAGS="-j$(nproc)" makepkg -si
           rm -v *.log
 
       - name: "Upload binaries"
@@ -164,12 +156,8 @@ jobs:
       - name: Create package
         run: |
           cd arch/labctrl-node-git
-          deps_args=()
-          for f in ../../libnacs-package/*.pkg.*; do
-              echo "Adding dependency: $f"
-              deps_args=("${deps_args[@]}" -I "$f")
-          done
-          MAKEFLAGS="-j$(nproc)" archlinuxcn-x86_64-build -- -U user "${deps_args[@]}"
+          pacman -U ../../libnacs-package/*.pkg.*
+          MAKEFLAGS="-j$(nproc)" makepkg -si
           rm -v *.log
 
       - name: "Upload binaries"
@@ -197,7 +185,7 @@ jobs:
       - name: Create package
         run: |
           cd arch/libspcm
-          MAKEFLAGS="-j$(nproc)" extra-x86_64-build -- -U user
+          MAKEFLAGS="-j$(nproc)" makepkg -si
           rm -v *.log
 
       - name: "Upload binaries"
