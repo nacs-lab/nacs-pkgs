@@ -40,12 +40,13 @@ sha256sums=('2b3790c984a481d96b580b03eaa4283628fd8753dc9a04ef2a692f1b78a652bb'
 prepare() {
   cd ${_srcname}
 
+  echo "Setting version..."
+  echo "-$pkgrel" > localversion.10-pkgrel
+  echo "${pkgbase#linux}" > localversion.20-pkgname
+
   patch -Np1 < ../vadj-ctrl.patch
 
   cat "${srcdir}/config" > ./.config
-
-  # add pkgrel to extraversion
-  sed -ri "s|^(EXTRAVERSION =)(.*)|\1 \2-${pkgrel}|" Makefile
 
   # don't run depmod on 'make install'. We'll do this ourselves in packaging
   sed -i '2iexit 0' scripts/depmod.sh
@@ -66,7 +67,7 @@ build() {
 
   run_config=0
 
-  export MAKEFLAGS+=' ARCH=arm LOCALVERSION='
+  export MAKEFLAGS+=' ARCH=arm'
   export PATH="${srcdir}/bin:${PATH}"
   if ((run_config)); then
       # For running xconfig
@@ -96,6 +97,9 @@ build() {
   fi
 
   # yes "" | make config
+
+  # get kernel version
+  make -s kernelrelease > version
 
   # build!
   make ${MAKEFLAGS} UIMAGE_LOADADDR=0x8000 uImage modules
