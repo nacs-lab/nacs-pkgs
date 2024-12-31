@@ -10,3 +10,7 @@ pacman -Syu --noconfirm devtools
 systemd-machine-id-setup # devtools requires a machine ID
 sed -i "s|MAKEFLAGS=.*|MAKEFLAGS=-j$(nproc)|" /etc/makepkg.conf
 useradd -m user # makepkg needs to be run with non-root
+cat > "/etc/sudoers.d/user-pacman" <<EOF
+user ALL = NOPASSWD: ALL
+EOF
+chmod 440 "/etc/sudoers.d/user-pacman"
