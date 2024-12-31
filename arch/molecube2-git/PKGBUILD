@@ -6,8 +6,8 @@ arch=(x86_64 armv7h aarch64)
 url='http://github.com/nacs-lab/molecube2'
 license=('LGPL')
 options=('!strip' 'debug')
-makedepends=(cmake git)
-depends=(libnacs zeromq yaml-cpp)
+makedepends=(cmake git cppzmq)
+depends=(libnacs-utils.so libnacs-seq.so libyaml-cpp.so libzmq.so)
 source=("git+https://github.com/nacs-lab/molecube2#branch=seq")
 md5sums=('SKIP')
 
