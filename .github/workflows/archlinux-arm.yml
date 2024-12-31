@@ -223,7 +223,7 @@ jobs:
           pacman -S --noconfirm cmake
           pacman-armv7 -U --noconfirm ../../linux-nacs-package/linux-nacs-* ../../knacs-git-package/knacs-git-* ../../libnacs-git-package/libnacs-git-*
           for ((i = 0; i < 10; i++)); do
-              pacman-armv7 -S --noconfirm zeromq yaml-cpp && break
+              pacman-armv7 -S --noconfirm zeromq cppzmq yaml-cpp && break
           done
           MAKEFLAGS="-j$(nproc)" su user -p -c makepkg-armv7
 
