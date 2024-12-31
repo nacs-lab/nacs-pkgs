@@ -1,5 +1,5 @@
 pkgname=molecube-hw-git
-pkgver=0.0.1
+pkgver=0.0.2
 epoch=1
 pkgrel=1
 pkgdesc='NaCs control'
@@ -8,6 +8,8 @@ url='harvard.edu'
 license=('LGPL')
 _vitis_ver=2020.1
 makedepends=(git cmake "vitis=$_vitis_ver")
+provides=(molecube-hw)
+conflicts=(molecube-hw)
 source=("git+https://github.com/nacs-lab/molecube-hw")
 md5sums=('SKIP')
 
