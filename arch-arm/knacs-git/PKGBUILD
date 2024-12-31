@@ -1,9 +1,9 @@
 #
 
 pkgname=knacs-git
-_ker_ver_prefix=5.4.0
+_ker_ver_prefix=6.6.0
 _ker_ver_suffix=nacs
-_extramodules=extramodules-5.4-nacs
+_extramodules=extramodules-6.6-nacs
 pkgver=34.4c9fbd8
 pkgrel=3
 pkgdesc='Kernel driver for the NaCs control system'

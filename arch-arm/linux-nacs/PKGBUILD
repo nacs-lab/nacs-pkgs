@@ -42,7 +42,6 @@ prepare() {
 
   echo "Setting version..."
   echo "-$pkgrel" > localversion.10-pkgrel
-  echo "${pkgbase#linux}" > localversion.20-pkgname
 
   patch -Np1 < ../vadj-ctrl.patch
 
@@ -116,7 +115,7 @@ _package() {
 
   cd "${srcdir}/${_srcname}"
 
-  export MAKEFLAGS+=' ARCH=arm LOCALVERSION='
+  export MAKEFLAGS+=' ARCH=arm'
   export PATH="${srcdir}/bin:${PATH}"
   KARCH=arm
 
@@ -168,7 +167,7 @@ _package-headers() {
   provides=("linux-headers=${pkgver}")
   conflicts=('linux-headers')
 
-  export MAKEFLAGS+=' ARCH=arm LOCALVERSION='
+  export MAKEFLAGS+=' ARCH=arm'
   export PATH="${srcdir}/bin:${PATH}"
   KARCH=arm
 
