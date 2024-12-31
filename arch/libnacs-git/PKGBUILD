@@ -65,5 +65,5 @@ package() {
   # from `makepkg`.
   pv=("libnacs=$ver")
 
-  provides=("${pv[@]}")
+  provides+=("${pv[@]}")
 }
