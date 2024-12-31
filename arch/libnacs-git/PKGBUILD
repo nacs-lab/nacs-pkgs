@@ -55,7 +55,6 @@ build() {
 }
 
 package() {
-  optdepends=(openlibm)
   cd libnacs/build
 
   make install DESTDIR="${pkgdir}"

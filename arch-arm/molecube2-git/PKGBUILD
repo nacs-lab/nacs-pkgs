@@ -38,7 +38,7 @@ build() {
 }
 
 package() {
-  depends=('glibc' 'libnacs' 'zeromq' 'yaml-cpp')
+  depends=(libnacs-utils.so libnacs-seq.so libyaml-cpp.so libzmq.so)
   cd molecube2/build
 
   make install DESTDIR="${pkgdir}"

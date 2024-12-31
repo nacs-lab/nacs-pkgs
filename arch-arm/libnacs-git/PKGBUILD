@@ -7,14 +7,10 @@ url='http://github.com/nacs-lab/libnacs'
 license=('LGPL')
 options=('!strip' 'debug')
 makedepends=('cmake' 'git' "${CHOST}-gcc" 'arch-arm')
-provides=(libnacs)
+provides=(libnacs-utils.so libnacs-seq.so)
 conflicts=(libnacs)
 source=("git+https://github.com/nacs-lab/libnacs")
 md5sums=('SKIP')
-
-if [[ $CARCH == aarch64 ]]; then
-  depends+=(llvm-libs)
-fi
 
 pkgver() {
   cd libnacs
@@ -27,14 +23,17 @@ build() {
 
   CFLAGS=${CFLAGS/-fvar-tracking-assignments/}
   CXXFLAGS=${CXXFLAGS/-fvar-tracking-assignments/}
-
   if [[ $CARCH == armv7h ]]; then
     CFLAGS=${CFLAGS/-march=armv7-a/}
     CXXFLAGS=${CXXFLAGS/-march=armv7-a/}
     cmake_args=(-DCMAKE_TOOLCHAIN_FILE=/usr/share/cmake/Modules/ARMv7hf.cmake
-                -DENABLE_KNACS=On)
+                -DENABLE_KNACS=On
+                -DENABLE_SIMD=Off
+                -DENABLE_LLVM=Off)
   else
     cmake_args=(-DCMAKE_TOOLCHAIN_FILE=/usr/share/cmake/Modules/ARMv8.cmake
+                -DENABLE_KNACS=Off
+                -DENABLE_SIMD=On
                 -DENABLE_LLVM=On)
   fi
 
@@ -52,14 +51,27 @@ build() {
         -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=/usr/lib \
         -DCMAKE_INSTALL_BINDIR=/usr/bin -DCMAKE_INSTALL_DATADIR=/usr/share \
         -DCMAKE_INSTALL_INCLUDEDIR=/usr/include \
-        -DENABLE_SIMD=Off \
         -DENABLE_TESTING=Off
   make
 }
 
 package() {
-  optdepends=(knacs openlibm zeromq)
+  depends=(libopenlibm.so libyaml-cpp.so libzmq.so)
+  if [[ $CARCH == armv7h ]]; then
+    depends+=(knacs)
+    provides+=(libnacs-kernel.so)
+  else
+    depends+=(intel-tbb llvm-libs sleef)
+  fi
   cd libnacs/build-${CARCH}
 
   make install DESTDIR="${pkgdir}"
+
+  ver=$(cat "${pkgdir}/usr/lib/pkgconfig/nacs-utils.pc" | grep '^Version: ')
+  ver=${ver#Version: }
+  # This extra assignment needed to fool the stupid context-independent validation
+  # from `makepkg`.
+  pv=("libnacs=$ver")
+
+  provides+=("${pv[@]}")
 }
