@@ -98,7 +98,7 @@ build() {
   # yes "" | make config
 
   # build!
-  make ${MAKEFLAGS} UIMAGE_LOADADDR=0x8000 uImage modules zynq-zc702.dtb
+  make ${MAKEFLAGS} UIMAGE_LOADADDR=0x8000 uImage modules
 }
 
 _package() {
@@ -123,9 +123,6 @@ _package() {
 
   mkdir -p "${pkgdir}"/{boot,usr/lib/{modules,$pkgbase}}
   make INSTALL_MOD_PATH="${pkgdir}/usr" modules_install
-  # make INSTALL_DTBS_PATH="${pkgdir}/boot/dtbs" dtbs_install
-  # Provided by molecube-hw
-  # cp arch/$KARCH/boot/dts/zynq-zc702.dtb "${pkgdir}/boot/devicetree.dtb"
   cp arch/$KARCH/boot/uImage "${pkgdir}/boot/uImage"
 
   # make room for external modules
