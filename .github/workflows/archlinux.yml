@@ -35,7 +35,6 @@ jobs:
         run: |
           cd arch/libnacs-git
           MAKEFLAGS="-j$(nproc)" sudo -u user makepkg -si --noconfirm
-          rm -v *.log
 
       - name: "Upload binaries"
         uses: actions/upload-artifact@v4
@@ -76,7 +75,6 @@ jobs:
           cd arch/python-libnacs-git
           pacman -U ../../libnacs-package/*.pkg.*
           MAKEFLAGS="-j$(nproc)" sudo -u user makepkg -si --noconfirm
-          rm -v *.log
 
       - name: "Upload binaries"
         uses: actions/upload-artifact@v4
@@ -117,7 +115,6 @@ jobs:
           cd arch/molecube2-git
           pacman -U ../../libnacs-package/*.pkg.*
           MAKEFLAGS="-j$(nproc)" sudo -u user makepkg -si --noconfirm
-          rm -v *.log
 
       - name: "Upload binaries"
         uses: actions/upload-artifact@v4
@@ -158,7 +155,6 @@ jobs:
           cd arch/labctrl-node-git
           pacman -U ../../libnacs-package/*.pkg.*
           MAKEFLAGS="-j$(nproc)" sudo -u user makepkg -si --noconfirm
-          rm -v *.log
 
       - name: "Upload binaries"
         uses: actions/upload-artifact@v4
@@ -186,7 +182,6 @@ jobs:
         run: |
           cd arch/libspcm
           MAKEFLAGS="-j$(nproc)" sudo -u user makepkg -si --noconfirm
-          rm -v *.log
 
       - name: "Upload binaries"
         uses: actions/upload-artifact@v4
