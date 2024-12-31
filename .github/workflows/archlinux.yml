@@ -154,6 +154,7 @@ jobs:
         run: |
           cd arch/labctrl-node-git
           pacman -U --noconfirm ../../libnacs-package/*.pkg.*
+          pacman -S --noconfirm nodejs-lts-hydrogen
           MAKEFLAGS="-j$(nproc)" sudo -u user makepkg -si --noconfirm
 
       - name: "Upload binaries"
