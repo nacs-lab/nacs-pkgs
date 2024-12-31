@@ -56,12 +56,12 @@ build() {
 }
 
 package() {
-  depends=(libopenlibm.so libyaml-cpp.so libzmq.so)
+  depends=(libyaml-cpp.so libzmq.so)
   if [[ $CARCH == armv7h ]]; then
     depends+=(knacs)
     provides+=(libnacs-kernel.so)
   else
-    depends+=(intel-tbb llvm-libs sleef)
+    depends+=(libopenlibm.so intel-tbb llvm-libs sleef)
   fi
   cd libnacs/build-${CARCH}
 
