@@ -7,7 +7,7 @@ url='harvard.edu'
 license=('LGPL')
 options=('!strip' 'debug')
 makedepends=('cmake' "${CHOST}-gcc" 'arch-arm')
-source=("git+https://github.com/nacs-lab/molecube2#branch=seq")
+source=("git+https://github.com/nacs-lab/molecube2")
 md5sums=('SKIP')
 
 pkgver() {

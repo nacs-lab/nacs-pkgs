@@ -8,7 +8,7 @@ license=('LGPL')
 options=('!strip' 'debug')
 makedepends=(cmake git cppzmq)
 depends=(libnacs-utils.so libnacs-seq.so libyaml-cpp.so libzmq.so)
-source=("git+https://github.com/nacs-lab/molecube2#branch=seq")
+source=("git+https://github.com/nacs-lab/molecube2")
 md5sums=('SKIP')
 
 pkgver() {
