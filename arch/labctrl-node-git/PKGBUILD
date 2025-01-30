@@ -8,7 +8,7 @@ license=('LGPL')
 options=('!strip' 'debug')
 makedepends=(cmake git nodejs)
 depends=(libnacs npm sqlite zeromq)
-source=("git+https://github.com/nacs-lab/labctrl-node#branch=seq")
+source=("git+https://github.com/nacs-lab/labctrl-node")
 md5sums=('SKIP')
 
 pkgver() {

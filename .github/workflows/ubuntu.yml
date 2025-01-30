@@ -133,7 +133,6 @@ jobs:
     - uses: actions/checkout@v4
       with:
         repository: nacs-lab/labctrl-node
-        ref: seq
         path: ubuntu/labctrl-node/labctrl-node
         fetch-depth: 0 # for version/hash computation
 
