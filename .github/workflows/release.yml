@@ -13,28 +13,28 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Download ArchLinux packages
-      uses: dawidd6/action-download-artifact@v9
+      uses: dawidd6/action-download-artifact@v10
       with:
         workflow: archlinux.yml
         workflow_conclusion: success
         branch: master
 
     - name: Download ArchLinuxARM packages
-      uses: dawidd6/action-download-artifact@v9
+      uses: dawidd6/action-download-artifact@v10
       with:
         workflow: archlinux-arm.yml
         workflow_conclusion: success
         branch: master
 
     - name: Download MSYS2 packages
-      uses: dawidd6/action-download-artifact@v9
+      uses: dawidd6/action-download-artifact@v10
       with:
         workflow: msys2.yml
         workflow_conclusion: success
         branch: master
 
     - name: Download Ubuntu packages
-      uses: dawidd6/action-download-artifact@v9
+      uses: dawidd6/action-download-artifact@v10
       with:
         workflow: ubuntu.yml
         workflow_conclusion: success
