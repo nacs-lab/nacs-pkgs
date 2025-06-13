@@ -1,13 +1,13 @@
 pkgname=nacs-boot
 pkgver=1.0
-pkgrel=6
+pkgrel=7
 pkgdesc='Boot files for NaCs computer control'
 arch=('armv7h')
 url="http://github.com/nacs-lab"
 license=('GPL2')
 source=(boot.bin uEnv.txt set_vadj.sh nacs-boot-set-vadj.service)
 md5sums=('3841f85a78b703575f0512e6f41ef080'
-         '0229d4d2a56918304dd7d5bf5f83c595'
+         'ff97e6959a18c4f1af6b107033baf9b9'
          '585a51a73b85fe501ab9cd307947b9b8'
          '052d841417992b6b33f6b282c8805c0b')
 options=('!strip')
