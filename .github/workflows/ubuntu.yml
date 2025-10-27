@@ -78,7 +78,7 @@ jobs:
       run: sudo apt-get install ${{matrix.UBUNTU_VER != '24.04' && 'libopenlibm-dev' || ''}} ${{matrix.UBUNTU_VER != '18.04' && 'libsleef-dev' || ''}} libzmq3-dev libyaml-cpp-dev libtbb-dev llvm-${{matrix.LLVM_VER}}-dev python3
 
     - name: Download libnacs
-      uses: actions/download-artifact@v5
+      uses: actions/download-artifact@v6
       with:
         name: libnacs-git-package-ubuntu-${{matrix.UBUNTU_VER}}
         path: libnacs-package
@@ -145,7 +145,7 @@ jobs:
         sudo apt-get install -y nodejs
 
     - name: Download libnacs
-      uses: actions/download-artifact@v5
+      uses: actions/download-artifact@v6
       with:
         name: libnacs-git-package-ubuntu-${{matrix.UBUNTU_VER}}
         path: libnacs-package
