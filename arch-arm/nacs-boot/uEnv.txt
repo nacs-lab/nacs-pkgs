@@ -1,3 +1,2 @@
 ethaddr=00:0a:35:00:01:22
 bootargs=rw quiet console=ttyPS0,115200
-uenvcmd=run mmc_loadbit;fatload mmc 0 0x4000000 ${kernel_image};fatload mmc 0 0x3A00000 ${devicetree_image};fatload mmc 0 0x2000000 ${ramdisk_image};bootm 0x4000000 0x2000000 0x3A00000
