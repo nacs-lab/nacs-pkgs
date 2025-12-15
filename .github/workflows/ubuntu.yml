@@ -42,7 +42,7 @@ jobs:
       run: bash build.sh
 
     - name: "Upload binaries"
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: libnacs-git-package-ubuntu-${{matrix.UBUNTU_VER}}
         path: ${{github.workspace}}/ubuntu/libnacs/libnacs/build/libnacs*.deb
@@ -91,7 +91,7 @@ jobs:
       run: bash build.sh
 
     - name: "Upload binaries"
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: python-libnacs-git-package-ubuntu-${{matrix.UBUNTU_VER}}
         path: ${{github.workspace}}/ubuntu/python-libnacs/python-libnacs/build/python-libnacs*.deb
@@ -158,7 +158,7 @@ jobs:
       run: bash build.sh
 
     - name: "Upload binaries"
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: labctrl-node-git-nodejs${{matrix.NODE_VER}}-package-ubuntu-${{matrix.UBUNTU_VER}}
         path: ${{github.workspace}}/ubuntu/labctrl-node/labctrl-node/build/labctrl-node*.deb
@@ -185,7 +185,7 @@ jobs:
       run: bash build.sh ${{matrix.UBUNTU_VER}}
 
     - name: "Upload binaries"
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: spcm-package-ubuntu-${{matrix.UBUNTU_VER}}
         path: ${{github.workspace}}/ubuntu/spcm/deb/*.deb

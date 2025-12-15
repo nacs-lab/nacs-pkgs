@@ -44,7 +44,7 @@ jobs:
           MAKEFLAGS="-j$(nproc)" su user -p -c makepkg-armv7
 
       - name: "Upload binaries"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: linux-nacs-package-archlinux-arm
           path: ${{github.workspace}}/arch-arm/linux-nacs/*.pkg.*
@@ -87,7 +87,7 @@ jobs:
           MAKEFLAGS="-j$(nproc)" su user -p -c makepkg-armv7
 
       - name: "Upload binaries"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: knacs-git-package-archlinux-arm
           path: ${{github.workspace}}/arch-arm/knacs-git/*.pkg.*
@@ -121,7 +121,7 @@ jobs:
           MAKEFLAGS="-j$(nproc)" su user -p -c makepkg-armv7
 
       - name: "Upload binaries"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: nacs-boot-package-archlinux-arm
           path: ${{github.workspace}}/arch-arm/nacs-boot/*.pkg.*
@@ -172,7 +172,7 @@ jobs:
           MAKEFLAGS="-j$(nproc)" su user -p -c makepkg-armv7
 
       - name: "Upload binaries"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: libnacs-git-package-archlinux-arm
           path: ${{github.workspace}}/arch-arm/libnacs-git/*.pkg.*
@@ -228,7 +228,7 @@ jobs:
           MAKEFLAGS="-j$(nproc)" su user -p -c makepkg-armv7
 
       - name: "Upload binaries"
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: molecube2-git-package-archlinux-arm
           path: ${{github.workspace}}/arch-arm/molecube2-git/*.pkg.*
