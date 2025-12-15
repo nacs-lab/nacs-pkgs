@@ -74,7 +74,7 @@ jobs:
         run: |
           bash github/setup-archlinux-arm.sh
       - name: Download linux-nacs
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: linux-nacs-package-archlinux-arm
           path: linux-nacs-package
@@ -151,12 +151,12 @@ jobs:
         run: |
           bash github/setup-archlinux-arm.sh
       - name: Download linux-nacs
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: linux-nacs-package-archlinux-arm
           path: linux-nacs-package
       - name: Download knacs
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: knacs-git-package-archlinux-arm
           path: knacs-git-package
@@ -202,17 +202,17 @@ jobs:
         run: |
           bash github/setup-archlinux-arm.sh
       - name: Download linux-nacs
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: linux-nacs-package-archlinux-arm
           path: linux-nacs-package
       - name: Download knacs
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: knacs-git-package-archlinux-arm
           path: knacs-git-package
       - name: Download libnacs
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v7
         with:
           name: libnacs-git-package-archlinux-arm
           path: libnacs-git-package
