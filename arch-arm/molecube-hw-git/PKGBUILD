@@ -47,5 +47,6 @@ package() {
   install -dm755 "${pkgdir}/boot/"
   install -T -Dm644 system.bit.bin "${pkgdir}/boot/system.bit.bin"
   install -T -Dm644 dts/system.dtb "${pkgdir}/boot/devicetree.dtb"
-  # install -T -Dm644 boot/boot.bin "${pkgdir}/boot/boot.bin"
+  install -T -Dm644 boot/boot.bin "${pkgdir}/boot/boot.bin"
+  install -T -Dm644 boot/boot.scr "${pkgdir}/boot/boot.scr"
 }

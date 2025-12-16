@@ -5,7 +5,7 @@ pkgdesc='Boot files for NaCs computer control'
 arch=('armv7h')
 url="http://github.com/nacs-lab"
 license=('GPL2')
-source=(boot.bin uEnv.txt set_vadj.sh nacs-boot-set-vadj.service)
+source=(uEnv.txt set_vadj.sh nacs-boot-set-vadj.service)
 md5sums=('3841f85a78b703575f0512e6f41ef080'
          'ff97e6959a18c4f1af6b107033baf9b9'
          '585a51a73b85fe501ab9cd307947b9b8'
@@ -16,7 +16,7 @@ backup=('boot/uEnv.txt')
 package() {
   depends=(molecube-hw)
   install -dm755 "${pkgdir}/boot/"
-  install -Dm644 boot.bin uEnv.txt "${pkgdir}/boot/"
+  install -Dm644 uEnv.txt "${pkgdir}/boot/"
 
   # VADJ setting
   mkdir -p "${pkgdir}/usr/lib/nacs-boot/"
