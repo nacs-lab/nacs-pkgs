@@ -16,7 +16,7 @@ _xilinx_ver=v2024.2
 _srcname=linux-xlnx-xilinx-${_xilinx_ver}
 
 pkgver=${_kernelver}
-pkgrel=1
+pkgrel=4
 arch=('armv7h')
 url="https://github.com/Xilinx/linux-xlnx"
 license=('GPL2')
@@ -28,14 +28,16 @@ source=(https://github.com/Xilinx/linux-xlnx/archive/refs/tags/xilinx-${_xilinx_
         '60-linux.hook'
         '90-linux.hook'
         mkuramdisk.sh
-        'config')
+        'config'
+        nacs.dts)
 sha256sums=('2b3790c984a481d96b580b03eaa4283628fd8753dc9a04ef2a692f1b78a652bb'
             '97e49b368e317d3690a4a67a341fe9107b4ac3eb4c058a68d329984872c40177'
             'b8a53611c695e4f750475647c17af573f93f301becc71368316dd479e1d9b312'
             'ae2e95db94ef7176207c690224169594d49445e04249d2499e9d2fbc117a0b21'
             'd089723f04a43e1bcc1d065b846b21f5f736d7d5d62fef98cad3b7c1fc61a774'
             'e5816f26e5c3eca37586dae721258242f0f1006ebf4d43e7e861fd3eb8e7260b'
-            'c07fefcf253296adefff59f8023fc2bbda7df3042d5acecda856be3e5a610389')
+            'c07fefcf253296adefff59f8023fc2bbda7df3042d5acecda856be3e5a610389'
+            '0ccc9ea8f123a2eec35c46fd3d044025dbcd5e7924d00e085cc83f8daccfff8a')
 
 prepare() {
   cd ${_srcname}
@@ -44,6 +46,8 @@ prepare() {
   echo "-$pkgrel" > localversion.10-pkgrel
 
   patch -Np1 < ../vadj-ctrl.patch
+
+  cp ../nacs.dts arch/arm/boot/dts/xilinx/
 
   cat "${srcdir}/config" > ./.config
 
@@ -101,7 +105,7 @@ build() {
   make -s kernelrelease > version
 
   # build!
-  make ${MAKEFLAGS} UIMAGE_LOADADDR=0x8000 uImage modules
+  make ${MAKEFLAGS} UIMAGE_LOADADDR=0x8000 uImage modules xilinx/nacs.dtb
 }
 
 _package() {
@@ -126,6 +130,8 @@ _package() {
 
   mkdir -p "${pkgdir}"/{boot,usr/lib/{modules,$pkgbase}}
   make INSTALL_MOD_PATH="${pkgdir}/usr" modules_install
+  # make INSTALL_DTBS_PATH="${pkgdir}/boot/dtbs" dtbs_install
+  cp arch/$KARCH/boot/dts/xilinx/nacs.dtb "${pkgdir}/boot/devicetree.dtb"
   cp arch/$KARCH/boot/uImage "${pkgdir}/boot/uImage"
 
   # make room for external modules

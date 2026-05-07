@@ -1,0 +1,24 @@
+#include "zynq-zc702.dts"
+
+/ {
+    amba_pl: amba_pl {
+        #address-cells = <1>;
+        #size-cells = <1>;
+        compatible = "simple-bus";
+        ranges ;
+        pulse_controller_0: pulse_controller@73000000 {
+            ocmpool = <&{ocm/ocm-sram@0}>;
+            compatible = "xlnx,pulse-controller-5";
+            reg = <0x73000000 0x1000>;
+        };
+    };
+};
+
+&ocm {
+    reg = <0xfffc0000 0x40000>;
+    ranges = <0 0xfffc0000 0x40000>;
+    ocm-sram@0 {
+        reg = <0x0 0x40000>;
+        pool;
+    };
+};
