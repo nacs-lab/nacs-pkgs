@@ -1,0 +1,2 @@
+# Rules file for the NaCs device driver
+KERNEL=="knacs", SUBSYSTEM=="nacs", MODE="0666"

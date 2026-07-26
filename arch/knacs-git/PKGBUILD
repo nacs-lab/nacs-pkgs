@@ -1,0 +1,78 @@
+#
+
+pkgname=knacs-git
+_ker_ver_prefix=6.6.0
+_ker_ver_suffix=nacs
+_extramodules=extramodules-6.6-nacs
+pkgver=49.05b58f5
+pkgrel=1
+pkgdesc='Kernel driver for the NaCs control system'
+arch=('armv7h')
+url='http://github.com/nacs-lab/knacs'
+license=('LGPL')
+makedepends=('cmake' "${CHOST}-gcc" 'arch-arm')
+conflicts=("knacs")
+provides=("knacs=1:${pkgver}-${pkgrel}")
+source=("git+https://github.com/nacs-lab/knacs"
+        99-knacs.rules)
+md5sums=('SKIP'
+         '706b8249bc7c369656efb9853b726d8c')
+options=(!strip)
+
+pkgver() {
+  cd knacs
+
+  echo "$(git rev-list --count HEAD).$(git rev-parse --short HEAD)"
+}
+
+build() {
+  cd knacs
+
+  CFLAGS=${CFLAGS/-fvar-tracking-assignments/}
+  CXXFLAGS=${CXXFLAGS/-fvar-tracking-assignments/}
+
+  CFLAGS=${CFLAGS/-march=armv7-a/}
+  CXXFLAGS=${CXXFLAGS/-march=armv7-a/}
+
+  kdirs=("/usr/lib/modules/"${_ker_ver_prefix}-*-${_ker_ver_suffix})
+  if [[ ${#kdirs[@]} = 0 ]]; then
+    echo "Cannot find kernel module directory in /usr/lib/modules/" >&2
+    exit 1
+  elif [[ ${#kdirs[@]} != 1 ]]; then
+    echo "Find multiple kernel module directory in /usr/lib/modules/" >&2
+    exit 1
+  fi
+  kdir=${kdirs[0]}
+  kver=${kdir##*/}
+  if [[ "$kver" = "${_ker_ver_prefix}-*-${_ker_ver_suffix}" ]]; then
+    echo "Cannot find kernel module directory in /usr/lib/modules/" >&2
+    exit 1
+  fi
+  krel=${kver%-${_ker_ver_suffix}}
+  krel=${krel##*-}
+
+  mkdir -p build
+  cd build
+  echo "${krel}" > .kernel_pkgrel
+  cmake .. -DCMAKE_INSTALL_PREFIX=/usr \
+        -DKDIR=${kdir}/build \
+        -DKERNEL_VER=${kver} \
+        -DEXTRAMODULES_DIR=/usr/lib/modules/${_extramodules}
+
+  make
+}
+
+package() {
+  cd knacs/build
+  # Fool the makepkg pre-scanner since it'll otherwise complain about wrong depends
+  _depends=("linux-nacs=${_ker_ver_prefix}-$(cat .kernel_pkgrel)")
+  depends=("${_depends[@]}")
+
+  make install DESTDIR="${pkgdir}"
+
+  install -Dm644 "${srcdir}/99-knacs.rules" \
+          "${pkgdir}/etc/udev/rules.d/99-knacs.rules"
+
+  install -d -m755 "${pkgdir}/usr/lib/modules-load.d"
+  echo "knacs" >> "${pkgdir}/usr/lib/modules-load.d/knacs.conf"
+}
