@@ -10,7 +10,7 @@ jobs:
     name: Create release
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v7
 
     - name: Download ArchLinux packages
       uses: dawidd6/action-download-artifact@v21
