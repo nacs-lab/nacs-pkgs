@@ -15,12 +15,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - UBUNTU_VER: 20.04
-            LLVM_VER: 11
           - UBUNTU_VER: 22.04
             LLVM_VER: 15
           - UBUNTU_VER: 24.04
             LLVM_VER: 18
+          - UBUNTU_VER: 26.04
+            LLVM_VER: 21
 
     env:
       UBUNTU_VER: ${{matrix.UBUNTU_VER}}
@@ -35,7 +35,7 @@ jobs:
         path: ubuntu/libnacs/libnacs
 
     - name: Install dependencies
-      run: sudo apt-get install ${{matrix.UBUNTU_VER != '24.04' && 'libopenlibm-dev' || ''}} libsleef-dev libzmq3-dev libyaml-cpp-dev libtbb-dev llvm-${{matrix.LLVM_VER}}-dev
+      run: sudo apt-get install ${{matrix.UBUNTU_VER == '22.04' && 'libopenlibm-dev' || ''}} libsleef-dev libzmq3-dev libyaml-cpp-dev libtbb-dev llvm-${{matrix.LLVM_VER}}-dev
 
     - name: Create package
       working-directory: ${{github.workspace}}/ubuntu/libnacs
@@ -55,12 +55,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - UBUNTU_VER: 20.04
-            LLVM_VER: 11
           - UBUNTU_VER: 22.04
             LLVM_VER: 15
           - UBUNTU_VER: 24.04
             LLVM_VER: 18
+          - UBUNTU_VER: 26.04
+            LLVM_VER: 21
 
     env:
       UBUNTU_VER: ${{matrix.UBUNTU_VER}}
@@ -75,7 +75,7 @@ jobs:
         path: ubuntu/python-libnacs/python-libnacs
 
     - name: Install dependencies
-      run: sudo apt-get install ${{matrix.UBUNTU_VER != '24.04' && 'libopenlibm-dev' || ''}} ${{matrix.UBUNTU_VER != '18.04' && 'libsleef-dev' || ''}} libzmq3-dev libyaml-cpp-dev libtbb-dev llvm-${{matrix.LLVM_VER}}-dev python3
+      run: sudo apt-get install ${{matrix.UBUNTU_VER == '22.04' && 'libopenlibm-dev' || ''}} libsleef-dev libzmq3-dev libyaml-cpp-dev libtbb-dev llvm-${{matrix.LLVM_VER}}-dev python3
 
     - name: Download libnacs
       uses: actions/download-artifact@v8
@@ -104,17 +104,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - UBUNTU_VER: 20.04
-            LLVM_VER: 11
-            NODE_VER: 20
           - UBUNTU_VER: 22.04
             LLVM_VER: 15
             NODE_VER: 20
           - UBUNTU_VER: 24.04
             LLVM_VER: 18
             NODE_VER: 20
-          - UBUNTU_VER: 20.04
-            LLVM_VER: 11
+          - UBUNTU_VER: 26.04
+            LLVM_VER: 21
             NODE_VER: 22
           - UBUNTU_VER: 22.04
             LLVM_VER: 15
@@ -122,6 +119,9 @@ jobs:
           - UBUNTU_VER: 24.04
             LLVM_VER: 18
             NODE_VER: 22
+          - UBUNTU_VER: 26.04
+            LLVM_VER: 21
+            NODE_VER: 24
 
     env:
       UBUNTU_VER: ${{matrix.UBUNTU_VER}}
@@ -137,7 +137,7 @@ jobs:
         fetch-depth: 0 # for version/hash computation
 
     - name: Install dependencies
-      run: sudo apt-get install ${{matrix.UBUNTU_VER != '24.04' && 'libopenlibm-dev' || ''}} libsleef-dev libzmq3-dev libyaml-cpp-dev libtbb-dev llvm-${{matrix.LLVM_VER}}-dev
+      run: sudo apt-get install ${{matrix.UBUNTU_VER == '22.04' && 'libopenlibm-dev' || ''}} libsleef-dev libzmq3-dev libyaml-cpp-dev libtbb-dev llvm-${{matrix.LLVM_VER}}-dev
 
     - name: Install NodeJS
       run: |
@@ -170,9 +170,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - UBUNTU_VER: 20.04
           - UBUNTU_VER: 22.04
           - UBUNTU_VER: 24.04
+          - UBUNTU_VER: 26.04
 
     env:
       UBUNTU_VER: ${{matrix.UBUNTU_VER}}
