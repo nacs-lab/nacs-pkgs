@@ -1,6 +1,6 @@
 #!/bin/bash
 
-drv_ver=527
+drv_ver=710
 ubuntu_rel=${1:-$(lsb_release -rs)}
 
 echo "Building for Ubuntu ${ubuntu_rel}"
