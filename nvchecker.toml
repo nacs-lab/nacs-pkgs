@@ -1,0 +1,58 @@
+# Upstream sources checked by `.github/workflows/update.yml`.
+#
+# Each entry is named after the directory of the PKGBUILD it tracks.
+# Only `-git` packages whose `pkgver` ends with the abbreviated commit hash
+# (`<count>.<hash>` or `<tag>.<n>.g<hash>`) are supported.
+# The upstream commit is compared to that hash and the package is rebuilt
+# (with `pkgver` updated by `makepkg`) when they differ.
+#
+# Packages not listed here (e.g. linux-nacs, libspcm, nacs-boot and sleef,
+# which need manual intervention to update) are only rebuilt when their
+# PKGBUILD version is changed or when one of their dependencies is rebuilt.
+
+# ArchLinux
+
+["arch/libnacs-git"]
+source = "git"
+git = "https://github.com/nacs-lab/libnacs"
+use_commit = true
+
+["arch/python-libnacs-git"]
+source = "git"
+git = "https://github.com/nacs-lab/python-libnacs"
+branch = "seq"
+use_commit = true
+
+["arch/molecube2-git"]
+source = "git"
+git = "https://github.com/nacs-lab/molecube2"
+use_commit = true
+
+["arch/labctrl-node-git"]
+source = "git"
+git = "https://github.com/nacs-lab/labctrl-node"
+use_commit = true
+
+# ArchLinux ARM
+
+["arch-arm/knacs-git"]
+source = "git"
+git = "https://github.com/nacs-lab/knacs"
+use_commit = true
+
+["arch-arm/libnacs-git"]
+source = "git"
+git = "https://github.com/nacs-lab/libnacs"
+use_commit = true
+
+["arch-arm/molecube2-git"]
+source = "git"
+git = "https://github.com/nacs-lab/molecube2"
+use_commit = true
+
+# MSYS2
+
+["windows/mingw-w64-libnacs-git"]
+source = "git"
+git = "https://github.com/nacs-lab/libnacs"
+use_commit = true

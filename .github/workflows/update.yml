@@ -1,0 +1,146 @@
+name: Update
+
+# Check for package updates, build the packages that need to be updated
+# and publish them to the pacman repositories on the gh-pages branch.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 8 * * *'
+  push:
+    branches: [ master ]
+
+concurrency:
+  group: update
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    name: Check for updates
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    outputs:
+      ref: ${{ steps.commit.outputs.ref }}
+      archlinux: ${{ steps.check.outputs.archlinux }}
+      archlinux-arm: ${{ steps.check.outputs.archlinux-arm }}
+      msys2: ${{ steps.check.outputs.msys2 }}
+    steps:
+      # git needs to be installed before checkout to get a git repository
+      - name: Install dependencies
+        run: |
+          pacman-key --init
+          pacman-key --populate archlinux
+          pacman -Syu --noconfirm git nvchecker
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: List published packages
+        run: |
+          git ls-remote --exit-code --heads origin gh-pages && ret=0 || ret=$?
+          if [[ $ret = 0 ]]; then
+              git fetch --depth 1 --filter=blob:none origin gh-pages
+              git ls-tree -r --name-only FETCH_HEAD > ../published.txt
+          elif [[ $ret = 2 ]]; then
+              # Not published yet
+              : > ../published.txt
+          else
+              exit $ret
+          fi
+
+      - name: Check for updates
+        id: check
+        run: python github/check-updates.py --published ../published.txt
+
+      - name: Commit pkgrel bumps
+        id: commit
+        run: |
+          bash github/push-master.sh "Rebuild packages for updated dependencies"
+          echo "ref=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+  archlinux:
+    name: ArchLinux
+    needs: check
+    if: needs.check.outputs.archlinux != ''
+    uses: ./.github/workflows/archlinux.yml
+    with:
+      ref: ${{ needs.check.outputs.ref }}
+      build: ${{ needs.check.outputs.archlinux }}
+
+  archlinux-arm:
+    name: ArchLinux ARM
+    needs: check
+    if: needs.check.outputs.archlinux-arm != ''
+    uses: ./.github/workflows/archlinux-arm.yml
+    with:
+      ref: ${{ needs.check.outputs.ref }}
+      build: ${{ needs.check.outputs.archlinux-arm }}
+
+  msys2:
+    name: MSYS2
+    needs: check
+    if: needs.check.outputs.msys2 != ''
+    uses: ./.github/workflows/msys2.yml
+    with:
+      ref: ${{ needs.check.outputs.ref }}
+      build: ${{ needs.check.outputs.msys2 }}
+
+  publish:
+    name: Publish packages
+    needs: [check, archlinux, archlinux-arm, msys2]
+    # Publish whatever was built successfully even if some of the builds failed.
+    # The failed ones will be retried in the next run.
+    if: >-
+      !cancelled() && needs.check.result == 'success' &&
+      (needs.check.outputs.archlinux != '' || needs.check.outputs.archlinux-arm != '' ||
+       needs.check.outputs.msys2 != '')
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    steps:
+      - name: Install dependencies
+        run: |
+          pacman-key --init
+          pacman-key --populate archlinux
+          pacman -Syu --noconfirm git
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.check.outputs.ref }}
+          fetch-depth: 0
+
+      - name: Download packages
+        uses: actions/download-artifact@v8
+        with:
+          path: ../artifacts
+
+      - name: Checkout package repository
+        run: |
+          git worktree add -q --detach ../pages
+          cd ../pages
+          git checkout -q --orphan gh-pages-new
+          git rm -rfq .
+          git ls-remote --exit-code --heads origin gh-pages && ret=0 || ret=$?
+          if [[ $ret = 0 ]]; then
+              git fetch -q --depth 1 origin gh-pages
+              git checkout FETCH_HEAD -- .
+          elif [[ $ret != 2 ]]; then
+              exit $ret
+          fi
+
+      - name: Update package repository
+        run: bash github/publish-packages.sh ../artifacts ../pages
+
+      - name: Push package repository
+        working-directory: ../pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -f .
+          git commit -q -m "Update packages from ${GITHUB_SHA}"
+          # Keep only one commit to limit the size of the branch.
+          git push -f origin HEAD:gh-pages
+
+      - name: Commit package versions
+        run: bash github/push-master.sh "Update packages"
