@@ -1,5 +1,5 @@
 pkgname=labctrl-node-git
-pkgver=224.e694c0f
+pkgver=244.220fe70
 pkgrel=1
 pkgdesc='NaCs Control Web Interface'
 arch=(x86_64 armv7h aarch64)

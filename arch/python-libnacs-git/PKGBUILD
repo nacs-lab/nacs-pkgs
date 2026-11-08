@@ -1,5 +1,5 @@
 pkgname=python-libnacs-git
-pkgver=53.01349e0
+pkgver=62.c0ec8f6
 pkgrel=1
 pkgdesc='Library used for the NaCs control system'
 arch=(any)
