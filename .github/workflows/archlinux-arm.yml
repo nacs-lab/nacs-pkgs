@@ -68,8 +68,8 @@ jobs:
         with:
           name: linux-nacs-package-archlinux-arm
           path: |
-            ${{github.workspace}}/arch-arm/linux-nacs/*.pkg.*
-            ${{github.workspace}}/arch-arm/linux-nacs/PKGBUILD
+            arch-arm/linux-nacs/*.pkg.*
+            arch-arm/linux-nacs/PKGBUILD
 
   build-knacs:
     name: Build knacs
@@ -126,8 +126,8 @@ jobs:
         with:
           name: knacs-git-package-archlinux-arm
           path: |
-            ${{github.workspace}}/arch-arm/knacs-git/*.pkg.*
-            ${{github.workspace}}/arch-arm/knacs-git/PKGBUILD
+            arch-arm/knacs-git/*.pkg.*
+            arch-arm/knacs-git/PKGBUILD
 
   build-nacs-boot:
     name: Build nacs-boot
@@ -165,8 +165,8 @@ jobs:
         with:
           name: nacs-boot-package-archlinux-arm
           path: |
-            ${{github.workspace}}/arch-arm/nacs-boot/*.pkg.*
-            ${{github.workspace}}/arch-arm/nacs-boot/PKGBUILD
+            arch-arm/nacs-boot/*.pkg.*
+            arch-arm/nacs-boot/PKGBUILD
 
   build-libnacs:
     name: Build libnacs
@@ -232,8 +232,8 @@ jobs:
         with:
           name: libnacs-git-package-archlinux-arm
           path: |
-            ${{github.workspace}}/arch-arm/libnacs-git/*.pkg.*
-            ${{github.workspace}}/arch-arm/libnacs-git/PKGBUILD
+            arch-arm/libnacs-git/*.pkg.*
+            arch-arm/libnacs-git/PKGBUILD
 
   build-molecube2:
     name: Build molecube2
@@ -293,5 +293,5 @@ jobs:
         with:
           name: molecube2-git-package-archlinux-arm
           path: |
-            ${{github.workspace}}/arch-arm/molecube2-git/*.pkg.*
-            ${{github.workspace}}/arch-arm/molecube2-git/PKGBUILD
+            arch-arm/molecube2-git/*.pkg.*
+            arch-arm/molecube2-git/PKGBUILD

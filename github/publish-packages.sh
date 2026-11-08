@@ -55,9 +55,15 @@ for artifact in "$artifacts"/*-package-"$platform"/; do
     if [[ -f "$artifact/PKGBUILD" && -f "$srcdir/PKGBUILD" ]]; then
         cp "$artifact/PKGBUILD" "$srcdir/PKGBUILD"
     fi
+    found=0
     for pkg in "$artifact"/*.pkg.tar.*; do
-        [[ -f "$pkg" ]] && pkgs+=("$pkg")
+        [[ -f "$pkg" ]] || continue
+        pkgs+=("$pkg")
+        found=1
     done
+    if [[ $found = 0 ]]; then
+        echo "::warning::No package found in artifact ${artifact##*/}"
+    fi
 done
 
 if [[ ${#pkgs[@]} = 0 ]]; then

@@ -60,8 +60,8 @@ jobs:
         with:
           name: libnacs-git-package-archlinux
           path: |
-            ${{github.workspace}}/arch/libnacs-git/*.pkg.*
-            ${{github.workspace}}/arch/libnacs-git/PKGBUILD
+            arch/libnacs-git/*.pkg.*
+            arch/libnacs-git/PKGBUILD
 
   build-python-libnacs:
     name: Build python-libnacs
@@ -105,8 +105,8 @@ jobs:
         with:
           name: python-libnacs-git-package-archlinux
           path: |
-            ${{github.workspace}}/arch/python-libnacs-git/*.pkg.*
-            ${{github.workspace}}/arch/python-libnacs-git/PKGBUILD
+            arch/python-libnacs-git/*.pkg.*
+            arch/python-libnacs-git/PKGBUILD
 
   build-molecube2:
     name: Build molecube2
@@ -150,8 +150,8 @@ jobs:
         with:
           name: molecube2-git-package-archlinux
           path: |
-            ${{github.workspace}}/arch/molecube2-git/*.pkg.*
-            ${{github.workspace}}/arch/molecube2-git/PKGBUILD
+            arch/molecube2-git/*.pkg.*
+            arch/molecube2-git/PKGBUILD
 
   build-labctrl-node:
     name: Build labctrl-node
@@ -196,8 +196,8 @@ jobs:
         with:
           name: labctrl-node-git-package-archlinux
           path: |
-            ${{github.workspace}}/arch/labctrl-node-git/*.pkg.*
-            ${{github.workspace}}/arch/labctrl-node-git/PKGBUILD
+            arch/labctrl-node-git/*.pkg.*
+            arch/labctrl-node-git/PKGBUILD
 
   build-libspcm:
     name: Build libspcm
@@ -228,5 +228,5 @@ jobs:
         with:
           name: libspcm-package-archlinux
           path: |
-            ${{github.workspace}}/arch/libspcm/*.pkg.*
-            ${{github.workspace}}/arch/libspcm/PKGBUILD
+            arch/libspcm/*.pkg.*
+            arch/libspcm/PKGBUILD
