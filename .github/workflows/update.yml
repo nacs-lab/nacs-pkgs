@@ -90,61 +90,32 @@ jobs:
       ref: ${{ needs.check.outputs.ref }}
       build: ${{ needs.check.outputs.msys2 }}
 
-  publish:
-    name: Publish packages
-    needs: [check, archlinux, archlinux-arm, msys2]
-    # Publish whatever was built successfully even if some of the builds failed.
-    # The failed ones will be retried in the next run.
-    if: >-
-      !cancelled() && needs.check.result == 'success' &&
-      (needs.check.outputs.archlinux != '' || needs.check.outputs.archlinux-arm != '' ||
-       needs.check.outputs.msys2 != '')
-    runs-on: ubuntu-latest
-    container: archlinux:base-devel
-    steps:
-      - name: Install dependencies
-        run: |
-          pacman-key --init
-          pacman-key --populate archlinux
-          pacman -Syu --noconfirm git
-          # The workspace is owned by the runner user rather than root
-          git config --global --add safe.directory '*'
-      - uses: actions/checkout@v7
-        with:
-          ref: ${{ needs.check.outputs.ref }}
-          fetch-depth: 0
+  # Publish each platform separately so that a failure in one doesn't block the others.
+  # Packages that were built successfully are published even if other builds failed.
+  # The failed ones will be retried in the next run.
+  publish-archlinux:
+    name: Publish ArchLinux
+    needs: [check, archlinux]
+    if: ${{ !cancelled() && needs.check.result == 'success' && needs.check.outputs.archlinux != '' }}
+    uses: ./.github/workflows/publish.yml
+    with:
+      ref: ${{ needs.check.outputs.ref }}
+      platform: archlinux
 
-      - name: Download packages
-        uses: actions/download-artifact@v8
-        with:
-          path: ../artifacts
+  publish-archlinux-arm:
+    name: Publish ArchLinux ARM
+    needs: [check, archlinux-arm]
+    if: ${{ !cancelled() && needs.check.result == 'success' && needs.check.outputs.archlinux-arm != '' }}
+    uses: ./.github/workflows/publish.yml
+    with:
+      ref: ${{ needs.check.outputs.ref }}
+      platform: archlinux-arm
 
-      - name: Checkout package repository
-        run: |
-          git worktree add -q --detach ../pages
-          cd ../pages
-          git checkout -q --orphan gh-pages-new
-          git rm -rfq .
-          git ls-remote --exit-code --heads origin gh-pages && ret=0 || ret=$?
-          if [[ $ret = 0 ]]; then
-              git fetch -q --depth 1 origin gh-pages
-              git checkout FETCH_HEAD -- .
-          elif [[ $ret != 2 ]]; then
-              exit $ret
-          fi
-
-      - name: Update package repository
-        run: bash github/publish-packages.sh ../artifacts ../pages
-
-      - name: Push package repository
-        working-directory: ../pages
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A -f .
-          git commit -q -m "Update packages from ${GITHUB_SHA}"
-          # Keep only one commit to limit the size of the branch.
-          git push -f origin HEAD:gh-pages
-
-      - name: Commit package versions
-        run: bash github/push-master.sh "Update packages"
+  publish-msys2:
+    name: Publish MSYS2
+    needs: [check, msys2]
+    if: ${{ !cancelled() && needs.check.result == 'success' && needs.check.outputs.msys2 != '' }}
+    uses: ./.github/workflows/publish.yml
+    with:
+      ref: ${{ needs.check.outputs.ref }}
+      platform: msys2

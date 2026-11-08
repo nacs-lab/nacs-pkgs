@@ -1,0 +1,47 @@
+name: Publish
+
+# Publish the packages built for one platform to its package repository on the gh-pages branch
+# and commit the updated package versions back to master.
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: Commit the packages were built from
+        type: string
+        required: true
+      platform:
+        description: archlinux, archlinux-arm or msys2
+        type: string
+        required: true
+
+jobs:
+  publish:
+    name: Publish packages
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    steps:
+      # git needs to be installed before checkout to get a git repository
+      - name: Install dependencies
+        run: |
+          pacman-key --init
+          pacman-key --populate archlinux
+          pacman -Syu --noconfirm git
+          # The workspace is owned by the runner user rather than root
+          git config --global --add safe.directory '*'
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+
+      - name: Download packages
+        uses: actions/download-artifact@v8
+        with:
+          pattern: '*-package-${{ inputs.platform }}'
+          path: ../artifacts
+
+      - name: Update package repository
+        run: bash github/publish-packages.sh "${{ inputs.platform }}" ../artifacts
+
+      - name: Commit package versions
+        run: bash github/push-master.sh "Update ${{ inputs.platform }} packages"
