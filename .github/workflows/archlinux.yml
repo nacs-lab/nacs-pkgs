@@ -2,10 +2,18 @@ name: ArchLinux
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ master ]
   pull_request:
     branches: [ master ]
+  workflow_call:
+    inputs:
+      ref:
+        description: Commit to build
+        type: string
+      build:
+        description: >-
+          Space separated list of packages to build.
+          Other packages are taken from the package repository.
+        type: string
 
 env:
   PACKAGER: "Ni Lab <niharvardlab@gmail.com>"
@@ -21,30 +29,44 @@ jobs:
       options: --privileged
       volumes:
         - /sys/fs/cgroup:/sys/fs/cgroup
+    env:
+      BUILD: ${{ !inputs.build || contains(format(' {0} ', inputs.build), ' libnacs-git ') }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
       - name: Initialize ArchLinux
+        if: env.BUILD == 'true'
         run: |
           bash github/setup-archlinux.sh
           chown -R user .
       - name: Setup ArchLinux CN repo
+        if: env.BUILD == 'true'
         # For sleef
         run: |
           bash github/setup-archlinux-cn.sh
       - name: Create package
+        if: env.BUILD == 'true'
         run: |
           cd arch/libnacs-git
           MAKEFLAGS="-j$(nproc)" sudo -u user makepkg -si --noconfirm
+      - name: Fetch published package
+        if: env.BUILD != 'true'
+        run: |
+          bash github/fetch-published.sh archlinux/x86_64 arch/libnacs-git 'libnacs-git-*'
 
       - name: "Upload binaries"
         uses: actions/upload-artifact@v7
         with:
           name: libnacs-git-package-archlinux
-          path: ${{github.workspace}}/arch/libnacs-git/*.pkg.*
+          path: |
+            ${{github.workspace}}/arch/libnacs-git/*.pkg.*
+            ${{github.workspace}}/arch/libnacs-git/PKGBUILD
 
   build-python-libnacs:
     name: Build python-libnacs
     needs: build-libnacs
+    if: ${{ !inputs.build || contains(format(' {0} ', inputs.build), ' python-libnacs-git ') }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -55,6 +77,8 @@ jobs:
         - /sys/fs/cgroup:/sys/fs/cgroup
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
       - name: Initialize ArchLinux
         run: |
           bash github/setup-archlinux.sh
@@ -80,11 +104,14 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: python-libnacs-git-package-archlinux
-          path: ${{github.workspace}}/arch/python-libnacs-git/*.pkg.*
+          path: |
+            ${{github.workspace}}/arch/python-libnacs-git/*.pkg.*
+            ${{github.workspace}}/arch/python-libnacs-git/PKGBUILD
 
   build-molecube2:
     name: Build molecube2
     needs: build-libnacs
+    if: ${{ !inputs.build || contains(format(' {0} ', inputs.build), ' molecube2-git ') }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -95,6 +122,8 @@ jobs:
         - /sys/fs/cgroup:/sys/fs/cgroup
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
       - name: Initialize ArchLinux
         run: |
           bash github/setup-archlinux.sh
@@ -120,11 +149,14 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: molecube2-git-package-archlinux
-          path: ${{github.workspace}}/arch/molecube2-git/*.pkg.*
+          path: |
+            ${{github.workspace}}/arch/molecube2-git/*.pkg.*
+            ${{github.workspace}}/arch/molecube2-git/PKGBUILD
 
   build-labctrl-node:
     name: Build labctrl-node
     needs: build-libnacs
+    if: ${{ !inputs.build || contains(format(' {0} ', inputs.build), ' labctrl-node-git ') }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -135,6 +167,8 @@ jobs:
         - /sys/fs/cgroup:/sys/fs/cgroup
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
       - name: Initialize ArchLinux
         run: |
           bash github/setup-archlinux.sh
@@ -161,10 +195,13 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: labctrl-node-git-package-archlinux
-          path: ${{github.workspace}}/arch/labctrl-node-git/*.pkg.*
+          path: |
+            ${{github.workspace}}/arch/labctrl-node-git/*.pkg.*
+            ${{github.workspace}}/arch/labctrl-node-git/PKGBUILD
 
   build-libspcm:
     name: Build libspcm
+    if: ${{ !inputs.build || contains(format(' {0} ', inputs.build), ' libspcm ') }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -175,6 +212,8 @@ jobs:
         - /sys/fs/cgroup:/sys/fs/cgroup
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
       - name: Initialize ArchLinux
         run: |
           bash github/setup-archlinux.sh
@@ -188,4 +227,6 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: libspcm-package-archlinux
-          path: ${{github.workspace}}/arch/libspcm/*.pkg.*
+          path: |
+            ${{github.workspace}}/arch/libspcm/*.pkg.*
+            ${{github.workspace}}/arch/libspcm/PKGBUILD
