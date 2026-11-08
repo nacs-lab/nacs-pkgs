@@ -2,10 +2,18 @@ name: MSYS2
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ master ]
   pull_request:
     branches: [ master ]
+  workflow_call:
+    inputs:
+      ref:
+        description: Commit to build
+        type: string
+      build:
+        description: >-
+          Space separated list of packages to build.
+          Other packages are taken from the package repository.
+        type: string
 
 env:
   CC: /mingw64/bin/gcc
@@ -18,11 +26,16 @@ jobs:
     runs-on: windows-latest
     strategy:
       fail-fast: false
+    env:
+      BUILD: ${{ !inputs.build || contains(format(' {0} ', inputs.build), ' mingw-w64-sleef-git ') }}
 
     steps:
     - uses: actions/checkout@v7
+      with:
+        ref: ${{ inputs.ref }}
 
     - uses: msys2/setup-msys2@v2
+      if: env.BUILD == 'true'
       with:
         msystem: MINGW64
         install: >-
@@ -35,16 +48,25 @@ jobs:
           mingw-w64-x86_64-libwinpthread
 
     - name: Build
+      if: env.BUILD == 'true'
       shell: msys2 {0}
       run: |
         cd windows/mingw-w64-sleef-git
         MAKEFLAGS="-j$(nproc)" MINGW_ARCH=MINGW64 makepkg-mingw
 
+    - name: Fetch published package
+      if: env.BUILD != 'true'
+      shell: bash
+      run: |
+        bash github/fetch-published.sh msys2/mingw64 windows/mingw-w64-sleef-git 'mingw-w64-x86_64-sleef-git-*'
+
     - name: "Upload binaries"
       uses: actions/upload-artifact@v7
       with:
         name: mingw-w64-x86_64-sleef-git-package-msys2
-        path: ${{github.workspace}}/windows/mingw-w64-sleef-git/*.pkg.tar.*
+        path: |
+          ${{github.workspace}}/windows/mingw-w64-sleef-git/*.pkg.tar.*
+          ${{github.workspace}}/windows/mingw-w64-sleef-git/PKGBUILD
 
   build-libnacs:
     name: Build libnacs
@@ -52,8 +74,11 @@ jobs:
     strategy:
       fail-fast: false
     needs: build-sleef
+    if: ${{ !inputs.build || contains(format(' {0} ', inputs.build), ' mingw-w64-libnacs-git ') }}
     steps:
     - uses: actions/checkout@v7
+      with:
+        ref: ${{ inputs.ref }}
 
     - uses: msys2/setup-msys2@v2
       with:
@@ -94,4 +119,6 @@ jobs:
       uses: actions/upload-artifact@v7
       with:
         name: mingw-w64-x86_64-libnacs-git-package-msys2
-        path: ${{github.workspace}}/windows/mingw-w64-libnacs-git/*.pkg.tar.*
+        path: |
+          ${{github.workspace}}/windows/mingw-w64-libnacs-git/*.pkg.tar.*
+          ${{github.workspace}}/windows/mingw-w64-libnacs-git/PKGBUILD
