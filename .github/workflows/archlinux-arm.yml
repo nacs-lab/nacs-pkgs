@@ -2,10 +2,18 @@ name: ArchLinux ARM
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ master ]
   pull_request:
     branches: [ master ]
+  workflow_call:
+    inputs:
+      ref:
+        description: Commit to build
+        type: string
+      build:
+        description: >-
+          Space separated list of packages to build.
+          Other packages are taken from the package repository.
+        type: string
 
 env:
   PACKAGER: "Ni Lab <niharvardlab@gmail.com>"
@@ -21,20 +29,28 @@ jobs:
       options: --privileged
       volumes:
         - /sys/fs/cgroup:/sys/fs/cgroup
+    env:
+      BUILD: ${{ !inputs.build || contains(format(' {0} ', inputs.build), ' linux-nacs ') }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
       - name: Initialize ArchLinux
+        if: env.BUILD == 'true'
         run: |
           bash github/setup-archlinux.sh
           chown -R user .
       - name: Setup ArchLinux CN repo
+        if: env.BUILD == 'true'
         # For cross compiling tools
         run: |
           bash github/setup-archlinux-cn.sh
       - name: Setup Cross-compiling environment
+        if: env.BUILD == 'true'
         run: |
           bash github/setup-archlinux-arm.sh
       - name: Create package
+        if: env.BUILD == 'true'
         run: |
           cd arch-arm/linux-nacs
           pacman -S --noconfirm xmlto docbook-xsl kmod inetutils bc uboot-tools
@@ -42,12 +58,18 @@ jobs:
               pacman-armv7 -S --noconfirm dtc libyaml && break
           done
           MAKEFLAGS="-j$(nproc)" su user -p -c makepkg-armv7
+      - name: Fetch published package
+        if: env.BUILD != 'true'
+        run: |
+          bash github/fetch-published.sh archlinux-arm/armv7h arch-arm/linux-nacs 'linux-nacs-*'
 
       - name: "Upload binaries"
         uses: actions/upload-artifact@v7
         with:
           name: linux-nacs-package-archlinux-arm
-          path: ${{github.workspace}}/arch-arm/linux-nacs/*.pkg.*
+          path: |
+            ${{github.workspace}}/arch-arm/linux-nacs/*.pkg.*
+            ${{github.workspace}}/arch-arm/linux-nacs/PKGBUILD
 
   build-knacs:
     name: Build knacs
@@ -60,40 +82,56 @@ jobs:
       options: --privileged
       volumes:
         - /sys/fs/cgroup:/sys/fs/cgroup
+    env:
+      BUILD: ${{ !inputs.build || contains(format(' {0} ', inputs.build), ' knacs-git ') }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
       - name: Initialize ArchLinux
+        if: env.BUILD == 'true'
         run: |
           bash github/setup-archlinux.sh
           chown -R user .
       - name: Setup ArchLinux CN repo
+        if: env.BUILD == 'true'
         # For cross compiling tools
         run: |
           bash github/setup-archlinux-cn.sh
       - name: Setup Cross-compiling environment
+        if: env.BUILD == 'true'
         run: |
           bash github/setup-archlinux-arm.sh
       - name: Download linux-nacs
+        if: env.BUILD == 'true'
         uses: actions/download-artifact@v8
         with:
           name: linux-nacs-package-archlinux-arm
           path: linux-nacs-package
 
       - name: Create package
+        if: env.BUILD == 'true'
         run: |
           cd arch-arm/knacs-git
           pacman -S --noconfirm cmake
           pacman-armv7 -U --noconfirm ../../linux-nacs-package/linux-nacs-headers-*
           MAKEFLAGS="-j$(nproc)" su user -p -c makepkg-armv7
+      - name: Fetch published package
+        if: env.BUILD != 'true'
+        run: |
+          bash github/fetch-published.sh archlinux-arm/armv7h arch-arm/knacs-git 'knacs-git-*'
 
       - name: "Upload binaries"
         uses: actions/upload-artifact@v7
         with:
           name: knacs-git-package-archlinux-arm
-          path: ${{github.workspace}}/arch-arm/knacs-git/*.pkg.*
+          path: |
+            ${{github.workspace}}/arch-arm/knacs-git/*.pkg.*
+            ${{github.workspace}}/arch-arm/knacs-git/PKGBUILD
 
   build-nacs-boot:
     name: Build nacs-boot
+    if: ${{ !inputs.build || contains(format(' {0} ', inputs.build), ' nacs-boot ') }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -104,6 +142,8 @@ jobs:
         - /sys/fs/cgroup:/sys/fs/cgroup
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
       - name: Initialize ArchLinux
         run: |
           bash github/setup-archlinux.sh
@@ -124,7 +164,9 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: nacs-boot-package-archlinux-arm
-          path: ${{github.workspace}}/arch-arm/nacs-boot/*.pkg.*
+          path: |
+            ${{github.workspace}}/arch-arm/nacs-boot/*.pkg.*
+            ${{github.workspace}}/arch-arm/nacs-boot/PKGBUILD
 
   build-libnacs:
     name: Build libnacs
@@ -137,31 +179,41 @@ jobs:
       options: --privileged
       volumes:
         - /sys/fs/cgroup:/sys/fs/cgroup
+    env:
+      BUILD: ${{ !inputs.build || contains(format(' {0} ', inputs.build), ' libnacs-git ') }}
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
       - name: Initialize ArchLinux
+        if: env.BUILD == 'true'
         run: |
           bash github/setup-archlinux.sh
           chown -R user .
       - name: Setup ArchLinux CN repo
+        if: env.BUILD == 'true'
         # For cross compiling tools
         run: |
           bash github/setup-archlinux-cn.sh
       - name: Setup Cross-compiling environment
+        if: env.BUILD == 'true'
         run: |
           bash github/setup-archlinux-arm.sh
       - name: Download linux-nacs
+        if: env.BUILD == 'true'
         uses: actions/download-artifact@v8
         with:
           name: linux-nacs-package-archlinux-arm
           path: linux-nacs-package
       - name: Download knacs
+        if: env.BUILD == 'true'
         uses: actions/download-artifact@v8
         with:
           name: knacs-git-package-archlinux-arm
           path: knacs-git-package
 
       - name: Create package
+        if: env.BUILD == 'true'
         run: |
           cd arch-arm/libnacs-git
           pacman -S --noconfirm cmake
@@ -170,16 +222,23 @@ jobs:
               pacman-armv7 -S --noconfirm openlibm zeromq cppzmq && break
           done
           MAKEFLAGS="-j$(nproc)" su user -p -c makepkg-armv7
+      - name: Fetch published package
+        if: env.BUILD != 'true'
+        run: |
+          bash github/fetch-published.sh archlinux-arm/armv7h arch-arm/libnacs-git 'libnacs-git-*'
 
       - name: "Upload binaries"
         uses: actions/upload-artifact@v7
         with:
           name: libnacs-git-package-archlinux-arm
-          path: ${{github.workspace}}/arch-arm/libnacs-git/*.pkg.*
+          path: |
+            ${{github.workspace}}/arch-arm/libnacs-git/*.pkg.*
+            ${{github.workspace}}/arch-arm/libnacs-git/PKGBUILD
 
   build-molecube2:
     name: Build molecube2
     needs: [build-linux-nacs, build-knacs, build-libnacs]
+    if: ${{ !inputs.build || contains(format(' {0} ', inputs.build), ' molecube2-git ') }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -190,6 +249,8 @@ jobs:
         - /sys/fs/cgroup:/sys/fs/cgroup
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
       - name: Initialize ArchLinux
         run: |
           bash github/setup-archlinux.sh
@@ -231,4 +292,6 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: molecube2-git-package-archlinux-arm
-          path: ${{github.workspace}}/arch-arm/molecube2-git/*.pkg.*
+          path: |
+            ${{github.workspace}}/arch-arm/molecube2-git/*.pkg.*
+            ${{github.workspace}}/arch-arm/molecube2-git/PKGBUILD
