@@ -35,13 +35,15 @@ jobs:
         run: |
           # platform: name of the platform in the update workflow and the artifacts
           # repo: directory of the package repository under `msys2/`
+          # suppress: deprecation warnings to suppress in setup-msys2
           all='[
             {"msystem": "MINGW64", "prefix": "mingw-w64-x86_64", "repo": "mingw64",
-             "platform": "msys2", "cc": "gcc", "cxx": "g++"},
+             "platform": "msys2", "cc": "gcc", "cxx": "g++",
+             "suppress": "msystem-mingw64"},
             {"msystem": "UCRT64", "prefix": "mingw-w64-ucrt-x86_64", "repo": "ucrt64",
-             "platform": "msys2-ucrt64", "cc": "gcc", "cxx": "g++"},
+             "platform": "msys2-ucrt64", "cc": "gcc", "cxx": "g++", "suppress": ""},
             {"msystem": "CLANG64", "prefix": "mingw-w64-clang-x86_64", "repo": "clang64",
-             "platform": "msys2-clang64", "cc": "clang", "cxx": "clang++"}
+             "platform": "msys2-clang64", "cc": "clang", "cxx": "clang++", "suppress": ""}
           ]'
           matrix=$(jq -c --arg m "$MSYSTEM" '[.[] | select($m == "" or .msystem == $m)]' <<< "$all")
           if [[ $matrix = '[]' ]]; then
@@ -71,6 +73,7 @@ jobs:
       if: env.BUILD == 'true'
       with:
         msystem: ${{ matrix.msystem }}
+        suppress-deprecation-warnings: ${{ matrix.suppress }}
         install: >-
           git
           make
@@ -121,6 +124,7 @@ jobs:
     - uses: msys2/setup-msys2@v2
       with:
         msystem: ${{ matrix.msystem }}
+        suppress-deprecation-warnings: ${{ matrix.suppress }}
         install: >-
           git
           make
