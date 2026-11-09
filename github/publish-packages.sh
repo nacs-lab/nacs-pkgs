@@ -32,39 +32,42 @@ pkgname_of() {
     echo "${base%-*-*-*}"
 }
 
-srcdir_of() {
-    local name=${1%-package-${platform}}
-    case "$platform" in
-        archlinux)
-            echo "arch/$name"
-            ;;
-        archlinux-arm)
-            echo "arch-arm/$name"
-            ;;
-        msys2)
-            echo "windows/mingw-w64-${name#mingw-w64-x86_64-}"
-            ;;
-    esac
+case "$platform" in
+    archlinux)
+        srcroot=arch
+        ;;
+    archlinux-arm)
+        srcroot=arch-arm
+        ;;
+    msys2)
+        srcroot=windows
+        ;;
+esac
+
+# The PKGBUILD directories are named after the pkgbase.
+pkgbase_of() {
+    bsdtar -xOf "$1" .PKGINFO | sed -n 's/^pkgbase = //p'
 }
 
-pkgs=()
-for artifact in "$artifacts"/*-package-"$platform"/; do
-    [[ -d "$artifact" ]] || continue
-    artifact=${artifact%/}
-    srcdir=$(srcdir_of "${artifact##*/}")
-    if [[ -f "$artifact/PKGBUILD" && -f "$srcdir/PKGBUILD" ]]; then
-        cp "$artifact/PKGBUILD" "$srcdir/PKGBUILD"
+# Don't rely on the artifact directory names since download-artifact
+# doesn't create a subdirectory when only one artifact is downloaded.
+shopt -s globstar nullglob
+pkgs=("$artifacts"/**/*.pkg.tar.*)
+for pkgbuild in "$artifacts"/**/PKGBUILD; do
+    dir=${pkgbuild%/PKGBUILD}
+    dirpkgs=("$dir"/*.pkg.tar.*)
+    if [[ ${#dirpkgs[@]} = 0 ]]; then
+        echo "::warning::No package found next to ${pkgbuild#"$artifacts"/}"
+        continue
     fi
-    found=0
-    for pkg in "$artifact"/*.pkg.tar.*; do
-        [[ -f "$pkg" ]] || continue
-        pkgs+=("$pkg")
-        found=1
-    done
-    if [[ $found = 0 ]]; then
-        echo "::warning::No package found in artifact ${artifact##*/}"
+    srcdir="$srcroot/$(pkgbase_of "${dirpkgs[0]}")"
+    if [[ -f "$srcdir/PKGBUILD" ]]; then
+        cp "$pkgbuild" "$srcdir/PKGBUILD"
+    else
+        echo "::warning::Cannot find $srcdir/PKGBUILD for ${pkgbuild#"$artifacts"/}"
     fi
 done
+shopt -u globstar nullglob
 
 if [[ ${#pkgs[@]} = 0 ]]; then
     echo "No packages to publish"
