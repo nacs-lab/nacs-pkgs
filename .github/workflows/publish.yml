@@ -14,12 +14,18 @@ on:
         description: archlinux, archlinux-arm or msys2
         type: string
         required: true
+    outputs:
+      published:
+        description: Space separated list of the package directories published
+        value: ${{ jobs.publish.outputs.published }}
 
 jobs:
   publish:
     name: Publish packages
     runs-on: ubuntu-latest
     container: archlinux:base-devel
+    outputs:
+      published: ${{ steps.publish.outputs.published }}
     steps:
       # git needs to be installed before checkout to get a git repository
       - name: Install dependencies
@@ -41,6 +47,7 @@ jobs:
           path: ../artifacts
 
       - name: Update package repository
+        id: publish
         run: bash github/publish-packages.sh "${{ inputs.platform }}" ../artifacts
 
       - name: Commit package versions

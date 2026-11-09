@@ -57,7 +57,7 @@ jobs:
           for ((i = 0; i < 10; i++)); do
               pacman-armv7 -S --noconfirm dtc libyaml && break
           done
-          MAKEFLAGS="-j$(nproc)" su user -p -c makepkg-armv7
+          MAKEFLAGS="-j$(nproc)" su user -p -c 'bash ../../github/build-package.sh archlinux/armv7h makepkg-armv7'
       - name: Fetch published package
         if: env.BUILD != 'true'
         run: |
@@ -115,7 +115,7 @@ jobs:
           cd arch-arm/knacs-git
           pacman -S --noconfirm cmake
           pacman-armv7 -U --noconfirm ../../linux-nacs-package/linux-nacs-headers-*
-          MAKEFLAGS="-j$(nproc)" su user -p -c makepkg-armv7
+          MAKEFLAGS="-j$(nproc)" su user -p -c 'bash ../../github/build-package.sh archlinux/armv7h makepkg-armv7'
       - name: Fetch published package
         if: env.BUILD != 'true'
         run: |
@@ -158,7 +158,7 @@ jobs:
       - name: Create package
         run: |
           cd arch-arm/nacs-boot
-          MAKEFLAGS="-j$(nproc)" su user -p -c makepkg-armv7
+          MAKEFLAGS="-j$(nproc)" su user -p -c 'bash ../../github/build-package.sh archlinux/armv7h makepkg-armv7'
 
       - name: "Upload binaries"
         uses: actions/upload-artifact@v7
@@ -221,7 +221,7 @@ jobs:
           for ((i = 0; i < 10; i++)); do
               pacman-armv7 -S --noconfirm openlibm zeromq cppzmq && break
           done
-          MAKEFLAGS="-j$(nproc)" su user -p -c makepkg-armv7
+          MAKEFLAGS="-j$(nproc)" su user -p -c 'bash ../../github/build-package.sh archlinux/armv7h makepkg-armv7'
       - name: Fetch published package
         if: env.BUILD != 'true'
         run: |
@@ -286,7 +286,7 @@ jobs:
           for ((i = 0; i < 10; i++)); do
               pacman-armv7 -S --noconfirm zeromq cppzmq yaml-cpp && break
           done
-          MAKEFLAGS="-j$(nproc)" su user -p -c makepkg-armv7
+          MAKEFLAGS="-j$(nproc)" su user -p -c 'bash ../../github/build-package.sh archlinux/armv7h makepkg-armv7'
 
       - name: "Upload binaries"
         uses: actions/upload-artifact@v7

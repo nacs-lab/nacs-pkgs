@@ -1,0 +1,7 @@
+- source: git
+  git: https://github.com/nacs-lab/python-libnacs
+  branch: seq
+  use_commit: true
+# Change to rebuild the package manually
+- source: manual
+  manual: '0'

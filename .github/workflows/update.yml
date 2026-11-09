@@ -2,6 +2,12 @@ name: Update
 
 # Check for package updates, build the packages that need to be updated
 # and publish them to the pacman repositories on the gh-pages branch.
+#
+# The versions from the sources of the packages (`*/*/nvchecker.yml`)
+# at the last successful build are kept in the cache.
+# Since the cache is evicted if it's not used for 7 days, the state is also uploaded
+# as an artifact (kept for 90 days) and used when the cache isn't available.
+# See `github/check-updates.py` for details.
 
 on:
   workflow_dispatch:
@@ -16,6 +22,11 @@ concurrency:
 
 permissions:
   contents: write
+  # For downloading the state from previous runs
+  actions: read
+
+env:
+  STATE_DIR: nvchecker-state
 
 jobs:
   check:
@@ -23,45 +34,48 @@ jobs:
     runs-on: ubuntu-latest
     container: archlinux:base-devel
     outputs:
-      ref: ${{ steps.commit.outputs.ref }}
       archlinux: ${{ steps.check.outputs.archlinux }}
       archlinux-arm: ${{ steps.check.outputs.archlinux-arm }}
       msys2: ${{ steps.check.outputs.msys2 }}
     steps:
-      # git needs to be installed before checkout to get a git repository
       - name: Install dependencies
         run: |
           pacman-key --init
           pacman-key --populate archlinux
-          pacman -Syu --noconfirm git nvchecker
-          # The workspace is owned by the runner user rather than root
-          git config --global --add safe.directory '*'
+          pacman -Syu --noconfirm git nvchecker python-yaml
       - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
 
-      - name: List published packages
-        run: |
-          git ls-remote --exit-code --heads origin gh-pages && ret=0 || ret=$?
-          if [[ $ret = 0 ]]; then
-              git fetch --depth 1 --filter=blob:none origin gh-pages
-              git ls-tree -r --name-only FETCH_HEAD > ../published.txt
-          elif [[ $ret = 2 ]]; then
-              # Not published yet
-              : > ../published.txt
-          else
-              exit $ret
-          fi
+      - name: Restore recorded versions
+        id: cache
+        uses: actions/cache/restore@v6
+        with:
+          path: ${{ env.STATE_DIR }}
+          key: nvchecker-state-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: nvchecker-state-
+      - name: Restore recorded versions from previous runs
+        if: steps.cache.outputs.cache-matched-key == ''
+        uses: dawidd6/action-download-artifact@v28
+        with:
+          workflow: update.yml
+          branch: ${{ github.ref_name }}
+          # Include runs with failed builds since the successful ones are still recorded.
+          workflow_conclusion: completed
+          name: nvchecker-state-recorded
+          search_artifacts: true
+          if_no_artifact_found: warn
+          path: ${{ env.STATE_DIR }}
 
       - name: Check for updates
         id: check
-        run: python github/check-updates.py --published ../published.txt
+        run: python github/check-updates.py --state-dir "$STATE_DIR" check
 
-      - name: Commit pkgrel bumps
-        id: commit
-        run: |
-          bash github/push-master.sh "Rebuild packages for updated dependencies"
-          echo "ref=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      # The versions are only recorded after the packages are published.
+      - name: Upload state
+        uses: actions/upload-artifact@v7
+        with:
+          name: nvchecker-state
+          path: ${{ env.STATE_DIR }}
+          overwrite: true
 
   archlinux:
     name: ArchLinux
@@ -69,7 +83,7 @@ jobs:
     if: needs.check.outputs.archlinux != ''
     uses: ./.github/workflows/archlinux.yml
     with:
-      ref: ${{ needs.check.outputs.ref }}
+      ref: ${{ github.sha }}
       build: ${{ needs.check.outputs.archlinux }}
 
   archlinux-arm:
@@ -78,7 +92,7 @@ jobs:
     if: needs.check.outputs.archlinux-arm != ''
     uses: ./.github/workflows/archlinux-arm.yml
     with:
-      ref: ${{ needs.check.outputs.ref }}
+      ref: ${{ github.sha }}
       build: ${{ needs.check.outputs.archlinux-arm }}
 
   msys2:
@@ -87,7 +101,7 @@ jobs:
     if: needs.check.outputs.msys2 != ''
     uses: ./.github/workflows/msys2.yml
     with:
-      ref: ${{ needs.check.outputs.ref }}
+      ref: ${{ github.sha }}
       build: ${{ needs.check.outputs.msys2 }}
 
   # Publish each platform separately so that a failure in one doesn't block the others.
@@ -99,7 +113,7 @@ jobs:
     if: ${{ !cancelled() && needs.check.result == 'success' && needs.check.outputs.archlinux != '' }}
     uses: ./.github/workflows/publish.yml
     with:
-      ref: ${{ needs.check.outputs.ref }}
+      ref: ${{ github.sha }}
       platform: archlinux
 
   publish-archlinux-arm:
@@ -108,7 +122,7 @@ jobs:
     if: ${{ !cancelled() && needs.check.result == 'success' && needs.check.outputs.archlinux-arm != '' }}
     uses: ./.github/workflows/publish.yml
     with:
-      ref: ${{ needs.check.outputs.ref }}
+      ref: ${{ github.sha }}
       platform: archlinux-arm
 
   publish-msys2:
@@ -117,5 +131,48 @@ jobs:
     if: ${{ !cancelled() && needs.check.result == 'success' && needs.check.outputs.msys2 != '' }}
     uses: ./.github/workflows/publish.yml
     with:
-      ref: ${{ needs.check.outputs.ref }}
+      ref: ${{ github.sha }}
       platform: msys2
+
+  # Record the versions of the published packages in one place
+  # since the cache can't be updated by multiple jobs.
+  record:
+    name: Record versions
+    needs: [check, publish-archlinux, publish-archlinux-arm, publish-msys2]
+    if: ${{ !cancelled() && needs.check.result == 'success' }}
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    steps:
+      - name: Install dependencies
+        run: |
+          pacman-key --init
+          pacman-key --populate archlinux
+          pacman -Syu --noconfirm nvchecker
+      - uses: actions/checkout@v7
+
+      - name: Download state
+        uses: actions/download-artifact@v8
+        with:
+          name: nvchecker-state
+          path: ${{ env.STATE_DIR }}
+
+      - name: Record versions
+        env:
+          PUBLISHED: >-
+            ${{ needs.publish-archlinux.outputs.published }}
+            ${{ needs.publish-archlinux-arm.outputs.published }}
+            ${{ needs.publish-msys2.outputs.published }}
+        run: python github/check-updates.py --state-dir "$STATE_DIR" record "$PUBLISHED"
+
+      - name: Upload recorded versions
+        uses: actions/upload-artifact@v7
+        with:
+          name: nvchecker-state-recorded
+          path: ${{ env.STATE_DIR }}
+          retention-days: 90
+          overwrite: true
+      - name: Save recorded versions
+        uses: actions/cache/save@v6
+        with:
+          path: ${{ env.STATE_DIR }}
+          key: nvchecker-state-${{ github.run_id }}-${{ github.run_attempt }}

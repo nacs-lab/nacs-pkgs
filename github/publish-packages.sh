@@ -53,6 +53,8 @@ pkgbase_of() {
 # doesn't create a subdirectory when only one artifact is downloaded.
 shopt -s globstar nullglob
 pkgs=("$artifacts"/**/*.pkg.tar.*)
+# Package directories published, used to record the versions built in the update workflow.
+published=()
 for pkgbuild in "$artifacts"/**/PKGBUILD; do
     dir=${pkgbuild%/PKGBUILD}
     dirpkgs=("$dir"/*.pkg.tar.*)
@@ -63,6 +65,7 @@ for pkgbuild in "$artifacts"/**/PKGBUILD; do
     srcdir="$srcroot/$(pkgbase_of "${dirpkgs[0]}")"
     if [[ -f "$srcdir/PKGBUILD" ]]; then
         cp "$pkgbuild" "$srcdir/PKGBUILD"
+        published+=("$srcdir")
     else
         echo "::warning::Cannot find $srcdir/PKGBUILD for ${pkgbuild#"$artifacts"/}"
     fi
@@ -192,16 +195,23 @@ prepare_pages() {
     newcommit=$(git commit-tree "$tree" -m "Update ${platform} packages from ${GITHUB_SHA}")
 }
 
+finish() {
+    if [[ -n $GITHUB_OUTPUT ]]; then
+        echo "published=${published[*]}" >> "$GITHUB_OUTPUT"
+    fi
+    exit 0
+}
+
 # Other platforms may be publishing at the same time.
 for ((i = 0; i < 5; i++)); do
     prepare_pages
     if [[ -z "$newcommit" ]]; then
         echo "Package repository is already up to date"
-        exit 0
+        finish
     fi
     if git push --force-with-lease="refs/heads/gh-pages:${oldcommit}" \
            origin "${newcommit}:refs/heads/gh-pages"; then
-        exit 0
+        finish
     fi
     sleep $((RANDOM % 10 + 5))
 done

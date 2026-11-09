@@ -52,7 +52,7 @@ jobs:
       shell: msys2 {0}
       run: |
         cd windows/mingw-w64-sleef-git
-        MAKEFLAGS="-j$(nproc)" MINGW_ARCH=MINGW64 makepkg-mingw
+        MAKEFLAGS="-j$(nproc)" MINGW_ARCH=MINGW64 bash ../../github/build-package.sh msys2/mingw64 makepkg-mingw
 
     - name: Fetch published package
       if: env.BUILD != 'true'
@@ -114,7 +114,7 @@ jobs:
       shell: msys2 {0}
       run: |
         cd windows/mingw-w64-libnacs-git
-        MAKEFLAGS="-j$(nproc)" MINGW_ARCH=MINGW64 makepkg-mingw
+        MAKEFLAGS="-j$(nproc)" MINGW_ARCH=MINGW64 bash ../../github/build-package.sh msys2/mingw64 makepkg-mingw
 
     - name: "Upload binaries"
       uses: actions/upload-artifact@v7

@@ -1,29 +1,43 @@
 #!/usr/bin/env python3
 
-# Decide which packages need to be rebuilt.
+# Decide which packages need to be rebuilt, similar to lilac
+# (https://github.com/archlinuxcn/lilac).
+#
+# The update sources of each package are listed in `<dir>/nvchecker.yml`
+# as an array of nvchecker entries. They are combined into one nvchecker
+# configuration in the state directory with the entries named `<dir>:<index>`.
+# The versions from the sources are only compared to the ones recorded
+# at the last successful build of the package and are not interpreted otherwise.
 #
 # A package is rebuilt when
-# 1. its upstream commit (from nvchecker) doesn't match its pkgver, or
-# 2. the package for the current PKGBUILD version is not published yet, or
-# 3. one of the packages it links to is rebuilt.
-#    The pkgrel is bumped in this case so that the new package gets a new version.
+# 1. the version from any of its sources changed since its last successful build, or
+# 2. one of the packages it is built against is rebuilt, or
+# 3. it was scheduled to be rebuilt before but the build or publishing failed.
+# The pkgrel is bumped when necessary by `build-package.sh` at build time.
 #
-# The list of packages to build for each platform is written to `$GITHUB_OUTPUT`.
+# Usage:
+#   check-updates.py check
+#     Check for updates and write the list of packages to build for each platform
+#     to `$GITHUB_OUTPUT` (if set) and the summary to `$GITHUB_STEP_SUMMARY` (or stdout).
+#   check-updates.py record [<dir>...]
+#     Record the versions of the packages that were built and published successfully
+#     so that they are not rebuilt again.
+#     The packages scheduled by the last `check` but not listed will be retried.
+#
+# The state (versions recorded and the build plan) is stored in the state directory
+# (`$XDG_STATE_HOME/nacs-pkgs` by default) and is cached between runs on GitHub Actions.
 
 import argparse
 import json
 import os
-import re
 import subprocess
 import sys
-import tomllib
 
 PLATFORMS = {
     'archlinux': {
         'srcdir': 'arch',
-        'repodir': 'archlinux/x86_64',
-        'env': {'CARCH': 'x86_64', 'CHOST': 'x86_64-pc-linux-gnu'},
         # Package -> packages that it needs to be rebuilt against
+        # The packages are listed in dependency order.
         'packages': {
             'libnacs-git': [],
             'python-libnacs-git': [],
@@ -34,8 +48,6 @@ PLATFORMS = {
     },
     'archlinux-arm': {
         'srcdir': 'arch-arm',
-        'repodir': 'archlinux/armv7h',
-        'env': {'CARCH': 'armv7h', 'CHOST': 'armv7l-unknown-linux-gnueabihf'},
         'packages': {
             'linux-nacs': [],
             'knacs-git': ['linux-nacs'],
@@ -46,9 +58,6 @@ PLATFORMS = {
     },
     'msys2': {
         'srcdir': 'windows',
-        'repodir': 'msys2/mingw64',
-        'env': {'CARCH': 'x86_64', 'CHOST': 'x86_64-w64-mingw32',
-                'MINGW_PACKAGE_PREFIX': 'mingw-w64-x86_64'},
         'packages': {
             'mingw-w64-sleef-git': [],
             'mingw-w64-libnacs-git': ['mingw-w64-sleef-git'],
@@ -56,131 +65,214 @@ PLATFORMS = {
     },
 }
 
-PKGINFO_SCRIPT = '''
-source PKGBUILD || exit 1
-echo "$epoch"
-echo "$pkgver"
-echo "$pkgrel"
-echo "${arch[*]}"
-printf '%s\\n' "${pkgname[@]}"
-'''
+NVCHECKER_CONFIG = 'nvchecker.toml'
+OLDVER = 'oldver.json'
+NEWVER = 'newver.json'
+PENDING = 'pending.json'
+PLAN = 'plan.json'
 
-def read_pkginfo(path, env):
-    out = subprocess.run(['bash', '-c', PKGINFO_SCRIPT], cwd=path, check=True,
-                         env={**os.environ, **env}, stdout=subprocess.PIPE,
-                         text=True).stdout.splitlines()
-    epoch, pkgver, pkgrel, arch = out[:4]
-    return {'epoch': epoch, 'pkgver': pkgver, 'pkgrel': pkgrel,
-            'arch': arch.split(), 'names': out[4:]}
+def default_state_dir():
+    state_home = (os.environ.get('XDG_STATE_HOME') or
+                  os.path.join(os.path.expanduser('~'), '.local', 'state'))
+    return os.path.join(state_home, 'nacs-pkgs')
 
-def package_prefixes(info, carch):
-    ver = f"{info['epoch']}:" if info['epoch'] else ''
-    ver += f"{info['pkgver']}-{info['pkgrel']}"
-    arch = 'any' if 'any' in info['arch'] else carch
-    return [f'{name}-{ver}-{arch}.pkg.tar.' for name in info['names']]
+def all_packages():
+    for platform, conf in PLATFORMS.items():
+        for pkg, deps in conf['packages'].items():
+            yield platform, pkg, f"{conf['srcdir']}/{pkg}", deps
 
-def pkgver_hash(pkgver):
-    m = re.search(r'(?:^|\.)g?([0-9a-f]{7,40})$', pkgver)
-    return m[1] if m else None
+def read_json(path, default):
+    try:
+        with open(path) as fh:
+            return json.load(fh)
+    except FileNotFoundError:
+        return default
 
-def run_nvchecker(config):
-    with open(config, 'rb') as fh:
-        entries = [name for name in tomllib.load(fh) if name != '__config__']
-    # No old version file is used. The current version is read from the PKGBUILD.
+def write_json(path, value):
+    with open(path, 'w') as fh:
+        json.dump(value, fh, indent=2, sort_keys=True)
+        fh.write('\n')
+
+def read_versions(path):
+    data = read_json(path, {})
+    if data.get('version') == 2:
+        data = data['data']
+    return {name: ver['version'] if isinstance(ver, dict) else ver
+            for name, ver in data.items()}
+
+def toml_value(value):
+    if isinstance(value, bool):
+        return 'true' if value else 'false'
+    if isinstance(value, (int, float)):
+        return repr(value)
+    if isinstance(value, str):
+        # JSON strings are valid TOML basic strings
+        return json.dumps(value)
+    if isinstance(value, list):
+        return '[' + ', '.join(toml_value(v) for v in value) + ']'
+    if isinstance(value, dict):
+        return '{' + ', '.join(f'{json.dumps(str(k))} = {toml_value(v)}'
+                               for k, v in value.items()) + '}'
+    raise TypeError(f'Unsupported value {value!r}')
+
+def load_sources(path):
+    import yaml
+    try:
+        with open(os.path.join(path, 'nvchecker.yml')) as fh:
+            sources = yaml.safe_load(fh)
+    except FileNotFoundError:
+        print(f'::warning::{path} has no nvchecker.yml')
+        return []
+    if sources is None:
+        return []
+    if not isinstance(sources, list) or not all(isinstance(s, dict) for s in sources):
+        sys.exit(f'{path}/nvchecker.yml must be an array of nvchecker entries')
+    return sources
+
+def write_nvchecker_config(state_dir):
+    entries = {}
+    lines = ['# Generated by check-updates.py', '',
+             '[__config__]', f'oldver = "{OLDVER}"', f'newver = "{NEWVER}"']
+    for _, _, path, _ in all_packages():
+        names = []
+        for i, source in enumerate(load_sources(path)):
+            name = f'{path}:{i}'
+            names.append(name)
+            lines.append('')
+            lines.append(f'[{json.dumps(name)}]')
+            lines.extend(f'{json.dumps(str(k))} = {toml_value(v)}' for k, v in source.items())
+        entries[path] = names
+    with open(os.path.join(state_dir, NVCHECKER_CONFIG), 'w') as fh:
+        fh.write('\n'.join(lines) + '\n')
+    return entries
+
+def run_nvchecker(state_dir, names):
+    config = os.path.join(state_dir, NVCHECKER_CONFIG)
+    newver = os.path.join(state_dir, NEWVER)
+    # Make sure that the versions of the failed entries are not left from the last run.
+    if os.path.exists(newver):
+        os.remove(newver)
     out = subprocess.run(['nvchecker', '-c', config, '--logger', 'json'],
                          stdout=subprocess.PIPE, text=True).stdout
-    versions = {}
     for line in out.splitlines():
         try:
             log = json.loads(line)
         except json.JSONDecodeError:
             continue
-        if 'version' in log and 'name' in log:
-            versions[log['name']] = log['version']
-        elif log.get('level') in ('error', 'warning'):
+        if log.get('level') in ('error', 'warning'):
             print(f"nvchecker {log.get('name', '')}: {log.get('event', '')} "
                   f"{log.get('error', '')}", file=sys.stderr)
-    failed = [name for name in entries if name not in versions]
+    versions = read_versions(newver)
+    failed = [name for name in names if name not in versions]
     if failed:
-        print(f'::warning::Failed to check upstream version of {", ".join(failed)}')
-    if entries and not versions:
-        sys.exit('Failed to check all upstream versions')
+        # The packages are not rebuilt for the failed entries.
+        print(f'::warning::Failed to check {", ".join(failed)}')
+    if names and not versions:
+        sys.exit('Failed to check all sources')
     return versions
 
-def bump_pkgrel(path):
-    with open(path) as fh:
-        content = fh.read()
-    content, n = re.subn(r'^pkgrel=(\d+)$',
-                         lambda m: f'pkgrel={int(m[1]) + 1}',
-                         content, count=1, flags=re.M)
-    if n != 1:
-        raise ValueError(f'Cannot find pkgrel in {path}')
-    with open(path, 'w') as fh:
-        fh.write(content)
+def changed_entries(state_dir):
+    out = subprocess.run(['nvcmp', '-c', os.path.join(state_dir, NVCHECKER_CONFIG), '-j'],
+                         check=True, stdout=subprocess.PIPE, text=True).stdout
+    return {change['name']: change for change in json.loads(out or '[]')}
 
-def write_output(fh, key, value):
-    if fh is not None:
-        print(f'{key}={value}', file=fh)
+def short_version(ver):
+    if ver is None:
+        return 'none'
+    return ver if len(ver) <= 16 else ver[:12] + '…'
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--nvchecker', default='nvchecker.toml',
-                        help='nvchecker configuration file')
-    parser.add_argument('--published', required=True,
-                        help='File with the list of files in the package repository')
-    args = parser.parse_args()
+def cmd_check(args):
+    state_dir = args.state_dir
+    os.makedirs(state_dir, exist_ok=True)
+    entries = write_nvchecker_config(state_dir)
+    initialize = not os.path.exists(os.path.join(state_dir, OLDVER))
+    run_nvchecker(state_dir, [name for names in entries.values() for name in names])
 
-    with open(args.published) as fh:
-        published = fh.read().splitlines()
-    upstream = run_nvchecker(args.nvchecker)
+    if initialize:
+        # Without any recorded versions, (e.g. first run or the cache was lost)
+        # assume the current packages are up to date instead of rebuilding everything.
+        print('::warning::No recorded versions found. '
+              'Recording the current versions without rebuilding any package.')
+        subprocess.run(['nvtake', '-c', os.path.join(state_dir, NVCHECKER_CONFIG), '--all'],
+                       check=True)
+        changes = {}
+    else:
+        changes = changed_entries(state_dir)
+    pending = set(read_json(os.path.join(state_dir, PENDING), []))
 
     output = os.environ.get('GITHUB_OUTPUT')
     output = open(output, 'a') if output else None
     summary = os.environ.get('GITHUB_STEP_SUMMARY')
     summary = open(summary, 'a') if summary else sys.stdout
-    print('| Package | Version | Upstream | Action |', file=summary)
-    print('|---|---|---|---|', file=summary)
+    print('| Package | Action | Reason |', file=summary)
+    print('|---|---|---|', file=summary)
 
-    for platform, conf in PLATFORMS.items():
-        carch = conf['env']['CARCH']
-        prefix = conf['repodir'] + '/'
-        files = [f[len(prefix):] for f in published if f.startswith(prefix)]
+    plan = {}
+    rebuild = {platform: [] for platform in PLATFORMS}
+    for platform, pkg, path, deps in all_packages():
+        reasons = []
+        for name in entries[path]:
+            if name in changes:
+                change = changes[name]
+                reasons.append(f"{name}: {short_version(change['oldver'])} → "
+                               f"{short_version(change['newver'])}")
+        rebuilt_deps = [dep for dep in deps if dep in rebuild[platform]]
+        if rebuilt_deps:
+            reasons.append(f'rebuild for {", ".join(rebuilt_deps)}')
+        if path in pending:
+            reasons.append('retry')
+        if reasons:
+            rebuild[platform].append(pkg)
+            plan[path] = entries[path]
+        print(f'| {path} | {"build" if reasons else ""} | {"<br>".join(reasons)} |',
+              file=summary)
 
-        rebuild = {}
-        infos = {}
-        # The packages are listed in dependency order.
-        for pkg, deps in conf['packages'].items():
-            path = os.path.join(conf['srcdir'], pkg)
-            info = read_pkginfo(path, conf['env'])
-            infos[pkg] = info
-
-            upstream_ver = upstream.get(path)
-            cur_hash = pkgver_hash(info['pkgver'])
-            if upstream_ver is not None and cur_hash is None:
-                print(f'Cannot find commit hash in {path} version {info["pkgver"]}',
-                      file=sys.stderr)
-            if (upstream_ver is not None and cur_hash is not None and
-                not upstream_ver.startswith(cur_hash)):
-                rebuild[pkg] = 'upstream updated'
-            elif not all(any(f.startswith(p) for f in files)
-                         for p in package_prefixes(info, carch)):
-                rebuild[pkg] = 'not published'
-            else:
-                rebuilt_deps = [dep for dep in deps if dep in rebuild]
-                if rebuilt_deps:
-                    bump_pkgrel(os.path.join(path, 'PKGBUILD'))
-                    info['pkgrel'] = str(int(info['pkgrel']) + 1)
-                    rebuild[pkg] = f'rebuild for {", ".join(rebuilt_deps)}'
-
-        for pkg, info in infos.items():
-            ver = f"{info['pkgver']}-{info['pkgrel']}"
-            upstream_ver = upstream.get(os.path.join(conf['srcdir'], pkg), '')
-            print(f'| {platform}/{pkg} | {ver} | {upstream_ver[:12]} | '
-                  f'{rebuild.get(pkg, "")} |', file=summary)
-        write_output(output, platform, ' '.join(rebuild))
-
+    write_json(os.path.join(state_dir, PLAN), plan)
     if output is not None:
+        for platform, pkgs in rebuild.items():
+            print(f'{platform}={" ".join(pkgs)}', file=output)
         output.close()
+
+def cmd_record(args):
+    state_dir = args.state_dir
+    plan = read_json(os.path.join(state_dir, PLAN), None)
+    if plan is None:
+        sys.exit('No build plan found. Run `check` first.')
+    built = {path.rstrip('/') for arg in args.built for path in arg.split()}
+    versions = read_versions(os.path.join(state_dir, NEWVER))
+
+    take = [name for path in plan if path in built
+            for name in plan[path] if name in versions]
+    if take:
+        subprocess.run(['nvtake', '-c', os.path.join(state_dir, NVCHECKER_CONFIG), *take],
+                       check=True)
+    failed = sorted(path for path in plan if path not in built)
+    write_json(os.path.join(state_dir, PENDING), failed)
+    os.remove(os.path.join(state_dir, PLAN))
+
+    summary = os.environ.get('GITHUB_STEP_SUMMARY')
+    summary = open(summary, 'a') if summary else sys.stdout
+    for path in plan:
+        if path in built:
+            print(f'* {path}: recorded', file=summary)
+        else:
+            print(f'* {path}: failed, will be retried', file=summary)
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--state-dir', default=default_state_dir(),
+                        help='Directory to store the versions and the build plan')
+    subparsers = parser.add_subparsers(dest='command', required=True)
+    subparsers.add_parser('check', help='Check which packages need to be rebuilt')
+    record = subparsers.add_parser('record', help='Record the result of the build')
+    record.add_argument('built', nargs='*',
+                        help='Package directories built and published successfully '
+                        '(whitespace separated lists are accepted)')
+    args = parser.parse_args()
+    if args.command == 'check':
+        cmd_check(args)
+    else:
+        cmd_record(args)
 
 if __name__ == '__main__':
     main()
