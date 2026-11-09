@@ -90,7 +90,7 @@ jobs:
           mingw-w64-x86_64-cmake
           mingw-w64-x86_64-clang
           mingw-w64-x86_64-toolchain
-          mingw-w64-x86_64-intel-tbb
+          mingw-w64-x86_64-tbb
           mingw-w64-x86_64-libwinpthread
           mingw-w64-x86_64-llvm
           mingw-w64-x86_64-openlibm
