@@ -1,4 +1,4 @@
-From a66834a8bcb4360ac1b4353ad7bad748d57d8e2d Mon Sep 17 00:00:00 2001
+From d3e853cf08bcf8e138e88ca85e55bc6aef2c4562 Mon Sep 17 00:00:00 2001
 From: Yichao Yu <yyc1992@gmail.com>
 Date: Sun, 24 Feb 2019 21:03:18 -0500
 Subject: [PATCH] Use vector calling convention
@@ -7,168 +7,35 @@ Only enabled when targeting x86 Windows with clang.
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 ---
- src/arch/helperavx.h               |  7 +++++++
- src/arch/helperavx2.h              |  7 +++++++
- src/arch/helperavx2_128.h          |  7 +++++++
- src/arch/helperavx512f.h           |  7 +++++++
- src/arch/helperpurec.h             |  7 +++++++
- src/arch/helperpurec_scalar.h      |  7 +++++++
- src/arch/helpersse2.h              |  7 +++++++
- src/common/misc.h                  | 16 +++++++++++++++-
- src/libm/dispavx.c.org             | 12 ++++++------
- src/libm/dispscalar.c.org          |  4 ++++
- src/libm/dispsse.c.org             |  6 +++---
- src/libm/mkalias.c                 | 30 +++++++++++++++++++++---------
- src/libm/mkrename.c                |  2 +-
- src/libm/sleeflibm_header.h.org.in |  6 ++++++
- src/libm/sleefsimddp.c             | 10 +++++-----
- src/libm/sleefsimdsp.c             |  8 ++++----
- 16 files changed, 114 insertions(+), 29 deletions(-)
+ src/common/misc.h                  |  20 ++++
+ src/libm/dispatcher.h              |  60 +++++-----
+ src/libm/dispavx.c.org             |  12 +-
+ src/libm/dispscalar.c.org          |   4 +
+ src/libm/dispsse.c.org             |   6 +-
+ src/libm/mkalias.c                 |  30 +++--
+ src/libm/mkrename.c                |   2 +-
+ src/libm/sleeflibm_header.h.org.in |   6 +
+ src/libm/sleefsimddp.c             | 146 ++++++++++++------------
+ src/libm/sleefsimdsp.c             | 172 ++++++++++++++---------------
+ 10 files changed, 250 insertions(+), 208 deletions(-)
 
-diff --git a/src/arch/helperavx.h b/src/arch/helperavx.h
-index 00fdaf9..23e2d21 100644
---- a/src/arch/helperavx.h
-+++ b/src/arch/helperavx.h
-@@ -49,6 +49,13 @@
- #include "misc.h"
- #endif // #if !defined(SLEEF_GENHEADER)
- 
-+#define VEC_SUFFIX_D1 "@@32"
-+#define VEC_SUFFIX_D2 "@@64"
-+#define VEC_SUFFIX_D3 "@@96"
-+#define VEC_SUFFIX_F1 "@@32"
-+#define VEC_SUFFIX_F2 "@@64"
-+#define VEC_SUFFIX_F3 "@@96"
-+
- typedef __m256i vmask;
- typedef __m256i vopmask;
- 
-diff --git a/src/arch/helperavx2.h b/src/arch/helperavx2.h
-index 38c21b4..280c280 100644
---- a/src/arch/helperavx2.h
-+++ b/src/arch/helperavx2.h
-@@ -47,6 +47,13 @@
- #include "misc.h"
- #endif // #if !defined(SLEEF_GENHEADER)
- 
-+#define VEC_SUFFIX_D1 "@@32"
-+#define VEC_SUFFIX_D2 "@@64"
-+#define VEC_SUFFIX_D3 "@@96"
-+#define VEC_SUFFIX_F1 "@@32"
-+#define VEC_SUFFIX_F2 "@@64"
-+#define VEC_SUFFIX_F3 "@@96"
-+
- typedef __m256i vmask;
- typedef __m256i vopmask;
- 
-diff --git a/src/arch/helperavx2_128.h b/src/arch/helperavx2_128.h
-index 97258cd..7568945 100644
---- a/src/arch/helperavx2_128.h
-+++ b/src/arch/helperavx2_128.h
-@@ -47,6 +47,13 @@
- #include "misc.h"
- #endif // #if !defined(SLEEF_GENHEADER)
- 
-+#define VEC_SUFFIX_D1 "@@16"
-+#define VEC_SUFFIX_D2 "@@32"
-+#define VEC_SUFFIX_D3 "@@48"
-+#define VEC_SUFFIX_F1 "@@16"
-+#define VEC_SUFFIX_F2 "@@32"
-+#define VEC_SUFFIX_F3 "@@48"
-+
- typedef __m128i vmask;
- typedef __m128i vopmask;
- 
-diff --git a/src/arch/helperavx512f.h b/src/arch/helperavx512f.h
-index dcf8ead..8f818c3 100644
---- a/src/arch/helperavx512f.h
-+++ b/src/arch/helperavx512f.h
-@@ -50,6 +50,13 @@
- #include "misc.h"
- #endif // #if !defined(SLEEF_GENHEADER)
- 
-+#define VEC_SUFFIX_D1 "@@64"
-+#define VEC_SUFFIX_D2 "@@128"
-+#define VEC_SUFFIX_D3 "@@192"
-+#define VEC_SUFFIX_F1 "@@64"
-+#define VEC_SUFFIX_F2 "@@128"
-+#define VEC_SUFFIX_F3 "@@192"
-+
- typedef __m512i vmask;
- typedef __mmask16 vopmask;
- 
-diff --git a/src/arch/helperpurec.h b/src/arch/helperpurec.h
-index fc5ed8b..77d3c19 100644
---- a/src/arch/helperpurec.h
-+++ b/src/arch/helperpurec.h
-@@ -31,6 +31,13 @@
- #define DFTPRIORITY LOG2VECTLENDP
- #define ISANAME "Pure C Array"
- 
-+#define VEC_SUFFIX_D1 "@@8"
-+#define VEC_SUFFIX_D2 "@@16"
-+#define VEC_SUFFIX_D3 "@@24"
-+#define VEC_SUFFIX_F1 "@@8"
-+#define VEC_SUFFIX_F2 "@@16"
-+#define VEC_SUFFIX_F3 "@@24"
-+
- typedef union {
-   uint32_t u[VECTLENDP*2];
-   uint64_t x[VECTLENDP];
-diff --git a/src/arch/helperpurec_scalar.h b/src/arch/helperpurec_scalar.h
-index c6a8c00..4e5d93b 100644
---- a/src/arch/helperpurec_scalar.h
-+++ b/src/arch/helperpurec_scalar.h
-@@ -98,6 +98,13 @@
- 
- #define DFTPRIORITY LOG2VECTLENDP
- 
-+#define VEC_SUFFIX_D1 "@@8"
-+#define VEC_SUFFIX_D2 "@@16"
-+#define VEC_SUFFIX_D3 "@@24"
-+#define VEC_SUFFIX_F1 "@@8"
-+#define VEC_SUFFIX_F2 "@@16"
-+#define VEC_SUFFIX_F3 "@@24"
-+
- typedef uint64_t vmask;
- typedef uint32_t vopmask;
- typedef double vdouble;
-diff --git a/src/arch/helpersse2.h b/src/arch/helpersse2.h
-index ae98add..ec21f48 100644
---- a/src/arch/helpersse2.h
-+++ b/src/arch/helpersse2.h
-@@ -53,6 +53,13 @@
- #include "misc.h"
- #endif // #if !defined(SLEEF_GENHEADER)
- 
-+#define VEC_SUFFIX_D1 "@@16"
-+#define VEC_SUFFIX_D2 "@@32"
-+#define VEC_SUFFIX_D3 "@@48"
-+#define VEC_SUFFIX_F1 "@@16"
-+#define VEC_SUFFIX_F2 "@@32"
-+#define VEC_SUFFIX_F3 "@@48"
-+
- typedef __m128i vmask;
- typedef __m128i vopmask;
- 
 diff --git a/src/common/misc.h b/src/common/misc.h
-index 6b571cb..01b6264 100644
+index 8d972e2..ffadde8 100644
 --- a/src/common/misc.h
 +++ b/src/common/misc.h
-@@ -318,12 +318,26 @@ typedef struct {
+@@ -317,6 +317,26 @@ typedef struct {
  
  #endif // #ifndef __MISC_H__
  
--#ifdef ENABLE_AAVPCS
 +#if defined(ENABLE_AAVPCS)
- #define VECTOR_CC __attribute__((aarch64_vector_pcs))
-+#elif defined(_WIN32) && defined(__clang__) && (defined(__x86_64__) || defined(__i386__))
++#define VECTOR_CC __attribute__((aarch64_vector_pcs))
++#elif defined(_WIN32) && defined(__clang__) && defined(__x86_64__)
 +#define ENABLE_VECTORCALL 1
 +#define VECTOR_CC __attribute__((vectorcall))
- #else
- #define VECTOR_CC
- #endif
- 
++#else
++#define VECTOR_CC
++#endif
++
 +// Name of the alias target for a function using VECTOR_CC.
 +// With vectorcall, the symbol name is decorated as "name@@<argument size>".
 +// The leading \x01 (the LLVM marker for "use this name verbatim") is written
@@ -182,34 +49,149 @@ index 6b571cb..01b6264 100644
 +
  //
  
- #if defined (__GNUC__) && !defined(__INTEL_COMPILER)
+ #if defined (__GNUC__)
+diff --git a/src/libm/dispatcher.h b/src/libm/dispatcher.h
+index 804423d..e9a16e5 100644
+--- a/src/libm/dispatcher.h
++++ b/src/libm/dispatcher.h
+@@ -38,80 +38,80 @@ int Sleef_internal_cpuSupportsExt(void (*tryExt)(), int *cache);
+  */
+ 
+ #define DISPATCH_vf_vf(fptype, veclen, funcNameS, funcNameS2, funcName, pfn, dfn, funcExt0, funcExt1, funcExt2) \
+-  static CONST fptype (*pfn)(fptype arg0);			\
+-  static CONST fptype dfn(fptype arg0) {			\
+-    fptype CONST (*p)(fptype arg0) = funcExt0;		\
++  static CONST VECTOR_CC fptype (*pfn)(fptype arg0);			\
++  static CONST VECTOR_CC fptype dfn(fptype arg0) {			\
++    fptype CONST VECTOR_CC (*p)(fptype arg0) = funcExt0;		\
+     SUBST_IF_EXT1(funcExt1);						\
+     SUBST_IF_EXT2(funcExt2);						\
+     pfn = p;								\
+     return (*pfn)(arg0);						\
+   }									\
+-  static CONST fptype (*pfn)(fptype arg0) = dfn;		\
+-  EXPORT CONST fptype funcName(fptype arg0) { return (*pfn)(arg0); } \
++  static CONST VECTOR_CC fptype (*pfn)(fptype arg0) = dfn;		\
++  EXPORT CONST VECTOR_CC fptype funcName(fptype arg0) { return (*pfn)(arg0); } \
+   VECALIAS_vf_vf(fptype, funcNameS, funcName, veclen)			\
+   VECALIAS_vf_vf(fptype, funcNameS2, funcName, veclen)
+ 
+ #define DISPATCH_vf_vf_vf(fptype, veclen, funcNameS, funcNameS2, funcName, pfn, dfn, funcExt0, funcExt1, funcExt2) \
+-  static CONST fptype (*pfn)(fptype arg0, fptype arg1);	\
+-  static CONST fptype dfn(fptype arg0, fptype arg1) {		\
+-    fptype CONST (*p)(fptype arg0, fptype arg1) = funcExt0;	\
++  static CONST VECTOR_CC fptype (*pfn)(fptype arg0, fptype arg1);	\
++  static CONST VECTOR_CC fptype dfn(fptype arg0, fptype arg1) {		\
++    fptype CONST VECTOR_CC (*p)(fptype arg0, fptype arg1) = funcExt0;	\
+     SUBST_IF_EXT1(funcExt1);						\
+     SUBST_IF_EXT2(funcExt2);						\
+     pfn = p;								\
+     return (*pfn)(arg0, arg1);						\
+   }									\
+-  static CONST fptype (*pfn)(fptype arg0, fptype arg1) = dfn; \
+-  EXPORT CONST fptype funcName(fptype arg0, fptype arg1) { return (*pfn)(arg0, arg1); } \
++  static CONST VECTOR_CC fptype (*pfn)(fptype arg0, fptype arg1) = dfn; \
++  EXPORT CONST VECTOR_CC fptype funcName(fptype arg0, fptype arg1) { return (*pfn)(arg0, arg1); } \
+   VECALIAS_vf_vf_vf(fptype, funcNameS, funcName, veclen)		\
+   VECALIAS_vf_vf_vf(fptype, funcNameS2, funcName, veclen)
+ 
+ #define DISPATCH_vf2_vf(fptype, fptype2, veclen, funcNameS, funcNameS2, funcName, pfn, dfn, funcExt0, funcExt1, funcExt2) \
+-  static CONST fptype2 (*pfn)(fptype arg0);			\
+-  static CONST fptype2 dfn(fptype arg0) {			\
+-    fptype2 CONST (*p)(fptype arg0) = funcExt0;		\
++  static CONST VECTOR_CC fptype2 (*pfn)(fptype arg0);			\
++  static CONST VECTOR_CC fptype2 dfn(fptype arg0) {			\
++    fptype2 CONST VECTOR_CC (*p)(fptype arg0) = funcExt0;		\
+     SUBST_IF_EXT1(funcExt1);						\
+     SUBST_IF_EXT2(funcExt2);						\
+     pfn = p;								\
+     return (*pfn)(arg0);						\
+   }									\
+-  static CONST fptype2 (*pfn)(fptype arg0) = dfn;		\
+-  EXPORT CONST fptype2 funcName(fptype arg0) { return (*pfn)(arg0); }
++  static CONST VECTOR_CC fptype2 (*pfn)(fptype arg0) = dfn;		\
++  EXPORT CONST VECTOR_CC fptype2 funcName(fptype arg0) { return (*pfn)(arg0); }
+ 
+ #define DISPATCH_vf_vf_vi(fptype, itype, veclen, funcNameS, funcNameS2, funcName, pfn, dfn, funcExt0, funcExt1, funcExt2) \
+-  static CONST fptype (*pfn)(fptype arg0, itype arg1);	\
+-  static CONST fptype dfn(fptype arg0, itype arg1) {		\
+-    fptype CONST (*p)(fptype arg0, itype arg1) = funcExt0;	\
++  static CONST VECTOR_CC fptype (*pfn)(fptype arg0, itype arg1);	\
++  static CONST VECTOR_CC fptype dfn(fptype arg0, itype arg1) {		\
++    fptype CONST VECTOR_CC (*p)(fptype arg0, itype arg1) = funcExt0;	\
+     SUBST_IF_EXT1(funcExt1);						\
+     SUBST_IF_EXT2(funcExt2);						\
+     pfn = p;								\
+     return (*pfn)(arg0, arg1);						\
+   }									\
+-  static CONST fptype (*pfn)(fptype arg0, itype arg1) = dfn;	\
+-  EXPORT CONST fptype funcName(fptype arg0, itype arg1) { return (*pfn)(arg0, arg1); }
++  static CONST VECTOR_CC fptype (*pfn)(fptype arg0, itype arg1) = dfn;	\
++  EXPORT CONST VECTOR_CC fptype funcName(fptype arg0, itype arg1) { return (*pfn)(arg0, arg1); }
+ 
+ #define DISPATCH_vi_vf(fptype, itype, veclen, funcNameS, funcNameS2, funcName, pfn, dfn, funcExt0, funcExt1, funcExt2) \
+-  static CONST itype (*pfn)(fptype arg0);			\
+-  static CONST itype dfn(fptype arg0) {			\
+-    itype CONST (*p)(fptype arg0) = funcExt0;			\
++  static CONST VECTOR_CC itype (*pfn)(fptype arg0);			\
++  static CONST VECTOR_CC itype dfn(fptype arg0) {			\
++    itype CONST VECTOR_CC (*p)(fptype arg0) = funcExt0;			\
+     SUBST_IF_EXT1(funcExt1);						\
+     SUBST_IF_EXT2(funcExt2);						\
+     pfn = p;								\
+     return (*pfn)(arg0);						\
+   }									\
+-  static CONST itype (*pfn)(fptype arg0) = dfn;		\
+-  EXPORT CONST itype funcName(fptype arg0) { return (*pfn)(arg0); }
++  static CONST VECTOR_CC itype (*pfn)(fptype arg0) = dfn;		\
++  EXPORT CONST VECTOR_CC itype funcName(fptype arg0) { return (*pfn)(arg0); }
+ 
+ #define DISPATCH_vf_vf_vf_vf(fptype, veclen, funcNameS, funcNameS2, funcName, pfn, dfn, funcExt0, funcExt1, funcExt2) \
+-  static CONST fptype (*pfn)(fptype arg0, fptype arg1, fptype arg2); \
+-  static CONST fptype dfn(fptype arg0, fptype arg1, fptype arg2) { \
+-    fptype CONST (*p)(fptype arg0, fptype arg1, fptype arg2) = funcExt0; \
++  static CONST VECTOR_CC fptype (*pfn)(fptype arg0, fptype arg1, fptype arg2); \
++  static CONST VECTOR_CC fptype dfn(fptype arg0, fptype arg1, fptype arg2) { \
++    fptype CONST VECTOR_CC (*p)(fptype arg0, fptype arg1, fptype arg2) = funcExt0; \
+     SUBST_IF_EXT1(funcExt1);						\
+     SUBST_IF_EXT2(funcExt2);						\
+     pfn = p;								\
+     return (*pfn)(arg0, arg1, arg2);					\
+   }									\
+-  static CONST fptype (*pfn)(fptype arg0, fptype arg1, fptype arg2) = dfn; \
+-  EXPORT CONST fptype funcName(fptype arg0, fptype arg1, fptype arg2) { return (*pfn)(arg0, arg1, arg2); } \
++  static CONST VECTOR_CC fptype (*pfn)(fptype arg0, fptype arg1, fptype arg2) = dfn; \
++  EXPORT CONST VECTOR_CC fptype funcName(fptype arg0, fptype arg1, fptype arg2) { return (*pfn)(arg0, arg1, arg2); } \
+   VECALIAS_vf_vf_vf_vf(fptype, funcNameS, funcName, veclen)		\
+   VECALIAS_vf_vf_vf_vf(fptype, funcNameS2, funcName, veclen)
+ 
 diff --git a/src/libm/dispavx.c.org b/src/libm/dispavx.c.org
-index b50ff0a..f7b4acb 100644
+index 12b6972..08aadab 100644
 --- a/src/libm/dispavx.c.org
 +++ b/src/libm/dispavx.c.org
-@@ -57,14 +57,14 @@ static int cpuSupportsFMA4() {
+@@ -41,14 +41,14 @@ static int cpuSupportsFMA() {
  
  #ifdef ENABLE_ALIAS
  #define VECALIAS_vf_vf(fptype, funcNameS, funcName, veclen)		\
--  EXPORT CONST VECTOR_CC fptype _ZGVcN ## veclen ## v_ ## funcNameS(fptype) __attribute__((alias(stringify(funcName)))); \
--  EXPORT CONST VECTOR_CC fptype _ZGVdN ## veclen ## v_ ## funcNameS(fptype) __attribute__((alias(stringify(funcName))));
+-  EXPORT CONST fptype _ZGVcN ## veclen ## v_ ## funcNameS(fptype) __attribute__((alias(stringify(funcName)))); \
+-  EXPORT CONST fptype _ZGVdN ## veclen ## v_ ## funcNameS(fptype) __attribute__((alias(stringify(funcName))));
 +  EXPORT CONST VECTOR_CC fptype _ZGVcN ## veclen ## v_ ## funcNameS(fptype) __attribute__((alias(VECTOR_CC_ALIAS(stringify(funcName), "@@32")))); \
 +  EXPORT CONST VECTOR_CC fptype _ZGVdN ## veclen ## v_ ## funcNameS(fptype) __attribute__((alias(VECTOR_CC_ALIAS(stringify(funcName), "@@32"))));
  #define VECALIAS_vf_vf_vf(fptype, funcNameS, funcName, veclen)		\
--  EXPORT CONST VECTOR_CC fptype _ZGVcN ## veclen ## vv_ ## funcNameS(fptype, fptype) __attribute__((alias(stringify(funcName)))); \
--  EXPORT CONST VECTOR_CC fptype _ZGVdN ## veclen ## vv_ ## funcNameS(fptype, fptype) __attribute__((alias(stringify(funcName))));
+-  EXPORT CONST fptype _ZGVcN ## veclen ## vv_ ## funcNameS(fptype, fptype) __attribute__((alias(stringify(funcName)))); \
+-  EXPORT CONST fptype _ZGVdN ## veclen ## vv_ ## funcNameS(fptype, fptype) __attribute__((alias(stringify(funcName))));
 +  EXPORT CONST VECTOR_CC fptype _ZGVcN ## veclen ## vv_ ## funcNameS(fptype, fptype) __attribute__((alias(VECTOR_CC_ALIAS(stringify(funcName), "@@64")))); \
 +  EXPORT CONST VECTOR_CC fptype _ZGVdN ## veclen ## vv_ ## funcNameS(fptype, fptype) __attribute__((alias(VECTOR_CC_ALIAS(stringify(funcName), "@@64"))));
  #define VECALIAS_vf_vf_vf_vf(fptype, funcNameS, funcName, veclen)	\
--  EXPORT CONST VECTOR_CC fptype _ZGVcN ## veclen ## vvv_ ## funcNameS(fptype, fptype, fptype) __attribute__((alias(stringify(funcName)))); \
--  EXPORT CONST VECTOR_CC fptype _ZGVdN ## veclen ## vvv_ ## funcNameS(fptype, fptype, fptype) __attribute__((alias(stringify(funcName))));
+-  EXPORT CONST fptype _ZGVcN ## veclen ## vvv_ ## funcNameS(fptype, fptype, fptype) __attribute__((alias(stringify(funcName)))); \
+-  EXPORT CONST fptype _ZGVdN ## veclen ## vvv_ ## funcNameS(fptype, fptype, fptype) __attribute__((alias(stringify(funcName))));
 +  EXPORT CONST VECTOR_CC fptype _ZGVcN ## veclen ## vvv_ ## funcNameS(fptype, fptype, fptype) __attribute__((alias(VECTOR_CC_ALIAS(stringify(funcName), "@@96")))); \
 +  EXPORT CONST VECTOR_CC fptype _ZGVdN ## veclen ## vvv_ ## funcNameS(fptype, fptype, fptype) __attribute__((alias(VECTOR_CC_ALIAS(stringify(funcName), "@@96"))));
  #endif
  
  #include "dispatcher.h"
 diff --git a/src/libm/dispscalar.c.org b/src/libm/dispscalar.c.org
-index ccf28c2..9d8a2aa 100644
+index c7f21e8..b662825 100644
 --- a/src/libm/dispscalar.c.org
 +++ b/src/libm/dispscalar.c.org
 @@ -13,6 +13,10 @@
@@ -224,26 +206,26 @@ index ccf28c2..9d8a2aa 100644
  
  NOEXPORT double sleef_cpuid_SCALFMA;
 diff --git a/src/libm/dispsse.c.org b/src/libm/dispsse.c.org
-index a6ca65a..5db133d 100644
+index 985c1d3..d244632 100644
 --- a/src/libm/dispsse.c.org
 +++ b/src/libm/dispsse.c.org
-@@ -53,11 +53,11 @@ static int cpuSupportsFMA() {
+@@ -43,11 +43,11 @@ static int cpuSupportsFMA() {
  
  #ifdef ENABLE_ALIAS
  #define VECALIAS_vf_vf(fptype, funcNameS, funcName, veclen)		\
--  EXPORT CONST VECTOR_CC fptype _ZGVbN ## veclen ## v_ ## funcNameS(fptype) __attribute__((alias(stringify(funcName))));
+-  EXPORT CONST fptype _ZGVbN ## veclen ## v_ ## funcNameS(fptype) __attribute__((alias(stringify(funcName))));
 +  EXPORT CONST VECTOR_CC fptype _ZGVbN ## veclen ## v_ ## funcNameS(fptype) __attribute__((alias(VECTOR_CC_ALIAS(stringify(funcName), "@@16"))));
  #define VECALIAS_vf_vf_vf(fptype, funcNameS, funcName, veclen)		\
--  EXPORT CONST VECTOR_CC fptype _ZGVbN ## veclen ## vv_ ## funcNameS(fptype, fptype) __attribute__((alias(stringify(funcName))));
+-  EXPORT CONST fptype _ZGVbN ## veclen ## vv_ ## funcNameS(fptype, fptype) __attribute__((alias(stringify(funcName))));
 +  EXPORT CONST VECTOR_CC fptype _ZGVbN ## veclen ## vv_ ## funcNameS(fptype, fptype) __attribute__((alias(VECTOR_CC_ALIAS(stringify(funcName), "@@32"))));
  #define VECALIAS_vf_vf_vf_vf(fptype, funcNameS, funcName, veclen)	\
--  EXPORT CONST VECTOR_CC fptype _ZGVbN ## veclen ## vvv_ ## funcNameS(fptype, fptype, fptype) __attribute__((alias(stringify(funcName))));
+-  EXPORT CONST fptype _ZGVbN ## veclen ## vvv_ ## funcNameS(fptype, fptype, fptype) __attribute__((alias(stringify(funcName))));
 +  EXPORT CONST VECTOR_CC fptype _ZGVbN ## veclen ## vvv_ ## funcNameS(fptype, fptype, fptype) __attribute__((alias(VECTOR_CC_ALIAS(stringify(funcName), "@@48"))));
  #endif
  
  #include "dispatcher.h"
 diff --git a/src/libm/mkalias.c b/src/libm/mkalias.c
-index 633786d..05b133d 100644
+index e7f55bd..0923382 100644
 --- a/src/libm/mkalias.c
 +++ b/src/libm/mkalias.c
 @@ -25,7 +25,7 @@ int main(int argc, char **argv) {
@@ -252,10 +234,10 @@ index 633786d..05b133d 100644
  
 -  char * vectorcc="";
 +  char * vectorcc=" VECTOR_CC";
- #ifdef ENABLE_AAVPCS
-   if (strcmp(isaname, "advsimd") == 0)
-     vectorcc =" __attribute__((aarch64_vector_pcs))";
-@@ -39,6 +39,7 @@ int main(int argc, char **argv) {
+ 
+   static char *argType2[] = {
+     "a0", "a0, a1", "a0", "a0, a1",
+@@ -34,6 +34,7 @@ int main(int argc, char **argv) {
    static char *typeSpecS[] = { "", "f" };
    static char *typeSpec[] = { "d", "f" };
    static char *vparameterStr[9] = { "v", "vv", "", "vv", "v", "vvv", "", "", "" };
@@ -263,7 +245,7 @@ index 633786d..05b133d 100644
  
    static char returnType[9][1000];
    static char argType0[9][1000];
-@@ -87,33 +88,44 @@ int main(int argc, char **argv) {
+@@ -82,33 +83,44 @@ int main(int argc, char **argv) {
      for(int i=0;funcList[i].name != NULL;i++) {
        if (fptype == 0 && (funcList[i].flags & 2) != 0) continue;
        if (funcList[i].ulp >= 0) {
@@ -277,7 +259,7 @@ index 633786d..05b133d 100644
 +	       vw * (2 - fptype) * 2 * argSize[funcList[i].funcType], vectorcc
  	       );
  	if (genAliasVectorABI && vparameterStr[funcList[i].funcType] != NULL) {
--	  printf("EXPORT CONST VECTOR_CC %s _ZGV%sN%d%s_Sleef_%s%s_u%02d(%s) __attribute__((alias(\"Sleef_%s%s%d_u%02d%s\")))%s;\n",
+-	  printf("EXPORT CONST %s _ZGV%sN%d%s_Sleef_%s%s_u%02d(%s) __attribute__((alias(\"Sleef_%s%s%d_u%02d%s\")))%s;\n",
 +	  printf("EXPORT CONST VECTOR_CC %s _ZGV%sN%d%s_Sleef_%s%s_u%02d(%s) __attribute__((alias(VECTOR_CC_ALIAS(\"Sleef_%s%s%d_u%02d%s\", \"@@%d\"))))%s;\n",
  		 returnType[funcList[i].funcType],
  		 mangledisa, vw, vparameterStr[funcList[i].funcType], funcList[i].name, typeSpecS[fptype], funcList[i].ulp,
@@ -305,7 +287,7 @@ index 633786d..05b133d 100644
 +	       vw * (2 - fptype) * 2 * argSize[funcList[i].funcType], vectorcc
  	       );
  	if (genAliasVectorABI && vparameterStr[funcList[i].funcType] != NULL) {
--	  printf("EXPORT CONST VECTOR_CC %s _ZGV%sN%d%s_Sleef_%s%s(%s) __attribute__((alias(\"Sleef_%s%s%d_%s\")))%s;\n",
+-	  printf("EXPORT CONST %s _ZGV%sN%d%s_Sleef_%s%s(%s) __attribute__((alias(\"Sleef_%s%s%d_%s\")))%s;\n",
 +	  printf("EXPORT CONST VECTOR_CC %s _ZGV%sN%d%s_Sleef_%s%s(%s) __attribute__((alias(VECTOR_CC_ALIAS(\"Sleef_%s%s%d_%s\", \"@@%d\"))))%s;\n",
  		 returnType[funcList[i].funcType],
  		 mangledisa, vw, vparameterStr[funcList[i].funcType], funcList[i].name, typeSpecS[fptype],
@@ -317,27 +299,27 @@ index 633786d..05b133d 100644
  	}
        }
 diff --git a/src/libm/mkrename.c b/src/libm/mkrename.c
-index edae03c..89f0bd0 100644
+index 09d2d10..14bdd96 100644
 --- a/src/libm/mkrename.c
 +++ b/src/libm/mkrename.c
-@@ -148,7 +148,7 @@ int main(int argc, char **argv) {
+@@ -87,7 +87,7 @@ int main(int argc, char **argv) {
      if (strcmp(isaname, "sve") == 0)
        wdp = wsp = "x";
  
 -    char * vectorcc = "";
 +    char * vectorcc = " SLEEF_VECTORCALL";
- #ifdef ENABLE_AAVPCS
-     if (strcmp(isaname, "advsimd") == 0)
-       vectorcc =" __attribute__((aarch64_vector_pcs))";
+ 
+     printf("#ifdef %s\n", architecture);
+ 
 diff --git a/src/libm/sleeflibm_header.h.org.in b/src/libm/sleeflibm_header.h.org.in
-index 66d88db..4f8d53b 100644
+index 4d134d8..b350969 100644
 --- a/src/libm/sleeflibm_header.h.org.in
 +++ b/src/libm/sleeflibm_header.h.org.in
-@@ -34,6 +34,12 @@
+@@ -39,6 +39,12 @@ extern "C"
  #define __STDC__ 1
  #endif
  
-+#if defined(_WIN32) && defined(__clang__) && (defined(__x86_64__) || defined(__i386__))
++#if defined(_WIN32) && defined(__clang__) && defined(__x86_64__)
 +#define SLEEF_VECTORCALL __attribute__((vectorcall))
 +#else
 +#define SLEEF_VECTORCALL
@@ -347,45 +329,1304 @@ index 66d88db..4f8d53b 100644
  #ifdef SLEEF_IMPORT_IS_EXPORT
  #define SLEEF_IMPORT __declspec(dllexport)
 diff --git a/src/libm/sleefsimddp.c b/src/libm/sleefsimddp.c
-index 8186ff3..ebe4577 100644
+index 4e13a54..3151dbb 100644
 --- a/src/libm/sleefsimddp.c
 +++ b/src/libm/sleefsimddp.c
-@@ -3606,11 +3606,11 @@ EXPORT CONST VECTOR_CC vdouble xerfc_u15(vdouble a) {
- // Sleef_cinz_sincospid2_u05sse2) by rename*.h.
+@@ -185,9 +185,9 @@ static INLINE CONST vint vsel_vi_vd_vi(vdouble d, vint x) { return vand_vi_vo_vi
  
- #ifdef ENABLE_ALIAS
--#define DALIAS_vd_vd(FUNC) EXPORT CONST VECTOR_CC vdouble y ## FUNC(vdouble) __attribute__((alias( stringify(x ## FUNC) )));
--#define DALIAS_vd2_vd(FUNC) EXPORT CONST VECTOR_CC vdouble2 y ## FUNC(vdouble) __attribute__((alias( stringify(x ## FUNC) )));
--#define DALIAS_vi_vd(FUNC) EXPORT CONST VECTOR_CC vint y ## FUNC(vdouble) __attribute__((alias( stringify(x ## FUNC) )));
--#define DALIAS_vd_vd_vd(FUNC) EXPORT CONST VECTOR_CC vdouble y ## FUNC(vdouble, vdouble) __attribute__((alias( stringify(x ## FUNC) )));
--#define DALIAS_vd_vd_vd_vd(FUNC) EXPORT CONST VECTOR_CC vdouble y ## FUNC(vdouble, vdouble, vdouble) __attribute__((alias( stringify(x ## FUNC) )));
-+#define DALIAS_vd_vd(FUNC) EXPORT CONST VECTOR_CC vdouble y ## FUNC(vdouble) __attribute__((alias(VECTOR_CC_ALIAS(stringify(x ## FUNC), VEC_SUFFIX_D1))));
-+#define DALIAS_vd2_vd(FUNC) EXPORT CONST VECTOR_CC vdouble2 y ## FUNC(vdouble) __attribute__((alias(VECTOR_CC_ALIAS(stringify(x ## FUNC), VEC_SUFFIX_D1))));
-+#define DALIAS_vi_vd(FUNC) EXPORT CONST VECTOR_CC vint y ## FUNC(vdouble) __attribute__((alias(VECTOR_CC_ALIAS(stringify(x ## FUNC), VEC_SUFFIX_D1))));
-+#define DALIAS_vd_vd_vd(FUNC) EXPORT CONST VECTOR_CC vdouble y ## FUNC(vdouble, vdouble) __attribute__((alias(VECTOR_CC_ALIAS(stringify(x ## FUNC), VEC_SUFFIX_D2))));
-+#define DALIAS_vd_vd_vd_vd(FUNC) EXPORT CONST VECTOR_CC vdouble y ## FUNC(vdouble, vdouble, vdouble) __attribute__((alias(VECTOR_CC_ALIAS(stringify(x ## FUNC), VEC_SUFFIX_D3))));
+ //
+ 
+-EXPORT CONST vdouble xldexp(vdouble x, vint q) { return vldexp_vd_vd_vi(x, q); }
++EXPORT CONST VECTOR_CC vdouble xldexp(vdouble x, vint q) { return vldexp_vd_vd_vi(x, q); }
+ 
+-EXPORT CONST vint xilogb(vdouble d) {
++EXPORT CONST VECTOR_CC vint xilogb(vdouble d) {
+   vdouble e = vcast_vd_vi(vilogbk_vi_vd(vabs_vd_vd(d)));
+   e = vsel_vd_vo_vd_vd(veq_vo_vd_vd(d, vcast_vd_d(0)), vcast_vd_d(SLEEF_FP_ILOGB0), e);
+   e = vsel_vd_vo_vd_vd(visnan_vo_vd(d), vcast_vd_d(SLEEF_FP_ILOGBNAN), e);
+@@ -229,7 +229,7 @@ static INLINE CONST ddi_t rempi(vdouble a) {
+   return ddisetddi_ddi_vd2_vi(x, q);
+ }
+ 
+-EXPORT CONST vdouble xsin(vdouble d) {
++EXPORT CONST VECTOR_CC vdouble xsin(vdouble d) {
+   vdouble u, s, r = d;
+   vint ql;
+ 
+@@ -296,7 +296,7 @@ EXPORT CONST vdouble xsin(vdouble d) {
+   return u;
+ }
+ 
+-EXPORT CONST vdouble xsin_u1(vdouble d) {
++EXPORT CONST VECTOR_CC vdouble xsin_u1(vdouble d) {
+   vdouble u;
+   vdouble2 s, t, x;
+   vint ql;
+@@ -365,7 +365,7 @@ EXPORT CONST vdouble xsin_u1(vdouble d) {
+   return u;
+ }
+ 
+-EXPORT CONST vdouble xcos(vdouble d) {
++EXPORT CONST VECTOR_CC vdouble xcos(vdouble d) {
+   vdouble u, s, r = d;
+   vint ql;
+ 
+@@ -436,7 +436,7 @@ EXPORT CONST vdouble xcos(vdouble d) {
+   return u;
+ }
+ 
+-EXPORT CONST vdouble xcos_u1(vdouble d) {
++EXPORT CONST VECTOR_CC vdouble xcos_u1(vdouble d) {
+   vdouble u;
+   vdouble2 s, t, x;
+   vint ql;
+@@ -516,7 +516,7 @@ EXPORT CONST vdouble xcos_u1(vdouble d) {
+ #define XSINCOSPI_U35 xsincospi_u35
+ #define XMODF xmodf
+ 
+-TYPE2_FUNCATR vdouble2 XSINCOS(vdouble d) {
++TYPE2_FUNCATR VECTOR_CC vdouble2 XSINCOS(vdouble d) {
+   vopmask o;
+   vdouble u, t, rx, ry, s = d;
+   vdouble2 r;
+@@ -591,7 +591,7 @@ TYPE2_FUNCATR vdouble2 XSINCOS(vdouble d) {
+   return r;
+ }
+ 
+-TYPE2_FUNCATR vdouble2 XSINCOS_U1(vdouble d) {
++TYPE2_FUNCATR VECTOR_CC vdouble2 XSINCOS_U1(vdouble d) {
+   vopmask o;
+   vdouble u, rx, ry;
+   vdouble2 r, s, t, x;
+@@ -673,7 +673,7 @@ TYPE2_FUNCATR vdouble2 XSINCOS_U1(vdouble d) {
+   return r;
+ }
+ 
+-TYPE2_FUNCATR vdouble2 XSINCOSPI_U05(vdouble d) {
++TYPE2_FUNCATR VECTOR_CC vdouble2 XSINCOSPI_U05(vdouble d) {
+   vopmask o;
+   vdouble u, s, t, rx, ry;
+   vdouble2 r, x, s2;
+@@ -739,7 +739,7 @@ TYPE2_FUNCATR vdouble2 XSINCOSPI_U05(vdouble d) {
+   return r;
+ }
+ 
+-TYPE2_FUNCATR vdouble2 XSINCOSPI_U35(vdouble d) {
++TYPE2_FUNCATR VECTOR_CC vdouble2 XSINCOSPI_U35(vdouble d) {
+   vopmask o;
+   vdouble u, s, t, rx, ry;
+   vdouble2 r;
+@@ -799,7 +799,7 @@ TYPE2_FUNCATR vdouble2 XSINCOSPI_U35(vdouble d) {
+   return r;
+ }
+ 
+-TYPE6_FUNCATR vdouble2 XMODF(vdouble x) {
++TYPE6_FUNCATR VECTOR_CC vdouble2 XMODF(vdouble x) {
+   vdouble fr = vsub_vd_vd_vd(x, vmul_vd_vd_vd(vcast_vd_d(INT64_C(1) << 31), vcast_vd_vi(vtruncate_vi_vd(vmul_vd_vd_vd(x, vcast_vd_d(1.0 / (INT64_C(1) << 31)))))));
+   fr = vsub_vd_vd_vd(fr, vcast_vd_vi(vtruncate_vi_vd(fr)));
+   fr = vsel_vd_vo_vd_vd(vgt_vo_vd_vd(vabs_vd_vd(x), vcast_vd_d(INT64_C(1) << 52)), vcast_vd_d(0), fr);
+@@ -851,7 +851,7 @@ static INLINE CONST vdouble2 sinpik(vdouble d) {
+   return x;
+ }
+ 
+-EXPORT CONST vdouble xsinpi_u05(vdouble d) {
++EXPORT CONST VECTOR_CC vdouble xsinpi_u05(vdouble d) {
+   vdouble2 x = sinpik(d);
+   vdouble r = vadd_vd_vd_vd(vd2getx_vd_vd2(x), vd2gety_vd_vd2(x));
+ 
+@@ -902,7 +902,7 @@ static INLINE CONST vdouble2 cospik(vdouble d) {
+   return x;
+ }
+ 
+-EXPORT CONST vdouble xcospi_u05(vdouble d) {
++EXPORT CONST VECTOR_CC vdouble xcospi_u05(vdouble d) {
+   vdouble2 x = cospik(d);
+   vdouble r = vadd_vd_vd_vd(vd2getx_vd_vd2(x), vd2gety_vd_vd2(x));
+ 
+@@ -912,7 +912,7 @@ EXPORT CONST vdouble xcospi_u05(vdouble d) {
+   return r;
+ }
+ 
+-EXPORT CONST vdouble xtan(vdouble d) {
++EXPORT CONST VECTOR_CC vdouble xtan(vdouble d) {
+   vdouble u, s, x, y;
+   vopmask o;
+   vint ql;
+@@ -979,7 +979,7 @@ EXPORT CONST vdouble xtan(vdouble d) {
+   return u;
+ }
+ 
+-EXPORT CONST vdouble xtan_u1(vdouble d) {
++EXPORT CONST VECTOR_CC vdouble xtan_u1(vdouble d) {
+   vdouble u;
+   vdouble2 s, t, x, y;
+   vopmask o;
+@@ -1154,7 +1154,7 @@ static INLINE CONST vdouble visinf2_vd_vd_vd(vdouble d, vdouble m) {
+   return vreinterpret_vd_vm(vand_vm_vo64_vm(visinf_vo_vd(d), vor_vm_vm_vm(vand_vm_vm_vm(vreinterpret_vm_vd(d), vreinterpret_vm_vd(vcast_vd_d(-0.0))), vreinterpret_vm_vd(m))));
+ }
+ 
+-EXPORT CONST vdouble xatan2(vdouble y, vdouble x) {
++EXPORT CONST VECTOR_CC vdouble xatan2(vdouble y, vdouble x) {
+   vdouble r = atan2k(vabs_vd_vd(y), x);
+ 
+   r = vmulsign_vd_vd_vd(r, x);
+@@ -1166,7 +1166,7 @@ EXPORT CONST vdouble xatan2(vdouble y, vdouble x) {
+   return r;
+ }
+ 
+-EXPORT CONST vdouble xatan2_u1(vdouble y, vdouble x) {
++EXPORT CONST VECTOR_CC vdouble xatan2_u1(vdouble y, vdouble x) {
+   vopmask o = vlt_vo_vd_vd(vabs_vd_vd(x), vcast_vd_d(5.5626846462680083984e-309)); // nexttoward((1.0 / DBL_MAX), 1)
+   x = vsel_vd_vo_vd_vd(o, vmul_vd_vd_vd(x, vcast_vd_d(UINT64_C(1) << 53)), x);
+   y = vsel_vd_vo_vd_vd(o, vmul_vd_vd_vd(y, vcast_vd_d(UINT64_C(1) << 53)), y);
+@@ -1183,7 +1183,7 @@ EXPORT CONST vdouble xatan2_u1(vdouble y, vdouble x) {
+   return r;
+ }
+ 
+-EXPORT CONST vdouble xasin(vdouble d) {
++EXPORT CONST VECTOR_CC vdouble xasin(vdouble d) {
+   vopmask o = vlt_vo_vd_vd(vabs_vd_vd(d), vcast_vd_d(0.5));
+   vdouble x2 = vsel_vd_vo_vd_vd(o, vmul_vd_vd_vd(d, d), vmul_vd_vd_vd(vsub_vd_vd_vd(vcast_vd_d(1), vabs_vd_vd(d)), vcast_vd_d(0.5)));
+   vdouble x = vsel_vd_vo_vd_vd(o, vabs_vd_vd(d), vsqrt_vd_vd(x2)), u;
+@@ -1209,7 +1209,7 @@ EXPORT CONST vdouble xasin(vdouble d) {
+   return vmulsign_vd_vd_vd(r, d);
+ }
+ 
+-EXPORT CONST vdouble xasin_u1(vdouble d) {
++EXPORT CONST VECTOR_CC vdouble xasin_u1(vdouble d) {
+   vopmask o = vlt_vo_vd_vd(vabs_vd_vd(d), vcast_vd_d(0.5));
+   vdouble x2 = vsel_vd_vo_vd_vd(o, vmul_vd_vd_vd(d, d), vmul_vd_vd_vd(vsub_vd_vd_vd(vcast_vd_d(1), vabs_vd_vd(d)), vcast_vd_d(0.5))), u;
+   vdouble2 x = vsel_vd2_vo_vd2_vd2(o, vcast_vd2_vd_vd(vabs_vd_vd(d), vcast_vd_d(0)), ddsqrt_vd2_vd(x2));
+@@ -1239,7 +1239,7 @@ EXPORT CONST vdouble xasin_u1(vdouble d) {
+   return vmulsign_vd_vd_vd(r, d);
+ }
+ 
+-EXPORT CONST vdouble xacos(vdouble d) {
++EXPORT CONST VECTOR_CC vdouble xacos(vdouble d) {
+   vopmask o = vlt_vo_vd_vd(vabs_vd_vd(d), vcast_vd_d(0.5));
+   vdouble x2 = vsel_vd_vo_vd_vd(o, vmul_vd_vd_vd(d, d),
+ 				vmul_vd_vd_vd(vsub_vd_vd_vd(vcast_vd_d(1), vabs_vd_vd(d)), vcast_vd_d(0.5))), u;
+@@ -1271,7 +1271,7 @@ EXPORT CONST vdouble xacos(vdouble d) {
+ 							  vneg_vd_vd(r))), r);
+ }
+ 
+-EXPORT CONST vdouble xacos_u1(vdouble d) {
++EXPORT CONST VECTOR_CC vdouble xacos_u1(vdouble d) {
+   vopmask o = vlt_vo_vd_vd(vabs_vd_vd(d), vcast_vd_d(0.5));
+   vdouble x2 = vsel_vd_vo_vd_vd(o, vmul_vd_vd_vd(d, d), vmul_vd_vd_vd(vsub_vd_vd_vd(vcast_vd_d(1), vabs_vd_vd(d)), vcast_vd_d(0.5))), u;
+   vdouble2 x = vsel_vd2_vo_vd2_vd2(o, vcast_vd2_vd_vd(vabs_vd_vd(d), vcast_vd_d(0)), ddsqrt_vd2_vd(x2));
+@@ -1306,14 +1306,14 @@ EXPORT CONST vdouble xacos_u1(vdouble d) {
+   return vadd_vd_vd_vd(vd2getx_vd_vd2(y), vd2gety_vd_vd2(y));
+ }
+ 
+-EXPORT CONST vdouble xatan_u1(vdouble d) {
++EXPORT CONST VECTOR_CC vdouble xatan_u1(vdouble d) {
+   vdouble2 d2 = atan2k_u1(vcast_vd2_vd_vd(vabs_vd_vd(d), vcast_vd_d(0)), vcast_vd2_d_d(1, 0));
+   vdouble r = vadd_vd_vd_vd(vd2getx_vd_vd2(d2), vd2gety_vd_vd2(d2));
+   r = vsel_vd_vo_vd_vd(visinf_vo_vd(d), vcast_vd_d(1.570796326794896557998982), r);
+   return vmulsign_vd_vd_vd(r, d);
+ }
+ 
+-EXPORT CONST vdouble xatan(vdouble s) {
++EXPORT CONST VECTOR_CC vdouble xatan(vdouble s) {
+   vdouble t, u;
+   vint q;
+ 
+@@ -1355,7 +1355,7 @@ EXPORT CONST vdouble xatan(vdouble s) {
+   return t;
+ }
+ 
+-EXPORT CONST vdouble xlog(vdouble d) {
++EXPORT CONST VECTOR_CC vdouble xlog(vdouble d) {
+   vdouble x, x2;
+   vdouble t, m;
+   
+@@ -1401,7 +1401,7 @@ EXPORT CONST vdouble xlog(vdouble d) {
+   return x;
+ }
+ 
+-EXPORT CONST vdouble xexp(vdouble d) {
++EXPORT CONST VECTOR_CC vdouble xexp(vdouble d) {
+   vdouble u = vrint_vd_vd(vmul_vd_vd_vd(d, vcast_vd_d(R_LN2))), s;
+   vint q = vrint_vi_vd(u);
+ 
+@@ -1507,7 +1507,7 @@ static INLINE CONST vdouble2 logk(vdouble d) {
+   return s;
+ }
+ 
+-EXPORT CONST vdouble xlog_u1(vdouble d) {
++EXPORT CONST VECTOR_CC vdouble xlog_u1(vdouble d) {
+   vdouble2 x;
+   vdouble t, m, x2;
+ 
+@@ -1593,7 +1593,7 @@ static INLINE CONST vdouble expk(vdouble2 d) {
+   return u;
+ }
+ 
+-EXPORT CONST vdouble xpow(vdouble x, vdouble y) {
++EXPORT CONST VECTOR_CC vdouble xpow(vdouble x, vdouble y) {
+   vopmask yisint = visint_vo_vd(y);
+   vopmask yisodd = vand_vo_vo_vo(visodd_vo_vd(y), yisint);
+ 
+@@ -1665,7 +1665,7 @@ static INLINE CONST vdouble2 expk2(vdouble2 d) {
+   return t;
+ }
+ 
+-EXPORT CONST vdouble xsinh(vdouble x) {
++EXPORT CONST VECTOR_CC vdouble xsinh(vdouble x) {
+   vdouble y = vabs_vd_vd(x);
+   vdouble2 d = expk2(vcast_vd2_vd_vd(y, vcast_vd_d(0)));
+   d = ddsub_vd2_vd2_vd2(d, ddrec_vd2_vd2(d));
+@@ -1678,7 +1678,7 @@ EXPORT CONST vdouble xsinh(vdouble x) {
+   return y;
+ }
+ 
+-EXPORT CONST vdouble xcosh(vdouble x) {
++EXPORT CONST VECTOR_CC vdouble xcosh(vdouble x) {
+   vdouble y = vabs_vd_vd(x);
+   vdouble2 d = expk2(vcast_vd2_vd_vd(y, vcast_vd_d(0)));
+   d = ddadd_vd2_vd2_vd2(d, ddrec_vd2_vd2(d));
+@@ -1690,7 +1690,7 @@ EXPORT CONST vdouble xcosh(vdouble x) {
+   return y;
+ }
+ 
+-EXPORT CONST vdouble xtanh(vdouble x) {
++EXPORT CONST VECTOR_CC vdouble xtanh(vdouble x) {
+   vdouble y = vabs_vd_vd(x);
+   vdouble2 d = expk2(vcast_vd2_vd_vd(y, vcast_vd_d(0)));
+   vdouble2 e = ddrec_vd2_vd2(d);
+@@ -1704,7 +1704,7 @@ EXPORT CONST vdouble xtanh(vdouble x) {
+   return y;
+ }
+ 
+-EXPORT CONST vdouble xsinh_u35(vdouble x) {
++EXPORT CONST VECTOR_CC vdouble xsinh_u35(vdouble x) {
+   vdouble e = expm1k(vabs_vd_vd(x));
+ 
+   vdouble y = vdiv_vd_vd_vd(vadd_vd_vd_vd(e, vcast_vd_d(2)), vadd_vd_vd_vd(e, vcast_vd_d(1)));
+@@ -1717,7 +1717,7 @@ EXPORT CONST vdouble xsinh_u35(vdouble x) {
+   return y;
+ }
+ 
+-EXPORT CONST vdouble xcosh_u35(vdouble x) {
++EXPORT CONST VECTOR_CC vdouble xcosh_u35(vdouble x) {
+   vdouble e = xexp(vabs_vd_vd(x));
+   vdouble y = vmla_vd_vd_vd_vd(vcast_vd_d(0.5), e, vdiv_vd_vd_vd(vcast_vd_d(0.5), e));
+ 
+@@ -1727,7 +1727,7 @@ EXPORT CONST vdouble xcosh_u35(vdouble x) {
+   return y;
+ }
+ 
+-EXPORT CONST vdouble xtanh_u35(vdouble x) {
++EXPORT CONST VECTOR_CC vdouble xtanh_u35(vdouble x) {
+   vdouble d = expm1k(vmul_vd_vd_vd(vcast_vd_d(2), vabs_vd_vd(x)));
+   vdouble y = vdiv_vd_vd_vd(d, vadd_vd_vd_vd(vcast_vd_d(2), d));
+ 
+@@ -1769,7 +1769,7 @@ static INLINE CONST vdouble2 logk2(vdouble2 d) {
+   return  s;
+ }
+ 
+-EXPORT CONST vdouble xasinh(vdouble x) {
++EXPORT CONST VECTOR_CC vdouble xasinh(vdouble x) {
+   vdouble y = vabs_vd_vd(x);
+   vopmask o = vgt_vo_vd_vd(y, vcast_vd_d(1));
+   vdouble2 d;
+@@ -1791,7 +1791,7 @@ EXPORT CONST vdouble xasinh(vdouble x) {
+   return y;
+ }
+ 
+-EXPORT CONST vdouble xacosh(vdouble x) {
++EXPORT CONST VECTOR_CC vdouble xacosh(vdouble x) {
+   vdouble2 d = logk2(ddadd2_vd2_vd2_vd(ddmul_vd2_vd2_vd2(ddsqrt_vd2_vd2(ddadd2_vd2_vd_vd(x, vcast_vd_d(1))), ddsqrt_vd2_vd2(ddadd2_vd2_vd_vd(x, vcast_vd_d(-1)))), x));
+   vdouble y = vadd_vd_vd_vd(vd2getx_vd_vd2(d), vd2gety_vd_vd2(d));
+ 
+@@ -1806,7 +1806,7 @@ EXPORT CONST vdouble xacosh(vdouble x) {
+   return y;
+ }
+ 
+-EXPORT CONST vdouble xatanh(vdouble x) {
++EXPORT CONST VECTOR_CC vdouble xatanh(vdouble x) {
+   vdouble y = vabs_vd_vd(x);
+   vdouble2 d = logk2(dddiv_vd2_vd2_vd2(ddadd2_vd2_vd_vd(vcast_vd_d(1), y), ddadd2_vd2_vd_vd(vcast_vd_d(1), vneg_vd_vd(y))));
+   y = vreinterpret_vd_vm(vor_vm_vo64_vm(vgt_vo_vd_vd(y, vcast_vd_d(1.0)), vreinterpret_vm_vd(vsel_vd_vo_vd_vd(veq_vo_vd_vd(y, vcast_vd_d(1.0)), vcast_vd_d(SLEEF_INFINITY), vmul_vd_vd_vd(vadd_vd_vd_vd(vd2getx_vd_vd2(d), vd2gety_vd_vd2(d)), vcast_vd_d(0.5))))));
+@@ -1818,7 +1818,7 @@ EXPORT CONST vdouble xatanh(vdouble x) {
+   return y;
+ }
+ 
+-EXPORT CONST vdouble xcbrt(vdouble d) {
++EXPORT CONST VECTOR_CC vdouble xcbrt(vdouble d) {
+   vdouble x, y, q = vcast_vd_d(1.0);
+   vint e, qu, re;
+   vdouble t;
+@@ -1860,7 +1860,7 @@ EXPORT CONST vdouble xcbrt(vdouble d) {
+   return y;
+ }
+ 
+-EXPORT CONST vdouble xcbrt_u1(vdouble d) {
++EXPORT CONST VECTOR_CC vdouble xcbrt_u1(vdouble d) {
+   vdouble x, y, z, t;
+   vdouble2 q2 = vcast_vd2_d_d(1, 0), u, v;
+   vint e, qu, re;
+@@ -1915,7 +1915,7 @@ EXPORT CONST vdouble xcbrt_u1(vdouble d) {
+   return z;
+ }
+ 
+-EXPORT CONST vdouble xexp2(vdouble d) {
++EXPORT CONST VECTOR_CC vdouble xexp2(vdouble d) {
+   vdouble u = vrint_vd_vd(d), s;
+   vint q = vrint_vi_vd(u);
+ 
+@@ -1945,7 +1945,7 @@ EXPORT CONST vdouble xexp2(vdouble d) {
+   return u;
+ }
+ 
+-EXPORT CONST vdouble xexp2_u35(vdouble d) {
++EXPORT CONST VECTOR_CC vdouble xexp2_u35(vdouble d) {
+   vdouble u = vrint_vd_vd(d), s;
+   vint q = vrint_vi_vd(u);
+ 
+@@ -1975,7 +1975,7 @@ EXPORT CONST vdouble xexp2_u35(vdouble d) {
+   return u;
+ }
+ 
+-EXPORT CONST vdouble xexp10(vdouble d) {
++EXPORT CONST VECTOR_CC vdouble xexp10(vdouble d) {
+   vdouble u = vrint_vd_vd(vmul_vd_vd_vd(d, vcast_vd_d(LOG10_2))), s;
+   vint q = vrint_vi_vd(u);
+ 
+@@ -2004,7 +2004,7 @@ EXPORT CONST vdouble xexp10(vdouble d) {
+   return u;
+ }
+ 
+-EXPORT CONST vdouble xexp10_u35(vdouble d) {
++EXPORT CONST VECTOR_CC vdouble xexp10_u35(vdouble d) {
+   vdouble u = vrint_vd_vd(vmul_vd_vd_vd(d, vcast_vd_d(LOG10_2))), s;
+   vint q = vrint_vi_vd(u);
+ 
+@@ -2035,7 +2035,7 @@ EXPORT CONST vdouble xexp10_u35(vdouble d) {
+   return u;
+ }
+ 
+-EXPORT CONST vdouble xexpm1(vdouble a) {
++EXPORT CONST VECTOR_CC vdouble xexpm1(vdouble a) {
+   vdouble2 d = ddadd2_vd2_vd2_vd(expk2(vcast_vd2_vd_vd(a, vcast_vd_d(0))), vcast_vd_d(-1.0));
+   vdouble x = vadd_vd_vd_vd(vd2getx_vd_vd2(d), vd2gety_vd_vd2(d));
+   x = vsel_vd_vo_vd_vd(vgt_vo_vd_vd(a, vcast_vd_d(709.782712893383996732223)), vcast_vd_d(SLEEF_INFINITY), x);
+@@ -2044,7 +2044,7 @@ EXPORT CONST vdouble xexpm1(vdouble a) {
+   return x;
+ }
+ 
+-EXPORT CONST vdouble xlog10(vdouble d) {
++EXPORT CONST VECTOR_CC vdouble xlog10(vdouble d) {
+   vdouble2 x;
+   vdouble t, m, x2;
+ 
+@@ -2095,7 +2095,7 @@ EXPORT CONST vdouble xlog10(vdouble d) {
+   return r;
+ }
+ 
+-EXPORT CONST vdouble xlog2(vdouble d) {
++EXPORT CONST VECTOR_CC vdouble xlog2(vdouble d) {
+   vdouble2 x;
+   vdouble t, m, x2;
+ 
+@@ -2147,7 +2147,7 @@ EXPORT CONST vdouble xlog2(vdouble d) {
+   return r;
+ }
+ 
+-EXPORT CONST vdouble xlog2_u35(vdouble d) {
++EXPORT CONST VECTOR_CC vdouble xlog2_u35(vdouble d) {
+   vdouble m, t, x, x2;
+ 
+ #if !defined(ENABLE_AVX512F)
+@@ -2194,7 +2194,7 @@ EXPORT CONST vdouble xlog2_u35(vdouble d) {
+   return r;
+ }
+ 
+-EXPORT CONST vdouble xlog1p(vdouble d) {
++EXPORT CONST VECTOR_CC vdouble xlog1p(vdouble d) {
+   vdouble2 x;
+   vdouble t, m, x2;
+ 
+@@ -2246,11 +2246,11 @@ EXPORT CONST vdouble xlog1p(vdouble d) {
+ 
+ //
+ 
+-EXPORT CONST vdouble xfabs(vdouble x) { return vabs_vd_vd(x); }
++EXPORT CONST VECTOR_CC vdouble xfabs(vdouble x) { return vabs_vd_vd(x); }
+ 
+-EXPORT CONST vdouble xcopysign(vdouble x, vdouble y) { return vcopysign_vd_vd_vd(x, y); }
++EXPORT CONST VECTOR_CC vdouble xcopysign(vdouble x, vdouble y) { return vcopysign_vd_vd_vd(x, y); }
+ 
+-EXPORT CONST vdouble xfmax(vdouble x, vdouble y) {
++EXPORT CONST VECTOR_CC vdouble xfmax(vdouble x, vdouble y) {
+ #if defined(__x86_64__) && !defined(ENABLE_PUREC)
+   return vsel_vd_vo_vd_vd(visnan_vo_vd(y), x, vmax_vd_vd_vd(x, y));
  #else
- #define DALIAS_vd_vd(FUNC) EXPORT CONST VECTOR_CC vdouble y ## FUNC(vdouble d) { return x ## FUNC (d); }
- #define DALIAS_vd2_vd(FUNC) EXPORT CONST VECTOR_CC vdouble2 y ## FUNC(vdouble d) { return x ## FUNC (d); }
+@@ -2258,7 +2258,7 @@ EXPORT CONST vdouble xfmax(vdouble x, vdouble y) {
+ #endif
+ }
+ 
+-EXPORT CONST vdouble xfmin(vdouble x, vdouble y) {
++EXPORT CONST VECTOR_CC vdouble xfmin(vdouble x, vdouble y) {
+ #if defined(__x86_64__) && !defined(ENABLE_PUREC)
+   return vsel_vd_vo_vd_vd(visnan_vo_vd(y), x, vmin_vd_vd_vd(x, y));
+ #else
+@@ -2266,19 +2266,19 @@ EXPORT CONST vdouble xfmin(vdouble x, vdouble y) {
+ #endif
+ }
+ 
+-EXPORT CONST vdouble xfdim(vdouble x, vdouble y) {
++EXPORT CONST VECTOR_CC vdouble xfdim(vdouble x, vdouble y) {
+   vdouble ret = vsub_vd_vd_vd(x, y);
+   ret = vsel_vd_vo_vd_vd(vor_vo_vo_vo(vlt_vo_vd_vd(ret, vcast_vd_d(0)), veq_vo_vd_vd(x, y)), vcast_vd_d(0), ret);
+   return ret;
+ }
+ 
+-EXPORT CONST vdouble xtrunc(vdouble x) { return vtruncate2_vd_vd(x); }
+-EXPORT CONST vdouble xfloor(vdouble x) { return vfloor2_vd_vd(x); }
+-EXPORT CONST vdouble xceil(vdouble x) { return vceil2_vd_vd(x); }
+-EXPORT CONST vdouble xround(vdouble x) { return vround2_vd_vd(x); }
+-EXPORT CONST vdouble xrint(vdouble x) { return vrint2_vd_vd(x); }
++EXPORT CONST VECTOR_CC vdouble xtrunc(vdouble x) { return vtruncate2_vd_vd(x); }
++EXPORT CONST VECTOR_CC vdouble xfloor(vdouble x) { return vfloor2_vd_vd(x); }
++EXPORT CONST VECTOR_CC vdouble xceil(vdouble x) { return vceil2_vd_vd(x); }
++EXPORT CONST VECTOR_CC vdouble xround(vdouble x) { return vround2_vd_vd(x); }
++EXPORT CONST VECTOR_CC vdouble xrint(vdouble x) { return vrint2_vd_vd(x); }
+ 
+-EXPORT CONST vdouble xnextafter(vdouble x, vdouble y) {
++EXPORT CONST VECTOR_CC vdouble xnextafter(vdouble x, vdouble y) {
+   x = vsel_vd_vo_vd_vd(veq_vo_vd_vd(x, vcast_vd_d(0)), vmulsign_vd_vd_vd(vcast_vd_d(0), y), x);
+   vmask xi2 = vreinterpret_vm_vd(x);
+   vopmask c = vxor_vo_vo_vo(vsignbit_vo_vd(x), vge_vo_vd_vd(y, x));
+@@ -2301,7 +2301,7 @@ EXPORT CONST vdouble xnextafter(vdouble x, vdouble y) {
+   return ret;
+ }
+ 
+-EXPORT CONST vdouble xfrfrexp(vdouble x) {
++EXPORT CONST VECTOR_CC vdouble xfrfrexp(vdouble x) {
+   x = vsel_vd_vo_vd_vd(vlt_vo_vd_vd(vabs_vd_vd(x), vcast_vd_d(SLEEF_DBL_MIN)), vmul_vd_vd_vd(x, vcast_vd_d(UINT64_C(1) << 63)), x);
+ 
+   vmask xm = vreinterpret_vm_vd(x);
+@@ -2316,7 +2316,7 @@ EXPORT CONST vdouble xfrfrexp(vdouble x) {
+   return ret;
+ }
+ 
+-EXPORT CONST vint xexpfrexp(vdouble x) {
++EXPORT CONST VECTOR_CC vint xexpfrexp(vdouble x) {
+   x = vsel_vd_vo_vd_vd(vlt_vo_vd_vd(vabs_vd_vd(x), vcast_vd_d(SLEEF_DBL_MIN)), vmul_vd_vd_vd(x, vcast_vd_d(UINT64_C(1) << 63)), x);
+ 
+   vint ret = vcastu_vi_vm(vreinterpret_vm_vd(x));
+@@ -2327,11 +2327,11 @@ EXPORT CONST vint xexpfrexp(vdouble x) {
+   return ret;
+ }
+ 
+-EXPORT CONST vdouble xfma(vdouble x, vdouble y, vdouble z) {
++EXPORT CONST VECTOR_CC vdouble xfma(vdouble x, vdouble y, vdouble z) {
+   return vfma_vd_vd_vd_vd(x, y, z);
+ }
+ 
+-SQRTU05_FUNCATR vdouble xsqrt_u05(vdouble d) {
++SQRTU05_FUNCATR VECTOR_CC vdouble xsqrt_u05(vdouble d) {
+   vdouble q, w, x, y, z;
+   
+   d = vsel_vd_vo_vd_vd(vlt_vo_vd_vd(d, vcast_vd_d(0)), vcast_vd_d(SLEEF_NAN), d);
+@@ -2369,7 +2369,7 @@ SQRTU05_FUNCATR vdouble xsqrt_u05(vdouble d) {
+   return w;
+ }
+ 
+-EXPORT CONST vdouble xsqrt(vdouble d) {
++EXPORT CONST VECTOR_CC vdouble xsqrt(vdouble d) {
+ #if defined(ACCURATE_SQRT)
+   return vsqrt_vd_vd(d);
+ #else
+@@ -2378,9 +2378,9 @@ EXPORT CONST vdouble xsqrt(vdouble d) {
+ #endif
+ }
+ 
+-EXPORT CONST vdouble xsqrt_u35(vdouble d) { return xsqrt_u05(d); }
++EXPORT CONST VECTOR_CC vdouble xsqrt_u35(vdouble d) { return xsqrt_u05(d); }
+ 
+-EXPORT CONST vdouble xhypot_u05(vdouble x, vdouble y) {
++EXPORT CONST VECTOR_CC vdouble xhypot_u05(vdouble x, vdouble y) {
+   x = vabs_vd_vd(x);
+   y = vabs_vd_vd(y);
+   vdouble min = vmin_vd_vd_vd(x, y), n = min;
+@@ -2401,7 +2401,7 @@ EXPORT CONST vdouble xhypot_u05(vdouble x, vdouble y) {
+   return ret;
+ }
+ 
+-EXPORT CONST vdouble xhypot_u35(vdouble x, vdouble y) {
++EXPORT CONST VECTOR_CC vdouble xhypot_u35(vdouble x, vdouble y) {
+   x = vabs_vd_vd(x);
+   y = vabs_vd_vd(y);
+   vdouble min = vmin_vd_vd_vd(x, y);
+@@ -2427,7 +2427,7 @@ static INLINE CONST vdouble vptrunc_vd_vd(vdouble x) { // round to integer towar
+ }
+ 
+ /* TODO AArch64: potential optimization by using `vfmad_lane_f64` */
+-EXPORT CONST vdouble xfmod(vdouble x, vdouble y) {
++EXPORT CONST VECTOR_CC vdouble xfmod(vdouble x, vdouble y) {
+   vdouble n = vabs_vd_vd(x), d = vabs_vd_vd(y), s = vcast_vd_d(1), q;
+   vopmask o = vlt_vo_vd_vd(d, vcast_vd_d(SLEEF_DBL_MIN));
+   n = vsel_vd_vo_vd_vd(o, vmul_vd_vd_vd(n, vcast_vd_d(UINT64_C(1) << 54)), n);
+@@ -2469,7 +2469,7 @@ static INLINE vdouble vrintk2_vd_vd(vdouble d) {
+ #endif
+ }
+ 
+-EXPORT CONST vdouble xremainder(vdouble x, vdouble y) {
++EXPORT CONST VECTOR_CC vdouble xremainder(vdouble x, vdouble y) {
+   vdouble n = vabs_vd_vd(x), d = vabs_vd_vd(y), s = vcast_vd_d(1), q;
+   vopmask o = vlt_vo_vd_vd(d, vcast_vd_d(SLEEF_DBL_MIN*2));
+   n = vsel_vd_vo_vd_vd(o, vmul_vd_vd_vd(n, vcast_vd_d(UINT64_C(1) << 54)), n);
+@@ -2499,7 +2499,7 @@ EXPORT CONST vdouble xremainder(vdouble x, vdouble y) {
+ }
+ 
+ /* TODO AArch64: potential optimization by using `vfmad_lane_f64` */
+-static CONST dd2 gammak(vdouble a) {
++static CONST VECTOR_CC dd2 gammak(vdouble a) {
+   vdouble2 clc = vcast_vd2_d_d(0, 0), clln = vcast_vd2_d_d(1, 0), clld = vcast_vd2_d_d(1, 0);
+   vdouble2 x, y, z;
+   vdouble t, u;
+@@ -2579,7 +2579,7 @@ static CONST dd2 gammak(vdouble a) {
+   return dd2setab_dd2_vd2_vd2(clc, dddiv_vd2_vd2_vd2(clln, clld));
+ }
+ 
+-EXPORT CONST vdouble xtgamma_u1(vdouble a) {
++EXPORT CONST VECTOR_CC vdouble xtgamma_u1(vdouble a) {
+   dd2 d = gammak(a);
+   vdouble2 y = ddmul_vd2_vd2_vd2(expk2(dd2geta_vd2_dd2(d)), dd2getb_vd2_dd2(d));
+   vdouble r = vadd_vd_vd_vd(vd2getx_vd_vd2(y), vd2gety_vd_vd2(y));
+@@ -2598,7 +2598,7 @@ EXPORT CONST vdouble xtgamma_u1(vdouble a) {
+   return r;
+ }
+ 
+-EXPORT CONST vdouble xlgamma_u1(vdouble a) {
++EXPORT CONST VECTOR_CC vdouble xlgamma_u1(vdouble a) {
+   dd2 d = gammak(a);
+   vdouble2 y = ddadd2_vd2_vd2_vd2(dd2geta_vd2_dd2(d), logk2(ddabs_vd2_vd2(dd2getb_vd2_dd2(d))));
+   vdouble r = vadd_vd_vd_vd(vd2getx_vd_vd2(y), vd2gety_vd_vd2(y));
+@@ -2622,7 +2622,7 @@ static INLINE CONST vdouble2 poly4dd(vdouble x, vdouble c3, vdouble2 c2, vdouble
+   return ddmla_vd2_vd_vd2_vd2(vmul_vd_vd_vd(x, x), poly2dd(x, c3, c2), poly2dd_b(x, c1, c0));
+ }
+ 
+-EXPORT CONST vdouble xerf_u1(vdouble a) {
++EXPORT CONST VECTOR_CC vdouble xerf_u1(vdouble a) {
+   vdouble t, x = vabs_vd_vd(a);
+   vdouble2 t2;
+   vdouble x2 = vmul_vd_vd_vd(x, x), x4 = vmul_vd_vd_vd(x2, x2);
+@@ -2717,7 +2717,7 @@ EXPORT CONST vdouble xerf_u1(vdouble a) {
+ }
+ 
+ /* TODO AArch64: potential optimization by using `vfmad_lane_f64` */
+-EXPORT CONST vdouble xerfc_u15(vdouble a) {
++EXPORT CONST VECTOR_CC vdouble xerfc_u15(vdouble a) {
+   vdouble s = a, r = vcast_vd_d(0), t;
+   vdouble2 u, d, x;
+   a = vabs_vd_vd(a);
 diff --git a/src/libm/sleefsimdsp.c b/src/libm/sleefsimdsp.c
-index 27a33f9..4cd6a00 100644
+index 89dc3f1..f741da1 100644
 --- a/src/libm/sleefsimdsp.c
 +++ b/src/libm/sleefsimdsp.c
-@@ -3582,10 +3582,10 @@ EXPORT CONST VECTOR_CC vfloat xerfcf_u15(vfloat a) {
- // See sleefsimddp.c for explanation of these macros
+@@ -301,7 +301,7 @@ static INLINE CONST vint2 vilogb2k_vi2_vf(vfloat d) {
  
- #ifdef ENABLE_ALIAS
--#define DALIAS_vf_vf(FUNC) EXPORT CONST VECTOR_CC vfloat y ## FUNC(vfloat) __attribute__((alias( stringify(x ## FUNC) )));
--#define DALIAS_vf2_vf(FUNC) EXPORT CONST VECTOR_CC vfloat2 y ## FUNC(vfloat) __attribute__((alias( stringify(x ## FUNC) )));
--#define DALIAS_vf_vf_vf(FUNC) EXPORT CONST VECTOR_CC vfloat y ## FUNC(vfloat, vfloat) __attribute__((alias( stringify(x ## FUNC) )));
--#define DALIAS_vf_vf_vf_vf(FUNC) EXPORT CONST VECTOR_CC vfloat y ## FUNC(vfloat, vfloat, vfloat) __attribute__((alias( stringify(x ## FUNC) )));
-+#define DALIAS_vf_vf(FUNC) EXPORT CONST VECTOR_CC vfloat y ## FUNC(vfloat) __attribute__((alias(VECTOR_CC_ALIAS(stringify(x ## FUNC), VEC_SUFFIX_F1))));
-+#define DALIAS_vf2_vf(FUNC) EXPORT CONST VECTOR_CC vfloat2 y ## FUNC(vfloat) __attribute__((alias(VECTOR_CC_ALIAS(stringify(x ## FUNC), VEC_SUFFIX_F1))));
-+#define DALIAS_vf_vf_vf(FUNC) EXPORT CONST VECTOR_CC vfloat y ## FUNC(vfloat, vfloat) __attribute__((alias(VECTOR_CC_ALIAS(stringify(x ## FUNC), VEC_SUFFIX_F2))));
-+#define DALIAS_vf_vf_vf_vf(FUNC) EXPORT CONST VECTOR_CC vfloat y ## FUNC(vfloat, vfloat, vfloat) __attribute__((alias(VECTOR_CC_ALIAS(stringify(x ## FUNC), VEC_SUFFIX_F3))));
+ //
+ 
+-EXPORT CONST vint2 xilogbf(vfloat d) {
++EXPORT CONST VECTOR_CC vint2 xilogbf(vfloat d) {
+   vint2 e = vilogbk_vi2_vf(vabs_vf_vf(d));
+   e = vsel_vi2_vo_vi2_vi2(veq_vo_vf_vf(d, vcast_vf_f(0.0f)), vcast_vi2_i(SLEEF_FP_ILOGB0), e);
+   e = vsel_vi2_vo_vi2_vi2(visnan_vo_vf(d), vcast_vi2_i(SLEEF_FP_ILOGBNAN), e);
+@@ -336,7 +336,7 @@ static INLINE CONST vfloat vldexp3_vf_vf_vi2(vfloat d, vint2 q) {
+   return vreinterpret_vf_vi2(vadd_vi2_vi2_vi2(vreinterpret_vi2_vf(d), vsll_vi2_vi2_i(q, 23)));
+ }
+ 
+-EXPORT CONST vfloat xldexpf(vfloat x, vint2 q) { return vldexp_vf_vf_vi2(x, q); }
++EXPORT CONST VECTOR_CC vfloat xldexpf(vfloat x, vint2 q) { return vldexp_vf_vf_vi2(x, q); }
+ 
+ #if !(defined(ENABLE_SVE) || defined(ENABLE_RVVM1) || defined(ENABLE_RVVM2))
+ typedef struct {
+@@ -344,9 +344,9 @@ typedef struct {
+   vint2 i;
+ } fi_t;
+ 
+-static vfloat figetd_vf_di(fi_t d) { return d.d; }
+-static vint2 figeti_vi2_di(fi_t d) { return d.i; }
+-static fi_t fisetdi_fi_vf_vi2(vfloat d, vint2 i) {
++static VECTOR_CC vfloat figetd_vf_di(fi_t d) { return d.d; }
++static VECTOR_CC vint2 figeti_vi2_di(fi_t d) { return d.i; }
++static VECTOR_CC fi_t fisetdi_fi_vf_vi2(vfloat d, vint2 i) {
+   fi_t r = { d, i };
+   return r;
+ }
+@@ -356,13 +356,13 @@ typedef struct {
+   vint2 i;
+ } dfi_t;
+ 
+-static vfloat2 dfigetdf_vf2_dfi(dfi_t d) { return d.df; }
+-static vint2 dfigeti_vi2_dfi(dfi_t d) { return d.i; }
+-static dfi_t dfisetdfi_dfi_vf2_vi2(vfloat2 v, vint2 i) {
++static VECTOR_CC vfloat2 dfigetdf_vf2_dfi(dfi_t d) { return d.df; }
++static VECTOR_CC vint2 dfigeti_vi2_dfi(dfi_t d) { return d.i; }
++static VECTOR_CC dfi_t dfisetdfi_dfi_vf2_vi2(vfloat2 v, vint2 i) {
+   dfi_t r = { v, i };
+   return r;
+ }
+-static dfi_t dfisetdf_dfi_dfi_vf2(dfi_t dfi, vfloat2 v) {
++static VECTOR_CC dfi_t dfisetdf_dfi_dfi_vf2(dfi_t dfi, vfloat2 v) {
+   dfi.df = v;
+   return dfi;
+ }
+@@ -423,7 +423,7 @@ static INLINE CONST dfi_t rempif(vfloat a) {
+   return dfisetdfi_dfi_vf2_vi2(x, q);
+ }
+ 
+-EXPORT CONST vfloat xsinf(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xsinf(vfloat d) {
+   vint2 q;
+   vfloat u, s, r = d;
+ 
+@@ -479,7 +479,7 @@ EXPORT CONST vfloat xsinf(vfloat d) {
+   return u;
+ }
+ 
+-EXPORT CONST vfloat xcosf(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xcosf(vfloat d) {
+   vint2 q;
+   vfloat u, s, r = d;
+ 
+@@ -535,7 +535,7 @@ EXPORT CONST vfloat xcosf(vfloat d) {
+   return u;
+ }
+ 
+-EXPORT CONST vfloat xtanf(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xtanf(vfloat d) {
+   vint2 q;
+   vopmask o;
+   vfloat u, s, x;
+@@ -590,7 +590,7 @@ EXPORT CONST vfloat xtanf(vfloat d) {
+   return u;
+ }
+ 
+-EXPORT CONST vfloat xsinf_u1(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xsinf_u1(vfloat d) {
+   vint2 q;
+   vfloat u, v;
+   vfloat2 s, t, x;
+@@ -638,7 +638,7 @@ EXPORT CONST vfloat xsinf_u1(vfloat d) {
+   return u;
+ }
+ 
+-EXPORT CONST vfloat xcosf_u1(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xcosf_u1(vfloat d) {
+   vint2 q;
+   vfloat u;
+   vfloat2 s, t, x;
+@@ -686,7 +686,7 @@ EXPORT CONST vfloat xcosf_u1(vfloat d) {
+   return u;
+ }
+ 
+-EXPORT CONST vfloat xfastsinf_u3500(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xfastsinf_u3500(vfloat d) {
+   vint2 q;
+   vfloat u, s, t = d;
+ 
+@@ -710,7 +710,7 @@ EXPORT CONST vfloat xfastsinf_u3500(vfloat d) {
+   return u;
+ }
+ 
+-EXPORT CONST vfloat xfastcosf_u3500(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xfastcosf_u3500(vfloat d) {
+   vint2 q;
+   vfloat u, s, t = d;
+ 
+@@ -743,7 +743,7 @@ EXPORT CONST vfloat xfastcosf_u3500(vfloat d) {
+ #define XSINCOSPIF_U35 xsincospif_u35
+ #define XMODFF xmodff
+ 
+-TYPE2_FUNCATR vfloat2 XSINCOSF(vfloat d) {
++TYPE2_FUNCATR VECTOR_CC vfloat2 XSINCOSF(vfloat d) {
+   vint2 q;
+   vopmask o;
+   vfloat u, s, t, rx, ry;
+@@ -809,7 +809,7 @@ TYPE2_FUNCATR vfloat2 XSINCOSF(vfloat d) {
+   return r;
+ }
+ 
+-TYPE2_FUNCATR vfloat2 XSINCOSF_U1(vfloat d) {
++TYPE2_FUNCATR VECTOR_CC vfloat2 XSINCOSF_U1(vfloat d) {
+   vint2 q;
+   vopmask o;
+   vfloat u, v, rx, ry;
+@@ -867,7 +867,7 @@ TYPE2_FUNCATR vfloat2 XSINCOSF_U1(vfloat d) {
+   return r;
+ }
+ 
+-TYPE2_FUNCATR vfloat2 XSINCOSPIF_U05(vfloat d) {
++TYPE2_FUNCATR VECTOR_CC vfloat2 XSINCOSPIF_U05(vfloat d) {
+   vopmask o;
+   vfloat u, s, t, rx, ry;
+   vfloat2 r, x, s2;
+@@ -927,7 +927,7 @@ TYPE2_FUNCATR vfloat2 XSINCOSPIF_U05(vfloat d) {
+   return r;
+ }
+ 
+-TYPE2_FUNCATR vfloat2 XSINCOSPIF_U35(vfloat d) {
++TYPE2_FUNCATR VECTOR_CC vfloat2 XSINCOSPIF_U35(vfloat d) {
+   vopmask o;
+   vfloat u, s, t, rx, ry;
+   vfloat2 r;
+@@ -981,7 +981,7 @@ TYPE2_FUNCATR vfloat2 XSINCOSPIF_U35(vfloat d) {
+   return r;
+ }
+ 
+-TYPE6_FUNCATR vfloat2 XMODFF(vfloat x) {
++TYPE6_FUNCATR VECTOR_CC vfloat2 XMODFF(vfloat x) {
+   vfloat fr = vsub_vf_vf_vf(x, vcast_vf_vi2(vtruncate_vi2_vf(x)));
+   fr = vsel_vf_vo_vf_vf(vgt_vo_vf_vf(vabs_vf_vf(x), vcast_vf_f(INT64_C(1) << 23)), vcast_vf_f(0), fr);
+ 
+@@ -992,7 +992,7 @@ TYPE6_FUNCATR vfloat2 XMODFF(vfloat x) {
+   return ret;
+ }
+ 
+-EXPORT CONST vfloat xtanf_u1(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xtanf_u1(vfloat d) {
+   vint2 q;
+   vfloat u, v;
+   vfloat2 s, t, x;
+@@ -1043,7 +1043,7 @@ EXPORT CONST vfloat xtanf_u1(vfloat d) {
+   return u;
+ }
+ 
+-EXPORT CONST vfloat xatanf(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xatanf(vfloat d) {
+   vfloat s, t, u;
+   vint2 q;
+ 
+@@ -1112,7 +1112,7 @@ static INLINE CONST vfloat visinf2_vf_vf_vf(vfloat d, vfloat m) {
+   return vreinterpret_vf_vm(vand_vm_vo32_vm(visinf_vo_vf(d), vor_vm_vm_vm(vsignbit_vm_vf(d), vreinterpret_vm_vf(m))));
+ }
+ 
+-EXPORT CONST vfloat xatan2f(vfloat y, vfloat x) {
++EXPORT CONST VECTOR_CC vfloat xatan2f(vfloat y, vfloat x) {
+   vfloat r = atan2kf(vabs_vf_vf(y), x);
+ 
+   r = vmulsign_vf_vf_vf(r, x);
+@@ -1125,7 +1125,7 @@ EXPORT CONST vfloat xatan2f(vfloat y, vfloat x) {
+   return r;
+ }
+ 
+-EXPORT CONST vfloat xasinf(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xasinf(vfloat d) {
+   vopmask o = vlt_vo_vf_vf(vabs_vf_vf(d), vcast_vf_f(0.5f));
+   vfloat x2 = vsel_vf_vo_vf_vf(o, vmul_vf_vf_vf(d, d), vmul_vf_vf_vf(vsub_vf_vf_vf(vcast_vf_f(1), vabs_vf_vf(d)), vcast_vf_f(0.5f)));
+   vfloat x = vsel_vf_vo_vf_vf(o, vabs_vf_vf(d), vsqrt_vf_vf(x2)), u;
+@@ -1141,7 +1141,7 @@ EXPORT CONST vfloat xasinf(vfloat d) {
+   return vmulsign_vf_vf_vf(r, d);
+ }
+ 
+-EXPORT CONST vfloat xacosf(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xacosf(vfloat d) {
+   vopmask o = vlt_vo_vf_vf(vabs_vf_vf(d), vcast_vf_f(0.5f));
+   vfloat x2 = vsel_vf_vo_vf_vf(o, vmul_vf_vf_vf(d, d),
+ 				vmul_vf_vf_vf(vsub_vf_vf_vf(vcast_vf_f(1), vabs_vf_vf(d)), vcast_vf_f(0.5f))), u;
+@@ -1203,7 +1203,7 @@ static INLINE CONST vfloat2 atan2kf_u1(vfloat2 y, vfloat2 x) {
+   return t;
+ }
+ 
+-EXPORT CONST vfloat xatan2f_u1(vfloat y, vfloat x) {
++EXPORT CONST VECTOR_CC vfloat xatan2f_u1(vfloat y, vfloat x) {
+   vopmask o = vlt_vo_vf_vf(vabs_vf_vf(x), vcast_vf_f(2.9387372783541830947e-39f)); // nexttowardf((1.0 / FLT_MAX), 1)
+   x = vsel_vf_vo_vf_vf(o, vmul_vf_vf_vf(x, vcast_vf_f(1 << 24)), x);
+   y = vsel_vf_vo_vf_vf(o, vmul_vf_vf_vf(y, vcast_vf_f(1 << 24)), y);
+@@ -1220,7 +1220,7 @@ EXPORT CONST vfloat xatan2f_u1(vfloat y, vfloat x) {
+   return r;
+ }
+ 
+-EXPORT CONST vfloat xasinf_u1(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xasinf_u1(vfloat d) {
+   vopmask o = vlt_vo_vf_vf(vabs_vf_vf(d), vcast_vf_f(0.5f));
+   vfloat x2 = vsel_vf_vo_vf_vf(o, vmul_vf_vf_vf(d, d), vmul_vf_vf_vf(vsub_vf_vf_vf(vcast_vf_f(1), vabs_vf_vf(d)), vcast_vf_f(0.5f))), u;
+   vfloat2 x = vsel_vf2_vo_vf2_vf2(o, vcast_vf2_vf_vf(vabs_vf_vf(d), vcast_vf_f(0)), dfsqrt_vf2_vf(x2));
+@@ -1240,7 +1240,7 @@ EXPORT CONST vfloat xasinf_u1(vfloat d) {
+   return vmulsign_vf_vf_vf(r, d);
+ }
+ 
+-EXPORT CONST vfloat xacosf_u1(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xacosf_u1(vfloat d) {
+   vopmask o = vlt_vo_vf_vf(vabs_vf_vf(d), vcast_vf_f(0.5f));
+   vfloat x2 = vsel_vf_vo_vf_vf(o, vmul_vf_vf_vf(d, d), vmul_vf_vf_vf(vsub_vf_vf_vf(vcast_vf_f(1), vabs_vf_vf(d)), vcast_vf_f(0.5f))), u;
+   vfloat2 x = vsel_vf2_vo_vf2_vf2(o, vcast_vf2_vf_vf(vabs_vf_vf(d), vcast_vf_f(0)), dfsqrt_vf2_vf(x2));
+@@ -1265,7 +1265,7 @@ EXPORT CONST vfloat xacosf_u1(vfloat d) {
+   return vadd_vf_vf_vf(vf2getx_vf_vf2(y), vf2gety_vf_vf2(y));
+ }
+ 
+-EXPORT CONST vfloat xatanf_u1(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xatanf_u1(vfloat d) {
+   vfloat2 d2 = atan2kf_u1(vcast_vf2_vf_vf(vabs_vf_vf(d), vcast_vf_f(0)), vcast_vf2_f_f(1, 0));
+   vfloat r = vadd_vf_vf_vf(vf2getx_vf_vf2(d2), vf2gety_vf_vf2(d2));
+   r = vsel_vf_vo_vf_vf(visinf_vo_vf(d), vcast_vf_f(1.570796326794896557998982), r);
+@@ -1274,7 +1274,7 @@ EXPORT CONST vfloat xatanf_u1(vfloat d) {
+ 
+ //
+ 
+-EXPORT CONST vfloat xlogf(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xlogf(vfloat d) {
+   vfloat x, x2, t, m;
+ 
+ #if !defined(ENABLE_AVX512F)
+@@ -1311,7 +1311,7 @@ EXPORT CONST vfloat xlogf(vfloat d) {
+   return x;
+ }
+ 
+-EXPORT CONST vfloat xexpf(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xexpf(vfloat d) {
+   vint2 q = vrint_vi2_vf(vmul_vf_vf_vf(d, vcast_vf_f(R_LN2f)));
+   vfloat s, u;
+ 
+@@ -1359,9 +1359,9 @@ static INLINE CONST vfloat expm1fk(vfloat d) {
+   return u;
+ }
+ 
+-EXPORT CONST vfloat xsqrtf_u35(vfloat d) { return vsqrt_vf_vf(d); }
++EXPORT CONST VECTOR_CC vfloat xsqrtf_u35(vfloat d) { return vsqrt_vf_vf(d); }
+ 
+-EXPORT CONST vfloat xcbrtf(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xcbrtf(vfloat d) {
+   vfloat x, y, q = vcast_vf_f(1.0), t;
+   vint2 e, qu, re;
+ 
+@@ -1400,7 +1400,7 @@ EXPORT CONST vfloat xcbrtf(vfloat d) {
+   return y;
+ }
+ 
+-EXPORT CONST vfloat xcbrtf_u1(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xcbrtf_u1(vfloat d) {
+   vfloat x, y, z, t;
+   vfloat2 q2 = vcast_vf2_f_f(1, 0), u, v;
+   vint2 e, qu, re;
+@@ -1525,7 +1525,7 @@ static INLINE CONST vfloat logk3f(vfloat d) {
+   return x;
+ }
+ 
+-EXPORT CONST vfloat xlogf_u1(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xlogf_u1(vfloat d) {
+   vfloat2 x;
+   vfloat t, m, x2;
+ 
+@@ -1615,7 +1615,7 @@ static INLINE CONST vfloat expk3f(vfloat d) {
+   return u;
+ }
+ 
+-EXPORT CONST vfloat xpowf(vfloat x, vfloat y) {
++EXPORT CONST VECTOR_CC vfloat xpowf(vfloat x, vfloat y) {
+ #if 1
+   vopmask yisint = vor_vo_vo_vo(veq_vo_vf_vf(vtruncate_vf_vf(y), y), vgt_vo_vf_vf(vabs_vf_vf(y), vcast_vf_f(1 << 24)));
+   vopmask yisodd = vand_vo_vo_vo(vand_vo_vo_vo(veq_vo_vi2_vi2(vand_vi2_vi2_vi2(vtruncate_vi2_vf(y), vcast_vi2_i(1)), vcast_vi2_i(1)), yisint),
+@@ -1654,7 +1654,7 @@ EXPORT CONST vfloat xpowf(vfloat x, vfloat y) {
+ #endif
+ }
+ 
+-EXPORT CONST vfloat xfastpowf_u3500(vfloat x, vfloat y) {
++EXPORT CONST VECTOR_CC vfloat xfastpowf_u3500(vfloat x, vfloat y) {
+   vfloat result = expk3f(vmul_vf_vf_vf(logk3f(vabs_vf_vf(x)), y));
+   vopmask yisint = vor_vo_vo_vo(veq_vo_vf_vf(vtruncate_vf_vf(y), y), vgt_vo_vf_vf(vabs_vf_vf(y), vcast_vf_f(1 << 24)));
+   vopmask yisodd = vand_vo_vo_vo(vand_vo_vo_vo(veq_vo_vi2_vi2(vand_vi2_vi2_vi2(vtruncate_vi2_vf(y), vcast_vi2_i(1)), vcast_vi2_i(1)), yisint),
+@@ -1696,7 +1696,7 @@ static INLINE CONST vfloat2 expk2f(vfloat2 d) {
+   return t;
+ }
+ 
+-EXPORT CONST vfloat xsinhf(vfloat x) {
++EXPORT CONST VECTOR_CC vfloat xsinhf(vfloat x) {
+   vfloat y = vabs_vf_vf(x);
+   vfloat2 d = expk2f(vcast_vf2_vf_vf(y, vcast_vf_f(0)));
+   d = dfsub_vf2_vf2_vf2(d, dfrec_vf2_vf2(d));
+@@ -1710,7 +1710,7 @@ EXPORT CONST vfloat xsinhf(vfloat x) {
+   return y;
+ }
+ 
+-EXPORT CONST vfloat xcoshf(vfloat x) {
++EXPORT CONST VECTOR_CC vfloat xcoshf(vfloat x) {
+   vfloat y = vabs_vf_vf(x);
+   vfloat2 d = expk2f(vcast_vf2_vf_vf(y, vcast_vf_f(0)));
+   d = dfadd_vf2_vf2_vf2(d, dfrec_vf2_vf2(d));
+@@ -1723,7 +1723,7 @@ EXPORT CONST vfloat xcoshf(vfloat x) {
+   return y;
+ }
+ 
+-EXPORT CONST vfloat xtanhf(vfloat x) {
++EXPORT CONST VECTOR_CC vfloat xtanhf(vfloat x) {
+   vfloat y = vabs_vf_vf(x);
+   vfloat2 d = expk2f(vcast_vf2_vf_vf(y, vcast_vf_f(0)));
+   vfloat2 e = dfrec_vf2_vf2(d);
+@@ -1738,7 +1738,7 @@ EXPORT CONST vfloat xtanhf(vfloat x) {
+   return y;
+ }
+ 
+-EXPORT CONST vfloat xsinhf_u35(vfloat x) {
++EXPORT CONST VECTOR_CC vfloat xsinhf_u35(vfloat x) {
+   vfloat e = expm1fk(vabs_vf_vf(x));
+   vfloat y = vdiv_vf_vf_vf(vadd_vf_vf_vf(e, vcast_vf_f(2)), vadd_vf_vf_vf(e, vcast_vf_f(1)));
+   y = vmul_vf_vf_vf(y, vmul_vf_vf_vf(vcast_vf_f(0.5f), e));
+@@ -1751,7 +1751,7 @@ EXPORT CONST vfloat xsinhf_u35(vfloat x) {
+   return y;
+ }
+ 
+-EXPORT CONST vfloat xcoshf_u35(vfloat x) {
++EXPORT CONST VECTOR_CC vfloat xcoshf_u35(vfloat x) {
+   vfloat e = xexpf(vabs_vf_vf(x));
+   vfloat y = vmla_vf_vf_vf_vf(vcast_vf_f(0.5f), e, vdiv_vf_vf_vf(vcast_vf_f(0.5), e));
+ 
+@@ -1762,7 +1762,7 @@ EXPORT CONST vfloat xcoshf_u35(vfloat x) {
+   return y;
+ }
+ 
+-EXPORT CONST vfloat xtanhf_u35(vfloat x) {
++EXPORT CONST VECTOR_CC vfloat xtanhf_u35(vfloat x) {
+   vfloat d = expm1fk(vmul_vf_vf_vf(vcast_vf_f(2), vabs_vf_vf(x)));
+   vfloat y = vdiv_vf_vf_vf(d, vadd_vf_vf_vf(vcast_vf_f(2), d));
+ 
+@@ -1801,7 +1801,7 @@ static INLINE CONST vfloat2 logk2f(vfloat2 d) {
+   return s;
+ }
+ 
+-EXPORT CONST vfloat xasinhf(vfloat x) {
++EXPORT CONST VECTOR_CC vfloat xasinhf(vfloat x) {
+   vfloat y = vabs_vf_vf(x);
+   vopmask o = vgt_vo_vf_vf(y, vcast_vf_f(1));
+   vfloat2 d;
+@@ -1822,7 +1822,7 @@ EXPORT CONST vfloat xasinhf(vfloat x) {
+   return y;
+ }
+ 
+-EXPORT CONST vfloat xacoshf(vfloat x) {
++EXPORT CONST VECTOR_CC vfloat xacoshf(vfloat x) {
+   vfloat2 d = logk2f(dfadd2_vf2_vf2_vf(dfmul_vf2_vf2_vf2(dfsqrt_vf2_vf2(dfadd2_vf2_vf_vf(x, vcast_vf_f(1))), dfsqrt_vf2_vf2(dfadd2_vf2_vf_vf(x, vcast_vf_f(-1)))), x));
+   vfloat y = vadd_vf_vf_vf(vf2getx_vf_vf2(d), vf2gety_vf_vf2(d));
+ 
+@@ -1838,7 +1838,7 @@ EXPORT CONST vfloat xacoshf(vfloat x) {
+   return y;
+ }
+ 
+-EXPORT CONST vfloat xatanhf(vfloat x) {
++EXPORT CONST VECTOR_CC vfloat xatanhf(vfloat x) {
+   vfloat y = vabs_vf_vf(x);
+   vfloat2 d = logk2f(dfdiv_vf2_vf2_vf2(dfadd2_vf2_vf_vf(vcast_vf_f(1), y), dfadd2_vf2_vf_vf(vcast_vf_f(1), vneg_vf_vf(y))));
+   y = vreinterpret_vf_vm(vor_vm_vo32_vm(vgt_vo_vf_vf(y, vcast_vf_f(1.0)), vreinterpret_vm_vf(vsel_vf_vo_vf_vf(veq_vo_vf_vf(y, vcast_vf_f(1.0)), vcast_vf_f(SLEEF_INFINITYf), vmul_vf_vf_vf(vadd_vf_vf_vf(vf2getx_vf_vf2(d), vf2gety_vf_vf2(d)), vcast_vf_f(0.5))))));
+@@ -1850,7 +1850,7 @@ EXPORT CONST vfloat xatanhf(vfloat x) {
+   return y;
+ }
+ 
+-EXPORT CONST vfloat xexp2f(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xexp2f(vfloat d) {
+   vfloat u = vrint_vf_vf(d), s;
+   vint2 q = vrint_vi2_vf(u);
+ 
+@@ -1873,7 +1873,7 @@ EXPORT CONST vfloat xexp2f(vfloat d) {
+   return u;
+ }
+ 
+-EXPORT CONST vfloat xexp2f_u35(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xexp2f_u35(vfloat d) {
+   vfloat u = vrint_vf_vf(d), s;
+   vint2 q = vrint_vi2_vf(u);
+ 
+@@ -1895,7 +1895,7 @@ EXPORT CONST vfloat xexp2f_u35(vfloat d) {
+   return u;
+ }
+ 
+-EXPORT CONST vfloat xexp10f(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xexp10f(vfloat d) {
+   vfloat u = vrint_vf_vf(vmul_vf_vf_vf(d, vcast_vf_f(LOG10_2))), s;
+   vint2 q = vrint_vi2_vf(u);
+ 
+@@ -1919,7 +1919,7 @@ EXPORT CONST vfloat xexp10f(vfloat d) {
+   return u;
+ }
+ 
+-EXPORT CONST vfloat xexp10f_u35(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xexp10f_u35(vfloat d) {
+   vfloat u = vrint_vf_vf(vmul_vf_vf_vf(d, vcast_vf_f(LOG10_2))), s;
+   vint2 q = vrint_vi2_vf(u);
+ 
+@@ -1942,7 +1942,7 @@ EXPORT CONST vfloat xexp10f_u35(vfloat d) {
+   return u;
+ }
+ 
+-EXPORT CONST vfloat xexpm1f(vfloat a) {
++EXPORT CONST VECTOR_CC vfloat xexpm1f(vfloat a) {
+   vfloat2 d = dfadd2_vf2_vf2_vf(expk2f(vcast_vf2_vf_vf(a, vcast_vf_f(0))), vcast_vf_f(-1.0));
+   vfloat x = vadd_vf_vf_vf(vf2getx_vf_vf2(d), vf2gety_vf_vf2(d));
+   x = vsel_vf_vo_vf_vf(vgt_vo_vf_vf(a, vcast_vf_f(88.72283172607421875f)), vcast_vf_f(SLEEF_INFINITYf), x);
+@@ -1951,7 +1951,7 @@ EXPORT CONST vfloat xexpm1f(vfloat a) {
+   return x;
+ }
+ 
+-EXPORT CONST vfloat xlog10f(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xlog10f(vfloat d) {
+   vfloat2 x;
+   vfloat t, m, x2;
+ 
+@@ -1996,7 +1996,7 @@ EXPORT CONST vfloat xlog10f(vfloat d) {
+   return r;
+ }
+ 
+-EXPORT CONST vfloat xlog2f(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xlog2f(vfloat d) {
+   vfloat2 x;
+   vfloat t, m, x2;
+ 
+@@ -2042,7 +2042,7 @@ EXPORT CONST vfloat xlog2f(vfloat d) {
+   return r;
+ }
+ 
+-EXPORT CONST vfloat xlog2f_u35(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xlog2f_u35(vfloat d) {
+   vfloat m, t, x, x2;
+ 
+ #if !defined(ENABLE_AVX512F)
+@@ -2081,7 +2081,7 @@ EXPORT CONST vfloat xlog2f_u35(vfloat d) {
+   return r;
+ }
+ 
+-EXPORT CONST vfloat xlog1pf(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xlog1pf(vfloat d) {
+   vfloat2 x;
+   vfloat t, m, x2;
+ 
+@@ -2127,11 +2127,11 @@ EXPORT CONST vfloat xlog1pf(vfloat d) {
+ 
+ //
+ 
+-EXPORT CONST vfloat xfabsf(vfloat x) { return vabs_vf_vf(x); }
++EXPORT CONST VECTOR_CC vfloat xfabsf(vfloat x) { return vabs_vf_vf(x); }
+ 
+-EXPORT CONST vfloat xcopysignf(vfloat x, vfloat y) { return vcopysign_vf_vf_vf(x, y); }
++EXPORT CONST VECTOR_CC vfloat xcopysignf(vfloat x, vfloat y) { return vcopysign_vf_vf_vf(x, y); }
+ 
+-EXPORT CONST vfloat xfmaxf(vfloat x, vfloat y) {
++EXPORT CONST VECTOR_CC vfloat xfmaxf(vfloat x, vfloat y) {
+ #if defined(__x86_64__) && !defined(ENABLE_PUREC)
+   return vsel_vf_vo_vf_vf(visnan_vo_vf(y), x, vmax_vf_vf_vf(x, y));
  #else
- #define DALIAS_vf_vf(FUNC) EXPORT CONST VECTOR_CC vfloat y ## FUNC(vfloat d) { return x ## FUNC (d); }
- #define DALIAS_vf2_vf(FUNC) EXPORT CONST VECTOR_CC vfloat2 y ## FUNC(vfloat d) { return x ## FUNC (d); }
+@@ -2139,7 +2139,7 @@ EXPORT CONST vfloat xfmaxf(vfloat x, vfloat y) {
+ #endif
+ }
+ 
+-EXPORT CONST vfloat xfminf(vfloat x, vfloat y) {
++EXPORT CONST VECTOR_CC vfloat xfminf(vfloat x, vfloat y) {
+ #if defined(__x86_64__) && !defined(ENABLE_PUREC)
+   return vsel_vf_vo_vf_vf(visnan_vo_vf(y), x, vmin_vf_vf_vf(x, y));
+ #else
+@@ -2147,13 +2147,13 @@ EXPORT CONST vfloat xfminf(vfloat x, vfloat y) {
+ #endif
+ }
+ 
+-EXPORT CONST vfloat xfdimf(vfloat x, vfloat y) {
++EXPORT CONST VECTOR_CC vfloat xfdimf(vfloat x, vfloat y) {
+   vfloat ret = vsub_vf_vf_vf(x, y);
+   ret = vsel_vf_vo_vf_vf(vor_vo_vo_vo(vlt_vo_vf_vf(ret, vcast_vf_f(0)), veq_vo_vf_vf(x, y)), vcast_vf_f(0), ret);
+   return ret;
+ }
+ 
+-EXPORT CONST vfloat xtruncf(vfloat x) {
++EXPORT CONST VECTOR_CC vfloat xtruncf(vfloat x) {
+ #ifdef FULL_FP_ROUNDING
+   return vtruncate_vf_vf(x);
+ #else
+@@ -2162,19 +2162,19 @@ EXPORT CONST vfloat xtruncf(vfloat x) {
+ #endif
+ }
+ 
+-EXPORT CONST vfloat xfloorf(vfloat x) {
++EXPORT CONST VECTOR_CC vfloat xfloorf(vfloat x) {
+   vfloat fr = vsub_vf_vf_vf(x, vcast_vf_vi2(vtruncate_vi2_vf(x)));
+   fr = vsel_vf_vo_vf_vf(vlt_vo_vf_vf(fr, vcast_vf_f(0)), vadd_vf_vf_vf(fr, vcast_vf_f(1.0f)), fr);
+   return vsel_vf_vo_vf_vf(vor_vo_vo_vo(visinf_vo_vf(x), vge_vo_vf_vf(vabs_vf_vf(x), vcast_vf_f(INT64_C(1) << 23))), x, vcopysign_vf_vf_vf(vsub_vf_vf_vf(x, fr), x));
+ }
+ 
+-EXPORT CONST vfloat xceilf(vfloat x) {
++EXPORT CONST VECTOR_CC vfloat xceilf(vfloat x) {
+   vfloat fr = vsub_vf_vf_vf(x, vcast_vf_vi2(vtruncate_vi2_vf(x)));
+   fr = vsel_vf_vo_vf_vf(vle_vo_vf_vf(fr, vcast_vf_f(0)), fr, vsub_vf_vf_vf(fr, vcast_vf_f(1.0f)));
+   return vsel_vf_vo_vf_vf(vor_vo_vo_vo(visinf_vo_vf(x), vge_vo_vf_vf(vabs_vf_vf(x), vcast_vf_f(INT64_C(1) << 23))), x, vcopysign_vf_vf_vf(vsub_vf_vf_vf(x, fr), x));
+ }
+ 
+-EXPORT CONST vfloat xroundf(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xroundf(vfloat d) {
+   vfloat x = vadd_vf_vf_vf(d, vcast_vf_f(0.5f));
+   vfloat fr = vsub_vf_vf_vf(x, vcast_vf_vi2(vtruncate_vi2_vf(x)));
+   x = vsel_vf_vo_vf_vf(vand_vo_vo_vo(vle_vo_vf_vf(x, vcast_vf_f(0)), veq_vo_vf_vf(fr, vcast_vf_f(0))), vsub_vf_vf_vf(x, vcast_vf_f(1.0f)), x);
+@@ -2183,7 +2183,7 @@ EXPORT CONST vfloat xroundf(vfloat d) {
+   return vsel_vf_vo_vf_vf(vor_vo_vo_vo(visinf_vo_vf(d), vge_vo_vf_vf(vabs_vf_vf(d), vcast_vf_f(INT64_C(1) << 23))), d, vcopysign_vf_vf_vf(vsub_vf_vf_vf(x, fr), d));
+ }
+ 
+-EXPORT CONST vfloat xrintf(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xrintf(vfloat d) {
+ #ifdef FULL_FP_ROUNDING
+   return vrint_vf_vf(d);
+ #else
+@@ -2193,11 +2193,11 @@ EXPORT CONST vfloat xrintf(vfloat d) {
+ #endif
+ }
+ 
+-EXPORT CONST vfloat xfmaf(vfloat x, vfloat y, vfloat z) {
++EXPORT CONST VECTOR_CC vfloat xfmaf(vfloat x, vfloat y, vfloat z) {
+   return vfma_vf_vf_vf_vf(x, y, z);
+ }
+ 
+-SQRTFU05_FUNCATR vfloat xsqrtf_u05(vfloat d) {
++SQRTFU05_FUNCATR VECTOR_CC vfloat xsqrtf_u05(vfloat d) {
+   vfloat q, w, x, y, z;
+ 
+   d = vsel_vf_vo_vf_vf(vlt_vo_vf_vf(d, vcast_vf_f(0)), vcast_vf_f(SLEEF_NANf), d);
+@@ -2233,7 +2233,7 @@ SQRTFU05_FUNCATR vfloat xsqrtf_u05(vfloat d) {
+   return w;
+ }
+ 
+-EXPORT CONST vfloat xsqrtf(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xsqrtf(vfloat d) {
+ #ifdef ACCURATE_SQRT
+   return vsqrt_vf_vf(d);
+ #else
+@@ -2242,7 +2242,7 @@ EXPORT CONST vfloat xsqrtf(vfloat d) {
+ #endif
+ }
+ 
+-EXPORT CONST vfloat xhypotf_u05(vfloat x, vfloat y) {
++EXPORT CONST VECTOR_CC vfloat xhypotf_u05(vfloat x, vfloat y) {
+   x = vabs_vf_vf(x);
+   y = vabs_vf_vf(y);
+   vfloat min = vmin_vf_vf_vf(x, y), n = min;
+@@ -2263,7 +2263,7 @@ EXPORT CONST vfloat xhypotf_u05(vfloat x, vfloat y) {
+   return ret;
+ }
+ 
+-EXPORT CONST vfloat xhypotf_u35(vfloat x, vfloat y) {
++EXPORT CONST VECTOR_CC vfloat xhypotf_u35(vfloat x, vfloat y) {
+   x = vabs_vf_vf(x);
+   y = vabs_vf_vf(y);
+   vfloat min = vmin_vf_vf_vf(x, y);
+@@ -2278,7 +2278,7 @@ EXPORT CONST vfloat xhypotf_u35(vfloat x, vfloat y) {
+   return ret;
+ }
+ 
+-EXPORT CONST vfloat xnextafterf(vfloat x, vfloat y) {
++EXPORT CONST VECTOR_CC vfloat xnextafterf(vfloat x, vfloat y) {
+   x = vsel_vf_vo_vf_vf(veq_vo_vf_vf(x, vcast_vf_f(0)), vmulsign_vf_vf_vf(vcast_vf_f(0), y), x);
+   vint2 xi2 = vreinterpret_vi2_vf(x);
+   vopmask c = vxor_vo_vo_vo(vsignbit_vo_vf(x), vge_vo_vf_vf(y, x));
+@@ -2301,7 +2301,7 @@ EXPORT CONST vfloat xnextafterf(vfloat x, vfloat y) {
+   return ret;
+ }
+ 
+-EXPORT CONST vfloat xfrfrexpf(vfloat x) {
++EXPORT CONST VECTOR_CC vfloat xfrfrexpf(vfloat x) {
+   x = vsel_vf_vo_vf_vf(vlt_vo_vf_vf(vabs_vf_vf(x), vcast_vf_f(SLEEF_FLT_MIN)), vmul_vf_vf_vf(x, vcast_vf_f(UINT64_C(1) << 30)), x);
+ 
+   vmask xm = vreinterpret_vm_vf(x);
+@@ -2316,7 +2316,7 @@ EXPORT CONST vfloat xfrfrexpf(vfloat x) {
+   return ret;
+ }
+ 
+-EXPORT CONST vint2 xexpfrexpf(vfloat x) {
++EXPORT CONST VECTOR_CC vint2 xexpfrexpf(vfloat x) {
+   /*
+   x = vsel_vf_vo_vf_vf(vlt_vo_vf_vf(vabs_vf_vf(x), vcast_vf_f(SLEEF_FLT_MIN)), vmul_vf_vf_vf(x, vcast_vf_f(UINT64_C(1) << 63)), x);
+ 
+@@ -2344,7 +2344,7 @@ static INLINE CONST vfloat vptrunc_vf_vf(vfloat x) {
+ #endif
+ }
+ 
+-EXPORT CONST vfloat xfmodf(vfloat x, vfloat y) {
++EXPORT CONST VECTOR_CC vfloat xfmodf(vfloat x, vfloat y) {
+   vfloat nu = vabs_vf_vf(x), de = vabs_vf_vf(y), s = vcast_vf_f(1), q;
+   vopmask o = vlt_vo_vf_vf(de, vcast_vf_f(SLEEF_FLT_MIN));
+   nu = vsel_vf_vo_vf_vf(o, vmul_vf_vf_vf(nu, vcast_vf_f(UINT64_C(1) << 25)), nu);
+@@ -2386,7 +2386,7 @@ static INLINE CONST vfloat vrintfk2_vf_vf(vfloat d) {
+ #endif
+ }
+ 
+-EXPORT CONST vfloat xremainderf(vfloat x, vfloat y) {
++EXPORT CONST VECTOR_CC vfloat xremainderf(vfloat x, vfloat y) {
+   vfloat n = vabs_vf_vf(x), d = vabs_vf_vf(y), s = vcast_vf_f(1), q;
+   vopmask o = vlt_vo_vf_vf(d, vcast_vf_f(SLEEF_FLT_MIN*2));
+   n = vsel_vf_vo_vf_vf(o, vmul_vf_vf_vf(n, vcast_vf_f(UINT64_C(1) << 25)), n);
+@@ -2455,7 +2455,7 @@ static INLINE CONST vfloat2 sinpifk(vfloat d) {
+   return x;
+ }
+ 
+-EXPORT CONST vfloat xsinpif_u05(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xsinpif_u05(vfloat d) {
+   vfloat2 x = sinpifk(d);
+   vfloat r = vadd_vf_vf_vf(vf2getx_vf_vf2(x), vf2gety_vf_vf2(x));
+ 
+@@ -2503,7 +2503,7 @@ static INLINE CONST vfloat2 cospifk(vfloat d) {
+   return x;
+ }
+ 
+-EXPORT CONST vfloat xcospif_u05(vfloat d) {
++EXPORT CONST VECTOR_CC vfloat xcospif_u05(vfloat d) {
+   vfloat2 x = cospifk(d);
+   vfloat r = vadd_vf_vf_vf(vf2getx_vf_vf2(x), vf2gety_vf_vf2(x));
+ 
+@@ -2518,16 +2518,16 @@ EXPORT CONST vfloat xcospif_u05(vfloat d) {
+     vfloat2 a, b;
+   } df2;
+ 
+-static df2 df2setab_df2_vf2_vf2(vfloat2 a, vfloat2 b) {
++static VECTOR_CC df2 df2setab_df2_vf2_vf2(vfloat2 a, vfloat2 b) {
+   df2 r = { a, b };
+   return r;
+ }
+-static vfloat2 df2geta_vf2_df2(df2 d) { return d.a; }
+-static vfloat2 df2getb_vf2_df2(df2 d) { return d.b; }
++static VECTOR_CC vfloat2 df2geta_vf2_df2(df2 d) { return d.a; }
++static VECTOR_CC vfloat2 df2getb_vf2_df2(df2 d) { return d.b; }
+ #endif
+ 
+ /* TODO AArch64: potential optimization by using `vfmad_lane_f64` */
+-static CONST df2 gammafk(vfloat a) {
++static CONST VECTOR_CC df2 gammafk(vfloat a) {
+   vfloat2 clc = vcast_vf2_f_f(0, 0), clln = vcast_vf2_f_f(1, 0), clld = vcast_vf2_f_f(1, 0);
+   vfloat2 x, y, z;
+   vfloat t, u;
+@@ -2590,7 +2590,7 @@ static CONST df2 gammafk(vfloat a) {
+   return df2setab_df2_vf2_vf2(clc, dfdiv_vf2_vf2_vf2(clln, clld));
+ }
+ 
+-EXPORT CONST vfloat xtgammaf_u1(vfloat a) {
++EXPORT CONST VECTOR_CC vfloat xtgammaf_u1(vfloat a) {
+   df2 d = gammafk(a);
+   vfloat2 y = dfmul_vf2_vf2_vf2(expk2f(df2geta_vf2_df2(d)), df2getb_vf2_df2(d));
+   vfloat r = vadd_vf_vf_vf(vf2getx_vf_vf2(y), vf2gety_vf_vf2(y));
+@@ -2609,7 +2609,7 @@ EXPORT CONST vfloat xtgammaf_u1(vfloat a) {
+   return r;
+ }
+ 
+-EXPORT CONST vfloat xlgammaf_u1(vfloat a) {
++EXPORT CONST VECTOR_CC vfloat xlgammaf_u1(vfloat a) {
+   df2 d = gammafk(a);
+   vfloat2 y = dfadd2_vf2_vf2_vf2(df2geta_vf2_df2(d), logk2f(dfabs_vf2_vf2(df2getb_vf2_df2(d))));
+   vfloat r = vadd_vf_vf_vf(vf2getx_vf_vf2(y), vf2gety_vf_vf2(y));
+@@ -2633,7 +2633,7 @@ static INLINE CONST vfloat2 poly4df(vfloat x, vfloat c3, vfloat2 c2, vfloat2 c1,
+   return dfmla_vf2_vf_vf2_vf2(vmul_vf_vf_vf(x, x), poly2df(x, c3, c2), poly2df_b(x, c1, c0));
+ }
+ 
+-EXPORT CONST vfloat xerff_u1(vfloat a) {
++EXPORT CONST VECTOR_CC vfloat xerff_u1(vfloat a) {
+   vfloat t, x = vabs_vf_vf(a);
+   vfloat2 t2;
+   vfloat x2 = vmul_vf_vf_vf(x, x), x4 = vmul_vf_vf_vf(x2, x2);
+@@ -2698,7 +2698,7 @@ EXPORT CONST vfloat xerff_u1(vfloat a) {
+ }
+ 
+ /* TODO AArch64: potential optimization by using `vfmad_lane_f64` */
+-EXPORT CONST vfloat xerfcf_u15(vfloat a) {
++EXPORT CONST VECTOR_CC vfloat xerfcf_u15(vfloat a) {
+   vfloat s = a, r = vcast_vf_f(0), t;
+   vfloat2 u, d, x;
+   a = vabs_vf_vf(a);
 -- 
 2.55.0
 
