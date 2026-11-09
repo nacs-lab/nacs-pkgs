@@ -1,0 +1,22 @@
+diff --git a/lib/nacs-utils/llvm/mergephi.cpp b/lib/nacs-utils/llvm/mergephi.cpp
+--- a/lib/nacs-utils/llvm/mergephi.cpp
++++ b/lib/nacs-utils/llvm/mergephi.cpp
+@@ -173,8 +173,8 @@ bool MergePhi::processPhiBool(PHINode *phi, BasicBlock::iterator first_non_phi)
+         }
+         changed = true;
+         auto nincoming = phi->getNumIncomingValues();
+-        PHINode *newphi = PHINode::Create(select->getType(), nincoming,
+-                                          "", first_non_phi);
++        PHINode *newphi = PHINode::Create(select->getType(), nincoming,
++                                          "", &*first_non_phi);
+         for (unsigned i = 0; i < nincoming; i++) {
+             auto val = cast<ConstantInt>(phi->getIncomingValue(i))->isZero() ?
+                 select->getFalseValue() : select->getTrueValue();
+@@ -246,6 +246,6 @@ bool MergePhi::processPhiCmp(PHINode *phi, BasicBlock::iterator first_non_phi)
+         changed = true;
+         auto nincoming = phi->getNumIncomingValues();
+-        PHINode *newphi = PHINode::Create(T_bool, nincoming, "", first_non_phi);
++        PHINode *newphi = PHINode::Create(T_bool, nincoming, "", &*first_non_phi);
+         for (unsigned i = 0; i < nincoming; i++) {
+             auto val = opno == 0 ?
+                 entry_builder.CreateCmp(
