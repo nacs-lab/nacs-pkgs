@@ -15,7 +15,7 @@ case "$platform" in
         repodir=archlinux/x86_64
         ;;
     archlinux-arm)
-        repodir=archlinux-arm/armv7h
+        repodir=archlinux/armv7h
         ;;
     msys2)
         repodir=msys2/mingw64
@@ -104,7 +104,7 @@ EOF
         repo=${db%/*}
         server="${pages_url}/${repo}"
         case "$repo" in
-            archlinux/*|archlinux-arm/*)
+            archlinux/*)
                 server="${pages_url}/${repo%/*}/\$arch"
                 ;;
         esac

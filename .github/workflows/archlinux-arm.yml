@@ -61,7 +61,7 @@ jobs:
       - name: Fetch published package
         if: env.BUILD != 'true'
         run: |
-          bash github/fetch-published.sh archlinux-arm/armv7h arch-arm/linux-nacs 'linux-nacs-*'
+          bash github/fetch-published.sh archlinux/armv7h arch-arm/linux-nacs 'linux-nacs-*'
 
       - name: "Upload binaries"
         uses: actions/upload-artifact@v7
@@ -119,7 +119,7 @@ jobs:
       - name: Fetch published package
         if: env.BUILD != 'true'
         run: |
-          bash github/fetch-published.sh archlinux-arm/armv7h arch-arm/knacs-git 'knacs-git-*'
+          bash github/fetch-published.sh archlinux/armv7h arch-arm/knacs-git 'knacs-git-*'
 
       - name: "Upload binaries"
         uses: actions/upload-artifact@v7
@@ -225,7 +225,7 @@ jobs:
       - name: Fetch published package
         if: env.BUILD != 'true'
         run: |
-          bash github/fetch-published.sh archlinux-arm/armv7h arch-arm/libnacs-git 'libnacs-git-*'
+          bash github/fetch-published.sh archlinux/armv7h arch-arm/libnacs-git 'libnacs-git-*'
 
       - name: "Upload binaries"
         uses: actions/upload-artifact@v7

@@ -34,7 +34,7 @@ PLATFORMS = {
     },
     'archlinux-arm': {
         'srcdir': 'arch-arm',
-        'repodir': 'archlinux-arm/armv7h',
+        'repodir': 'archlinux/armv7h',
         'env': {'CARCH': 'armv7h', 'CHOST': 'armv7l-unknown-linux-gnueabihf'},
         'packages': {
             'linux-nacs': [],

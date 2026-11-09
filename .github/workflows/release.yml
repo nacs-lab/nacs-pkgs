@@ -37,7 +37,7 @@ jobs:
     - name: Create archlinux-arm package tarball
       run: |
         mkdir archlinux-arm-packages
-        mv pages/archlinux-arm/armv7h/*.pkg.tar.* archlinux-arm-packages/
+        mv pages/archlinux/armv7h/*.pkg.tar.* archlinux-arm-packages/
         tar -cvf archlinux-arm-packages.tar.zst --zstd archlinux-arm-packages/
 
     - name: Create msys2 package tarball
