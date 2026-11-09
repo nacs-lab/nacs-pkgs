@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>NaCs packages</title>
+</head>
+<body>
+<h1>NaCs packages</h1>
+<p>Built from <a href="https://github.com/nacs-lab/nacs-pkgs">nacs-lab/nacs-pkgs</a>.
+Add the repository to <code>/etc/pacman.conf</code> to use it.</p>
+<p>The packages and the databases are signed with the key
+<a href="nacs.asc"><code>FB3383FB18F0EC34A1ABC3D275A6768C2AA33C49</code></a>.
+Import it before using the repository with</p>
+<pre>
+curl -O https://nacs-lab.github.io/nacs-pkgs/nacs.asc
+pacman-key --add nacs.asc
+pacman-key --lsign-key FB3383FB18F0EC34A1ABC3D275A6768C2AA33C49
+</pre>
+<p>After adding the repository, install <code>nacs-keyring</code>
+to keep the key up to date.</p>
+<pre>
+pacman -Sy nacs-keyring
+</pre>
+<h2>archlinux/armv7h</h2>
+<pre>
+[nacs]
+Server = https://nacs-lab.github.io/nacs-pkgs/archlinux/$arch
+</pre>
+<ul>
+<li><a href="archlinux/armv7h/knacs-git-61.0163050-1-armv7h.pkg.tar.zst">knacs-git-61.0163050-1-armv7h.pkg.tar.zst</a></li>
+<li><a href="archlinux/armv7h/libnacs-git-1273.1cda507-1-armv7h.pkg.tar.zst">libnacs-git-1273.1cda507-1-armv7h.pkg.tar.zst</a></li>
+<li><a href="archlinux/armv7h/linux-nacs-6.6.0-4-armv7h.pkg.tar.zst">linux-nacs-6.6.0-4-armv7h.pkg.tar.zst</a></li>
+<li><a href="archlinux/armv7h/linux-nacs-headers-6.6.0-4-armv7h.pkg.tar.zst">linux-nacs-headers-6.6.0-4-armv7h.pkg.tar.zst</a></li>
+<li><a href="archlinux/armv7h/molecube2-git-400.725aaef-4-armv7h.pkg.tar.zst">molecube2-git-400.725aaef-4-armv7h.pkg.tar.zst</a></li>
+<li><a href="archlinux/armv7h/nacs-boot-2.0-1-armv7h.pkg.tar.zst">nacs-boot-2.0-1-armv7h.pkg.tar.zst</a></li>
+<li><a href="archlinux/armv7h/nacs-keyring-20261109-1-any.pkg.tar.zst">nacs-keyring-20261109-1-any.pkg.tar.zst</a></li>
+</ul>
+<h2>archlinux/x86_64</h2>
+<pre>
+[nacs]
+Server = https://nacs-lab.github.io/nacs-pkgs/archlinux/$arch
+</pre>
+<ul>
+<li><a href="archlinux/x86_64/labctrl-node-git-244.220fe70-4-x86_64.pkg.tar.zst">labctrl-node-git-244.220fe70-4-x86_64.pkg.tar.zst</a></li>
+<li><a href="archlinux/x86_64/libnacs-git-1273.1cda507-1-x86_64.pkg.tar.zst">libnacs-git-1273.1cda507-1-x86_64.pkg.tar.zst</a></li>
+<li><a href="archlinux/x86_64/libspcm-710.24441-1-x86_64.pkg.tar.zst">libspcm-710.24441-1-x86_64.pkg.tar.zst</a></li>
+<li><a href="archlinux/x86_64/molecube2-git-400.725aaef-4-x86_64.pkg.tar.zst">molecube2-git-400.725aaef-4-x86_64.pkg.tar.zst</a></li>
+<li><a href="archlinux/x86_64/nacs-keyring-20261109-1-any.pkg.tar.zst">nacs-keyring-20261109-1-any.pkg.tar.zst</a></li>
+<li><a href="archlinux/x86_64/python-libnacs-git-62.c0ec8f6-1-any.pkg.tar.zst">python-libnacs-git-62.c0ec8f6-1-any.pkg.tar.zst</a></li>
+</ul>
+<h2>msys2/clang64</h2>
+<pre>
+[nacs-clang64]
+Server = https://nacs-lab.github.io/nacs-pkgs/msys2/clang64
+</pre>
+<ul>
+<li><a href="msys2/clang64/mingw-w64-clang-x86_64-libnacs-git-1273.1cda507-1-any.pkg.tar.zst">mingw-w64-clang-x86_64-libnacs-git-1273.1cda507-1-any.pkg.tar.zst</a></li>
+<li><a href="msys2/clang64/mingw-w64-clang-x86_64-sleef-git-3.9.0.41.g7623d6c-1-any.pkg.tar.zst">mingw-w64-clang-x86_64-sleef-git-3.9.0.41.g7623d6c-1-any.pkg.tar.zst</a></li>
+<li><a href="msys2/clang64/nacs-keyring-20261109-1-any.pkg.tar.zst">nacs-keyring-20261109-1-any.pkg.tar.zst</a></li>
+</ul>
+<h2>msys2/mingw64</h2>
+<pre>
+[nacs]
+Server = https://nacs-lab.github.io/nacs-pkgs/msys2/mingw64
+</pre>
+<ul>
+<li><a href="msys2/mingw64/mingw-w64-x86_64-libnacs-git-1273.1cda507-1-any.pkg.tar.zst">mingw-w64-x86_64-libnacs-git-1273.1cda507-1-any.pkg.tar.zst</a></li>
+<li><a href="msys2/mingw64/mingw-w64-x86_64-sleef-git-3.9.0.41.g7623d6c-1-any.pkg.tar.zst">mingw-w64-x86_64-sleef-git-3.9.0.41.g7623d6c-1-any.pkg.tar.zst</a></li>
+<li><a href="msys2/mingw64/nacs-keyring-20261109-1-any.pkg.tar.zst">nacs-keyring-20261109-1-any.pkg.tar.zst</a></li>
+</ul>
+<h2>msys2/ucrt64</h2>
+<pre>
+[nacs-ucrt64]
+Server = https://nacs-lab.github.io/nacs-pkgs/msys2/ucrt64
+</pre>
+<ul>
+<li><a href="msys2/ucrt64/mingw-w64-ucrt-x86_64-libnacs-git-1273.1cda507-1-any.pkg.tar.zst">mingw-w64-ucrt-x86_64-libnacs-git-1273.1cda507-1-any.pkg.tar.zst</a></li>
+<li><a href="msys2/ucrt64/mingw-w64-ucrt-x86_64-sleef-git-3.9.0.41.g7623d6c-1-any.pkg.tar.zst">mingw-w64-ucrt-x86_64-sleef-git-3.9.0.41.g7623d6c-1-any.pkg.tar.zst</a></li>
+<li><a href="msys2/ucrt64/nacs-keyring-20261109-1-any.pkg.tar.zst">nacs-keyring-20261109-1-any.pkg.tar.zst</a></li>
+</ul>
+</body>
+</html>
