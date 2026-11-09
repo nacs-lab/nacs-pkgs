@@ -3,7 +3,7 @@
 
 pkgbase=mingw-w64-libnacs-git
 pkgname="${MINGW_PACKAGE_PREFIX}-libnacs-git"
-pkgver=1268.3fbc618
+pkgver=1272.b554624
 pkgrel=1
 pkgdesc='Library used for the NaCs control system'
 provides=("${MINGW_PACKAGE_PREFIX}-libnacs")
