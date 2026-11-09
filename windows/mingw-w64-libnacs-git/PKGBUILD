@@ -24,6 +24,7 @@ depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
          "${MINGW_PACKAGE_PREFIX}-zeromq")
 makedepends=(git make
              "${MINGW_PACKAGE_PREFIX}-cmake"
+             "${MINGW_PACKAGE_PREFIX}-cppzmq"
              "${MINGW_PACKAGE_PREFIX}-gcc")
 source=("git+https://github.com/nacs-lab/libnacs")
 sha256sums=('SKIP')
