@@ -19,7 +19,7 @@ jobs:
         path: pages
 
     - name: Download Ubuntu packages
-      uses: dawidd6/action-download-artifact@v27
+      uses: dawidd6/action-download-artifact@v28
       with:
         workflow: ubuntu.yml
         workflow_conclusion: success
