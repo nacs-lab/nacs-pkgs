@@ -1,6 +1,6 @@
 pkgname=labctrl-node-git
 pkgver=244.220fe70
-pkgrel=3
+pkgrel=4
 pkgdesc='NaCs Control Web Interface'
 arch=(x86_64 armv7h aarch64)
 url='http://github.com/nacs-lab/labctrl-node'
