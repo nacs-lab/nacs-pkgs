@@ -33,6 +33,7 @@ jobs:
       with:
         repository: nacs-lab/libnacs
         path: ubuntu/libnacs/libnacs
+        fetch-depth: 0 # for version/hash computation
 
     - name: Update package database
       run: sudo apt-get update
@@ -76,6 +77,7 @@ jobs:
         repository: nacs-lab/python-libnacs
         ref: seq
         path: ubuntu/python-libnacs/python-libnacs
+        fetch-depth: 0 # for version/hash computation
 
     - name: Update package database
       run: sudo apt-get update
