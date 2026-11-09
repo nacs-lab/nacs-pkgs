@@ -1,0 +1,24 @@
+# Maintainer: Ni Lab <niharvardlab@gmail.com>
+
+# PGP keys used to sign the packages and the databases in the nacs repositories.
+# The same package is published for all platforms
+# (`arch-arm/nacs-keyring` and `windows/nacs-keyring` are symlinks to this directory).
+#
+# * nacs.gpg: ASCII armored public keys (including the revoked ones)
+# * nacs-trusted: `<fingerprint>:4:` for each trusted key
+# * nacs-revoked: fingerprint of each revoked key
+# Use `github/update-keyring.sh` to update the keys.
+
+pkgname=nacs-keyring
+pkgver=20261109
+pkgrel=1
+pkgdesc="PGP keys for the nacs package repositories"
+arch=('any')
+url="https://github.com/nacs-lab/nacs-pkgs"
+install=$pkgname.install
+source=(nacs.gpg nacs-trusted nacs-revoked)
+sha256sums=('SKIP' 'SKIP' 'SKIP')
+
+package() {
+  install -Dm644 -t "$pkgdir/usr/share/pacman/keyrings/" nacs.gpg nacs-trusted nacs-revoked
+}

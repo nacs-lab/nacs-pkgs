@@ -1,0 +1,8 @@
+# Rebuild when the keys are changed.
+# This fails (i.e. no rebuild) until the keys are added with `github/update-keyring.sh`.
+# The command is run in the root of the repository.
+- source: cmd
+  cmd: >-
+    cd arch/nacs-keyring &&
+    test -s nacs.gpg && test -s nacs-trusted && test -f nacs-revoked &&
+    cat nacs.gpg nacs-trusted nacs-revoked | sha256sum | cut -c1-16

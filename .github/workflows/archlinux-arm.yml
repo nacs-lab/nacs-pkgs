@@ -295,3 +295,37 @@ jobs:
           path: |
             arch-arm/molecube2-git/*.pkg.*
             arch-arm/molecube2-git/PKGBUILD
+
+  # The same architecture independent package is built for all platforms
+  # from `arch/nacs-keyring` (`arch-arm/nacs-keyring` is a symlink to it).
+  build-keyring:
+    name: Build nacs-keyring
+    if: ${{ !inputs.build || contains(format(' {0} ', inputs.build), ' nacs-keyring ') }}
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:base-devel
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+      - name: Initialize ArchLinux
+        run: |
+          bash github/setup-archlinux.sh
+          chown -R user .
+      - name: Create package
+        run: |
+          cd arch/nacs-keyring
+          if [[ ! -f nacs.gpg ]]; then
+              echo "::warning::No keys in nacs-keyring yet, see github/update-keyring.sh"
+              exit 0
+          fi
+          sudo -u user --preserve-env=GITHUB_SERVER_URL,GITHUB_REPOSITORY \
+              bash ../../github/build-package.sh archlinux/armv7h makepkg --noconfirm
+
+      - name: "Upload binaries"
+        uses: actions/upload-artifact@v7
+        with:
+          name: nacs-keyring-package-archlinux-arm
+          path: |
+            arch/nacs-keyring/*.pkg.*
+            arch/nacs-keyring/PKGBUILD

@@ -44,6 +44,7 @@ PLATFORMS = {
             'molecube2-git': ['libnacs-git'],
             'labctrl-node-git': ['libnacs-git'],
             'libspcm': [],
+            'nacs-keyring': [],
         },
     },
     'archlinux-arm': {
@@ -54,6 +55,7 @@ PLATFORMS = {
             'nacs-boot': [],
             'libnacs-git': ['knacs-git'],
             'molecube2-git': ['libnacs-git'],
+            'nacs-keyring': [],
         },
     },
     'msys2': {
@@ -61,6 +63,7 @@ PLATFORMS = {
         'packages': {
             'mingw-w64-sleef-git': [],
             'mingw-w64-libnacs-git': ['mingw-w64-sleef-git'],
+            'nacs-keyring': [],
         },
     },
 }

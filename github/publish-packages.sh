@@ -126,6 +126,11 @@ curl -O ${pages_url}/${reponame}.asc
 pacman-key --add ${reponame}.asc
 pacman-key --lsign-key ${PACKAGE_SIGNING_KEY_ID}
 </pre>
+<p>After adding the repository, install <code>nacs-keyring</code>
+to keep the key up to date.</p>
+<pre>
+pacman -Sy nacs-keyring
+</pre>
 EOF
     else
         echo "<p>The packages are not signed.</p>"
