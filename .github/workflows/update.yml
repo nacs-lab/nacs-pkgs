@@ -37,6 +37,8 @@ jobs:
       archlinux: ${{ steps.check.outputs.archlinux }}
       archlinux-arm: ${{ steps.check.outputs.archlinux-arm }}
       msys2: ${{ steps.check.outputs.msys2 }}
+      msys2-ucrt64: ${{ steps.check.outputs.msys2-ucrt64 }}
+      msys2-clang64: ${{ steps.check.outputs.msys2-clang64 }}
     steps:
       - name: Install dependencies
         run: |
@@ -103,6 +105,27 @@ jobs:
     with:
       ref: ${{ github.sha }}
       build: ${{ needs.check.outputs.msys2 }}
+      msystem: MINGW64
+
+  msys2-ucrt64:
+    name: MSYS2 UCRT64
+    needs: check
+    if: needs.check.outputs.msys2-ucrt64 != ''
+    uses: ./.github/workflows/msys2.yml
+    with:
+      ref: ${{ github.sha }}
+      build: ${{ needs.check.outputs.msys2-ucrt64 }}
+      msystem: UCRT64
+
+  msys2-clang64:
+    name: MSYS2 CLANG64
+    needs: check
+    if: needs.check.outputs.msys2-clang64 != ''
+    uses: ./.github/workflows/msys2.yml
+    with:
+      ref: ${{ github.sha }}
+      build: ${{ needs.check.outputs.msys2-clang64 }}
+      msystem: CLANG64
 
   # Publish each platform separately so that a failure in one doesn't block the others.
   # Packages that were built successfully are published even if other builds failed.
@@ -137,11 +160,32 @@ jobs:
       ref: ${{ github.sha }}
       platform: msys2
 
+  publish-msys2-ucrt64:
+    name: Publish MSYS2 UCRT64
+    needs: [check, msys2-ucrt64]
+    if: ${{ !cancelled() && needs.check.result == 'success' && needs.check.outputs.msys2-ucrt64 != '' }}
+    uses: ./.github/workflows/publish.yml
+    secrets: inherit
+    with:
+      ref: ${{ github.sha }}
+      platform: msys2-ucrt64
+
+  publish-msys2-clang64:
+    name: Publish MSYS2 CLANG64
+    needs: [check, msys2-clang64]
+    if: ${{ !cancelled() && needs.check.result == 'success' && needs.check.outputs.msys2-clang64 != '' }}
+    uses: ./.github/workflows/publish.yml
+    secrets: inherit
+    with:
+      ref: ${{ github.sha }}
+      platform: msys2-clang64
+
   # Record the versions of the published packages in one place
   # since the cache can't be updated by multiple jobs.
   record:
     name: Record versions
-    needs: [check, publish-archlinux, publish-archlinux-arm, publish-msys2]
+    needs: [check, publish-archlinux, publish-archlinux-arm, publish-msys2,
+            publish-msys2-ucrt64, publish-msys2-clang64]
     if: ${{ !cancelled() && needs.check.result == 'success' }}
     runs-on: ubuntu-latest
     container: archlinux:base-devel
@@ -165,6 +209,8 @@ jobs:
             ${{ needs.publish-archlinux.outputs.published }}
             ${{ needs.publish-archlinux-arm.outputs.published }}
             ${{ needs.publish-msys2.outputs.published }}
+            ${{ needs.publish-msys2-ucrt64.outputs.published }}
+            ${{ needs.publish-msys2-clang64.outputs.published }}
         run: python github/check-updates.py --state-dir "$STATE_DIR" record "$PUBLISHED"
 
       - name: Upload recorded versions

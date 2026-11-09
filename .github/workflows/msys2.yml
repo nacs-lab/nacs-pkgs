@@ -14,20 +14,53 @@ on:
           Space separated list of packages to build.
           Other packages are taken from the package repository.
         type: string
+      msystem:
+        description: MSYS2 environment to build for (MINGW64, UCRT64 or CLANG64). All by default.
+        type: string
 
 env:
-  CC: /mingw64/bin/gcc
-  CXX: /mingw64/bin/g++
   PACKAGER: "Ni Lab <niharvardlab@gmail.com>"
 
 jobs:
+  setup:
+    name: Environments
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - name: Select environments
+        id: matrix
+        env:
+          MSYSTEM: ${{ inputs.msystem }}
+        run: |
+          # platform: name of the platform in the update workflow and the artifacts
+          # repo: directory of the package repository under `msys2/`
+          all='[
+            {"msystem": "MINGW64", "prefix": "mingw-w64-x86_64", "repo": "mingw64",
+             "platform": "msys2", "cc": "gcc", "cxx": "g++"},
+            {"msystem": "UCRT64", "prefix": "mingw-w64-ucrt-x86_64", "repo": "ucrt64",
+             "platform": "msys2-ucrt64", "cc": "gcc", "cxx": "g++"},
+            {"msystem": "CLANG64", "prefix": "mingw-w64-clang-x86_64", "repo": "clang64",
+             "platform": "msys2-clang64", "cc": "clang", "cxx": "clang++"}
+          ]'
+          matrix=$(jq -c --arg m "$MSYSTEM" '[.[] | select($m == "" or .msystem == $m)]' <<< "$all")
+          if [[ $matrix = '[]' ]]; then
+              echo "Unknown MSYS2 environment $MSYSTEM" >&2
+              exit 1
+          fi
+          echo "matrix={\"include\":$matrix}" >> "$GITHUB_OUTPUT"
+
   build-sleef:
-    name: Build Sleef
+    name: Build Sleef (${{ matrix.msystem }})
+    needs: setup
     runs-on: windows-latest
     strategy:
       fail-fast: false
+      matrix: ${{ fromJSON(needs.setup.outputs.matrix) }}
     env:
       BUILD: ${{ !inputs.build || contains(format(' {0} ', inputs.build), ' mingw-w64-sleef-git ') }}
+      CC: /${{ matrix.repo }}/bin/${{ matrix.cc }}
+      CXX: /${{ matrix.repo }}/bin/${{ matrix.cxx }}
 
     steps:
     - uses: actions/checkout@v7
@@ -37,44 +70,49 @@ jobs:
     - uses: msys2/setup-msys2@v2
       if: env.BUILD == 'true'
       with:
-        msystem: MINGW64
+        msystem: ${{ matrix.msystem }}
         install: >-
           git
           make
           patch
-          mingw-w64-x86_64-cmake
-          mingw-w64-x86_64-clang
-          mingw-w64-x86_64-toolchain
-          mingw-w64-x86_64-libwinpthread
+        pacboy: >-
+          cmake:p
+          clang:p
+          toolchain:p
+          libwinpthread:p
 
     - name: Build
       if: env.BUILD == 'true'
       shell: msys2 {0}
       run: |
         cd windows/mingw-w64-sleef-git
-        MAKEFLAGS="-j$(nproc)" MINGW_ARCH=MINGW64 bash ../../github/build-package.sh msys2/mingw64 makepkg-mingw
+        MAKEFLAGS="-j$(nproc)" MINGW_ARCH=${{ matrix.msystem }} bash ../../github/build-package.sh msys2/${{ matrix.repo }} makepkg-mingw
 
     - name: Fetch published package
       if: env.BUILD != 'true'
       shell: bash
       run: |
-        bash github/fetch-published.sh msys2/mingw64 windows/mingw-w64-sleef-git 'mingw-w64-x86_64-sleef-git-*'
+        bash github/fetch-published.sh msys2/${{ matrix.repo }} windows/mingw-w64-sleef-git '${{ matrix.prefix }}-sleef-git-*'
 
     - name: "Upload binaries"
       uses: actions/upload-artifact@v7
       with:
-        name: mingw-w64-x86_64-sleef-git-package-msys2
+        name: ${{ matrix.prefix }}-sleef-git-package-${{ matrix.platform }}
         path: |
           windows/mingw-w64-sleef-git/*.pkg.tar.*
           windows/mingw-w64-sleef-git/PKGBUILD
 
   build-libnacs:
-    name: Build libnacs
+    name: Build libnacs (${{ matrix.msystem }})
     runs-on: windows-latest
     strategy:
       fail-fast: false
-    needs: build-sleef
+      matrix: ${{ fromJSON(needs.setup.outputs.matrix) }}
+    needs: [setup, build-sleef]
     if: ${{ !inputs.build || contains(format(' {0} ', inputs.build), ' mingw-w64-libnacs-git ') }}
+    env:
+      CC: /${{ matrix.repo }}/bin/${{ matrix.cc }}
+      CXX: /${{ matrix.repo }}/bin/${{ matrix.cxx }}
     steps:
     - uses: actions/checkout@v7
       with:
@@ -82,27 +120,28 @@ jobs:
 
     - uses: msys2/setup-msys2@v2
       with:
-        msystem: MINGW64
+        msystem: ${{ matrix.msystem }}
         install: >-
           git
           make
           patch
-          mingw-w64-x86_64-cmake
-          mingw-w64-x86_64-clang
-          mingw-w64-x86_64-cppzmq
-          mingw-w64-x86_64-toolchain
-          mingw-w64-x86_64-tbb
-          mingw-w64-x86_64-libwinpthread
-          mingw-w64-x86_64-llvm
-          mingw-w64-x86_64-openlibm
-          mingw-w64-x86_64-polly
-          mingw-w64-x86_64-yaml-cpp
-          mingw-w64-x86_64-zeromq
+        pacboy: >-
+          cmake:p
+          clang:p
+          cppzmq:p
+          toolchain:p
+          tbb:p
+          libwinpthread:p
+          llvm:p
+          openlibm:p
+          polly:p
+          yaml-cpp:p
+          zeromq:p
 
     - name: Download Sleef
       uses: actions/download-artifact@v8
       with:
-        name: mingw-w64-x86_64-sleef-git-package-msys2
+        name: ${{ matrix.prefix }}-sleef-git-package-${{ matrix.platform }}
         path: sleef-package
 
     - name: Install Sleef
@@ -114,12 +153,12 @@ jobs:
       shell: msys2 {0}
       run: |
         cd windows/mingw-w64-libnacs-git
-        MAKEFLAGS="-j$(nproc)" MINGW_ARCH=MINGW64 bash ../../github/build-package.sh msys2/mingw64 makepkg-mingw
+        MAKEFLAGS="-j$(nproc)" MINGW_ARCH=${{ matrix.msystem }} bash ../../github/build-package.sh msys2/${{ matrix.repo }} makepkg-mingw
 
     - name: "Upload binaries"
       uses: actions/upload-artifact@v7
       with:
-        name: mingw-w64-x86_64-libnacs-git-package-msys2
+        name: ${{ matrix.prefix }}-libnacs-git-package-${{ matrix.platform }}
         path: |
           windows/mingw-w64-libnacs-git/*.pkg.tar.*
           windows/mingw-w64-libnacs-git/PKGBUILD
@@ -127,9 +166,13 @@ jobs:
   # The same architecture independent package is built for all platforms
   # from `arch/nacs-keyring` (`windows/nacs-keyring` is a symlink to it).
   build-keyring:
-    name: Build nacs-keyring
+    name: Build nacs-keyring (${{ matrix.msystem }})
+    needs: setup
     if: ${{ !inputs.build || contains(format(' {0} ', inputs.build), ' nacs-keyring ') }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.setup.outputs.matrix) }}
     container:
       image: archlinux:base-devel
     steps:
@@ -148,12 +191,12 @@ jobs:
               exit 0
           fi
           sudo -u user --preserve-env=GITHUB_SERVER_URL,GITHUB_REPOSITORY \
-              bash ../../github/build-package.sh msys2/mingw64 makepkg --noconfirm
+              bash ../../github/build-package.sh msys2/${{ matrix.repo }} makepkg --noconfirm
 
       - name: "Upload binaries"
         uses: actions/upload-artifact@v7
         with:
-          name: nacs-keyring-package-msys2
+          name: nacs-keyring-package-${{ matrix.platform }}
           path: |
             arch/nacs-keyring/*.pkg.*
             arch/nacs-keyring/PKGBUILD

@@ -12,17 +12,34 @@ set -e
 
 platform=$1
 artifacts=$(realpath "$2")
-reponame=nacs
+# The public key is shared by all repositories.
+keyfile=nacs.asc
 
+# Each MSYS2 environment needs a different repository name
+# so that they can be used at the same time.
+# The package ids (see `check-updates.py`) have a suffix for these environments.
+idsuffix=
 case "$platform" in
     archlinux)
         repodir=archlinux/x86_64
+        reponame=nacs
+        srcroot=arch
         ;;
     archlinux-arm)
         repodir=archlinux/armv7h
+        reponame=nacs
+        srcroot=arch-arm
         ;;
     msys2)
         repodir=msys2/mingw64
+        reponame=nacs
+        srcroot=windows
+        ;;
+    msys2-ucrt64|msys2-clang64)
+        repodir=msys2/${platform#msys2-}
+        reponame=nacs-${platform#msys2-}
+        srcroot=windows
+        idsuffix=@${platform#msys2-}
         ;;
     *)
         echo "Unknown platform $platform" >&2
@@ -35,18 +52,6 @@ pkgname_of() {
     base=${base%.pkg.tar.*}
     echo "${base%-*-*-*}"
 }
-
-case "$platform" in
-    archlinux)
-        srcroot=arch
-        ;;
-    archlinux-arm)
-        srcroot=arch-arm
-        ;;
-    msys2)
-        srcroot=windows
-        ;;
-esac
 
 # The PKGBUILD directories are named after the pkgbase.
 pkgbase_of() {
@@ -65,7 +70,7 @@ filter_pkgs() {
 
 shopt -s globstar nullglob
 mapfile -t pkgs < <(filter_pkgs "$artifacts"/**/*.pkg.tar.*)
-# Package directories published, used to record the versions built in the update workflow.
+# Ids of the packages published, used to record the versions built in the update workflow.
 published=()
 for pkgbuild in "$artifacts"/**/PKGBUILD; do
     dir=${pkgbuild%/PKGBUILD}
@@ -77,7 +82,7 @@ for pkgbuild in "$artifacts"/**/PKGBUILD; do
     srcdir="$srcroot/$(pkgbase_of "${dirpkgs[0]}")"
     if [[ -f "$srcdir/PKGBUILD" ]]; then
         cp "$pkgbuild" "$srcdir/PKGBUILD"
-        published+=("$srcdir")
+        published+=("$srcdir$idsuffix")
     else
         echo "::warning::Cannot find $srcdir/PKGBUILD for ${pkgbuild#"$artifacts"/}"
     fi
@@ -119,11 +124,11 @@ EOF
     if [[ -n $PACKAGE_SIGNING_KEY_ID ]]; then
         cat <<EOF
 <p>The packages and the databases are signed with the key
-<a href="${reponame}.asc"><code>${PACKAGE_SIGNING_KEY_ID}</code></a>.
+<a href="${keyfile}"><code>${PACKAGE_SIGNING_KEY_ID}</code></a>.
 Import it before using the repository with</p>
 <pre>
-curl -O ${pages_url}/${reponame}.asc
-pacman-key --add ${reponame}.asc
+curl -O ${pages_url}/${keyfile}
+pacman-key --add ${keyfile}
 pacman-key --lsign-key ${PACKAGE_SIGNING_KEY_ID}
 </pre>
 <p>After adding the repository, install <code>nacs-keyring</code>
@@ -136,10 +141,12 @@ EOF
         echo "<p>The packages are not signed.</p>"
         siglevel=$'\nSigLevel = Optional TrustAll'
     fi
-    local db repo server pkg
-    for db in */*/"$reponame".db; do
+    local db repo name server pkg
+    for db in */*/*.db; do
         [[ -f "$db" ]] || continue
         repo=${db%/*}
+        name=${db##*/}
+        name=${name%.db}
         server="${pages_url}/${repo}"
         case "$repo" in
             archlinux/*)
@@ -149,7 +156,7 @@ EOF
         cat <<EOF
 <h2>${repo}</h2>
 <pre>
-[${reponame}]${siglevel}
+[${name}]${siglevel}
 Server = ${server}
 </pre>
 <ul>
@@ -235,7 +242,7 @@ prepare_pages() {
     )
     touch .nojekyll
     if [[ -n $PACKAGE_SIGNING_KEY_ID ]]; then
-        gpg --batch --armor --export "$PACKAGE_SIGNING_KEY_ID" > "$reponame.asc"
+        gpg --batch --armor --export "$PACKAGE_SIGNING_KEY_ID" > "$keyfile"
     fi
     write_index > index.html
 

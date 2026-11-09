@@ -13,19 +13,22 @@ license=('LGPL')
 provides=("${MINGW_PACKAGE_PREFIX}-libnacs")
 conflicts=("${MINGW_PACKAGE_PREFIX}-libnacs")
 options=('!strip')
-depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
+# There's no gcc-libs in the clang environments
+depends=($([[ ${MINGW_PACKAGE_PREFIX} == *-clang-* ]] || echo "${MINGW_PACKAGE_PREFIX}-gcc-libs")
          "${MINGW_PACKAGE_PREFIX}-tbb"
          "${MINGW_PACKAGE_PREFIX}-libwinpthread"
          "${MINGW_PACKAGE_PREFIX}-llvm"
          "${MINGW_PACKAGE_PREFIX}-openlibm"
          "${MINGW_PACKAGE_PREFIX}-polly"
-         "${MINGW_PACKAGE_PREFIX}-sleef"
+         # The official sleef package (in some environments) doesn't have
+         # the patch for the calling convention.
+         "${MINGW_PACKAGE_PREFIX}-sleef-git"
          "${MINGW_PACKAGE_PREFIX}-yaml-cpp"
          "${MINGW_PACKAGE_PREFIX}-zeromq")
 makedepends=(git make
              "${MINGW_PACKAGE_PREFIX}-cmake"
              "${MINGW_PACKAGE_PREFIX}-cppzmq"
-             "${MINGW_PACKAGE_PREFIX}-gcc")
+             "${MINGW_PACKAGE_PREFIX}-cc")
 source=("git+https://github.com/nacs-lab/libnacs")
 sha256sums=('SKIP')
 
@@ -45,7 +48,12 @@ build() {
   CXXFLAGS+=' -O3 -flto'
   LDFLAGS+=' -O3 -flto'
 
-  CC=${MINGW_PREFIX}/bin/gcc CXX=${MINGW_PREFIX}/bin/g++ \
+  local cc=gcc cxx=g++
+  if [[ ${MINGW_PACKAGE_PREFIX} == *-clang-* ]]; then
+    cc=clang
+    cxx=clang++
+  fi
+  CC=${MINGW_PREFIX}/bin/$cc CXX=${MINGW_PREFIX}/bin/$cxx \
     MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" "${MINGW_PREFIX}"/bin/cmake .. \
     -G 'MSYS Makefiles' \
     -DCMAKE_BUILD_TYPE=Release \

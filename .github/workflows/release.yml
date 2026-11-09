@@ -45,6 +45,11 @@ jobs:
         mkdir msys2-packages
         mv pages/msys2/mingw64/*.pkg.tar.* msys2-packages/
         zip -r msys2-packages.zip msys2-packages/
+        for env in ucrt64 clang64; do
+            mkdir msys2-${env}-packages
+            mv pages/msys2/${env}/*.pkg.tar.* msys2-${env}-packages/
+            zip -r msys2-${env}-packages.zip msys2-${env}-packages/
+        done
 
     - name: Create ubuntu package tarball
       run: |
@@ -57,6 +62,6 @@ jobs:
     - name: Tag release
       uses: ncipollo/release-action@v1
       with:
-        artifacts: archlinux-packages.tar.zst,archlinux-arm-packages.tar.zst,msys2-packages.zip,ubuntu-22.04-packages.tar.zst,ubuntu-24.04-packages.tar.zst,ubuntu-26.04-packages.tar.zst
+        artifacts: archlinux-packages.tar.zst,archlinux-arm-packages.tar.zst,msys2-packages.zip,msys2-ucrt64-packages.zip,msys2-clang64-packages.zip,ubuntu-22.04-packages.tar.zst,ubuntu-24.04-packages.tar.zst,ubuntu-26.04-packages.tar.zst
         body: Packages
         token: ${{ secrets.GITHUB_TOKEN }}

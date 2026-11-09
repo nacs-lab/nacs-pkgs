@@ -11,7 +11,7 @@ on:
         type: string
         required: true
       platform:
-        description: archlinux, archlinux-arm or msys2
+        description: archlinux, archlinux-arm, msys2, msys2-ucrt64 or msys2-clang64
         type: string
         required: true
     outputs:
