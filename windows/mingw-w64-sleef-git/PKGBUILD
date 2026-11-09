@@ -20,7 +20,7 @@ makedepends=("git"
              "${MINGW_PACKAGE_PREFIX}-clang"
              "${MINGW_PACKAGE_PREFIX}-cmake"
              patch make)
-source=("git+https://github.com/shibatch/sleef"
+source=("git+https://github.com/shibatch/sleef#commit=56e1f79cb140fb9326d612d0be06b5250565cade"
         0002-Use-vector-calling-convention.patch)
 sha256sums=('SKIP'
             '66813be9393f05c60ce2d87c5bcc8156ace4cfa753ed99abac3655a61af6a18d')
