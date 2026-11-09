@@ -30,5 +30,8 @@ git -C "$tmpdir" fetch -q --depth 1 --filter=blob:none origin gh-pages
 git -C "$tmpdir" checkout -q FETCH_HEAD
 
 mkdir -p "$dest"
-cp -v "$tmpdir/$repodir"/*.pkg.tar.* "$dest"/
+for pkg in "$tmpdir/$repodir"/*.pkg.tar.*; do
+    # The signatures are not needed for installing the packages
+    [[ $pkg = *.sig ]] || cp -v "$pkg" "$dest"/
+done
 rm -rf "$tmpdir"

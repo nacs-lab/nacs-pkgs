@@ -24,6 +24,8 @@ jobs:
     name: Publish packages
     runs-on: ubuntu-latest
     container: archlinux:base-devel
+    # The signing key is stored in the environment, which is limited to the master branch.
+    environment: package-signing
     outputs:
       published: ${{ steps.publish.outputs.published }}
     steps:
@@ -45,6 +47,12 @@ jobs:
         with:
           pattern: '*-package-${{ inputs.platform }}'
           path: ../artifacts
+
+      - name: Import signing key
+        env:
+          PACKAGE_SIGNING_KEY: ${{ secrets.PACKAGE_SIGNING_KEY }}
+          PACKAGE_SIGNING_PASSPHRASE: ${{ secrets.PACKAGE_SIGNING_PASSPHRASE }}
+        run: bash github/import-signing-key.sh
 
       - name: Update package repository
         id: publish

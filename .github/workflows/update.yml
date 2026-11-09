@@ -112,6 +112,7 @@ jobs:
     needs: [check, archlinux]
     if: ${{ !cancelled() && needs.check.result == 'success' && needs.check.outputs.archlinux != '' }}
     uses: ./.github/workflows/publish.yml
+    secrets: inherit
     with:
       ref: ${{ github.sha }}
       platform: archlinux
@@ -121,6 +122,7 @@ jobs:
     needs: [check, archlinux-arm]
     if: ${{ !cancelled() && needs.check.result == 'success' && needs.check.outputs.archlinux-arm != '' }}
     uses: ./.github/workflows/publish.yml
+    secrets: inherit
     with:
       ref: ${{ github.sha }}
       platform: archlinux-arm
@@ -130,6 +132,7 @@ jobs:
     needs: [check, msys2]
     if: ${{ !cancelled() && needs.check.result == 'success' && needs.check.outputs.msys2 != '' }}
     uses: ./.github/workflows/publish.yml
+    secrets: inherit
     with:
       ref: ${{ github.sha }}
       platform: msys2

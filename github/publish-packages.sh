@@ -3,6 +3,10 @@
 # Add the packages built for one platform to its package repository on the gh-pages branch
 # and copy the PKGBUILD's updated by makepkg back to the source tree.
 # Usage: publish-packages.sh <platform> <artifacts dir>
+#
+# If `$PACKAGE_SIGNING_KEY_ID` is set (see `import-signing-key.sh`), the packages
+# (including the already published ones without a signature) and the databases are signed
+# and the public key is published as `nacs.asc`.
 
 set -e
 
@@ -51,13 +55,21 @@ pkgbase_of() {
 
 # Don't rely on the artifact directory names since download-artifact
 # doesn't create a subdirectory when only one artifact is downloaded.
+# Prints the packages (not the signatures) in the arguments
+filter_pkgs() {
+    local f
+    for f in "$@"; do
+        [[ $f = *.sig ]] || echo "$f"
+    done
+}
+
 shopt -s globstar nullglob
-pkgs=("$artifacts"/**/*.pkg.tar.*)
+mapfile -t pkgs < <(filter_pkgs "$artifacts"/**/*.pkg.tar.*)
 # Package directories published, used to record the versions built in the update workflow.
 published=()
 for pkgbuild in "$artifacts"/**/PKGBUILD; do
     dir=${pkgbuild%/PKGBUILD}
-    dirpkgs=("$dir"/*.pkg.tar.*)
+    mapfile -t dirpkgs < <(filter_pkgs "$dir"/*.pkg.tar.*)
     if [[ ${#dirpkgs[@]} = 0 ]]; then
         echo "::warning::No package found next to ${pkgbuild#"$artifacts"/}"
         continue
@@ -101,9 +113,24 @@ write_index() {
 <body>
 <h1>NaCs packages</h1>
 <p>Built from <a href="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}">${GITHUB_REPOSITORY}</a>.
-Add the repository to <code>/etc/pacman.conf</code> to use it.
-The packages are not signed.</p>
+Add the repository to <code>/etc/pacman.conf</code> to use it.</p>
 EOF
+    local siglevel=
+    if [[ -n $PACKAGE_SIGNING_KEY_ID ]]; then
+        cat <<EOF
+<p>The packages and the databases are signed with the key
+<a href="${reponame}.asc"><code>${PACKAGE_SIGNING_KEY_ID}</code></a>.
+Import it before using the repository with</p>
+<pre>
+curl -O ${pages_url}/${reponame}.asc
+pacman-key --add ${reponame}.asc
+pacman-key --lsign-key ${PACKAGE_SIGNING_KEY_ID}
+</pre>
+EOF
+    else
+        echo "<p>The packages are not signed.</p>"
+        siglevel=$'\nSigLevel = Optional TrustAll'
+    fi
     local db repo server pkg
     for db in */*/"$reponame".db; do
         [[ -f "$db" ]] || continue
@@ -117,14 +144,13 @@ EOF
         cat <<EOF
 <h2>${repo}</h2>
 <pre>
-[${reponame}]
-SigLevel = Optional TrustAll
+[${reponame}]${siglevel}
 Server = ${server}
 </pre>
 <ul>
 EOF
         for pkg in "$repo"/*.pkg.tar.*; do
-            [[ -f "$pkg" ]] || continue
+            [[ -f "$pkg" && $pkg != *.sig ]] || continue
             echo "<li><a href=\"${pkg}\">${pkg##*/}</a></li>"
         done
         echo "</ul>"
@@ -156,7 +182,11 @@ prepare_pages() {
     mkdir -p "$repodir"
     local pkg old
     for pkg in "${pkgs[@]}"; do
-        # Remove old versions of the package
+        # Keep the package (and its signature) if it's already published
+        if cmp -s "$pkg" "$repodir/${pkg##*/}"; then
+            continue
+        fi
+        # Remove old versions of the package (and their signatures)
         for old in "$repodir"/*.pkg.tar.*; do
             [[ -f "$old" ]] || continue
             if [[ $(pkgname_of "$old") = "$(pkgname_of "$pkg")" ]]; then
@@ -165,6 +195,14 @@ prepare_pages() {
         done
         cp -v "$pkg" "$repodir/"
     done
+    if [[ -n $PACKAGE_SIGNING_KEY_ID ]]; then
+        for pkg in "$repodir"/*.pkg.tar.*; do
+            [[ -f $pkg && $pkg != *.sig && ! -f $pkg.sig ]] || continue
+            echo "Signing ${pkg##*/}"
+            gpg --batch --yes --local-user "$PACKAGE_SIGNING_KEY_ID" \
+                --detach-sign --no-armor "$pkg"
+        done
+    fi
 
     newcommit=
     # The database changes every time it's generated so check the packages instead.
@@ -177,14 +215,23 @@ prepare_pages() {
     (
         cd "$repodir"
         # Recreate the database so that it matches the packages exactly.
-        rm -f "$reponame".{db,files}{,.tar.gz,.tar.gz.old}
-        repo-add -q "$reponame.db.tar.gz" *.pkg.tar.*
+        rm -f "$reponame".{db,files}{,.tar.gz,.tar.gz.old}{,.sig}
+        sign=()
+        if [[ -n $PACKAGE_SIGNING_KEY_ID ]]; then
+            sign=(--sign --key "$PACKAGE_SIGNING_KEY_ID")
+        fi
+        mapfile -t files < <(filter_pkgs *.pkg.tar.*)
+        repo-add -q "${sign[@]}" "$reponame.db.tar.gz" "${files[@]}"
         # GitHub pages does not support symlinks
-        for f in "$reponame".{db,files}; do
+        for f in "$reponame".{db,files}{,.sig}; do
+            [[ -L $f ]] || continue
             cp --remove-destination "$(readlink -f "$f")" "$f"
         done
     )
     touch .nojekyll
+    if [[ -n $PACKAGE_SIGNING_KEY_ID ]]; then
+        gpg --batch --armor --export "$PACKAGE_SIGNING_KEY_ID" > "$reponame.asc"
+    fi
     write_index > index.html
 
     git add -A -f .
