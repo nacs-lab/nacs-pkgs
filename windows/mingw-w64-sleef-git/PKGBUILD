@@ -14,8 +14,7 @@ provides=("${MINGW_PACKAGE_PREFIX}-sleef")
 conflicts=("${MINGW_PACKAGE_PREFIX}-sleef")
 replaces=("${MINGW_PACKAGE_PREFIX}-sleef")
 options=('strip' 'staticlibs')
-# There's no gcc-libs in the clang environments
-depends=($([[ ${MINGW_PACKAGE_PREFIX} == *-clang-* ]] || echo "${MINGW_PACKAGE_PREFIX}-gcc-libs")
+depends=("${MINGW_PACKAGE_PREFIX}-cc-libs"
          "${MINGW_PACKAGE_PREFIX}-libwinpthread")
 makedepends=("git"
              "${MINGW_PACKAGE_PREFIX}-clang"

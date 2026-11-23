@@ -13,8 +13,7 @@ license=('LGPL')
 provides=("${MINGW_PACKAGE_PREFIX}-libnacs")
 conflicts=("${MINGW_PACKAGE_PREFIX}-libnacs")
 options=('!strip')
-# There's no gcc-libs in the clang environments
-depends=($([[ ${MINGW_PACKAGE_PREFIX} == *-clang-* ]] || echo "${MINGW_PACKAGE_PREFIX}-gcc-libs")
+depends=("${MINGW_PACKAGE_PREFIX}-cc-libs"
          "${MINGW_PACKAGE_PREFIX}-tbb"
          "${MINGW_PACKAGE_PREFIX}-libwinpthread"
          "${MINGW_PACKAGE_PREFIX}-llvm"
