@@ -20,10 +20,14 @@ makedepends=("git"
              "${MINGW_PACKAGE_PREFIX}-clang"
              "${MINGW_PACKAGE_PREFIX}-cmake"
              patch make)
+# The tlfloat version pinned by sleef doesn't build with libc++.
+# Use one with the fix (https://github.com/shibatch/tlfloat/commit/ccf5a8e1dd88e566852cea7778add527b6871460)
 source=("git+https://github.com/shibatch/sleef"
+        "git+https://github.com/shibatch/tlfloat#commit=ccf5a8e1dd88e566852cea7778add527b6871460"
         0001-Use-vector-calling-convention.patch
         0002-Only-use-__stdcall-for-exported-functions-on-32bit-x.patch)
 sha256sums=('SKIP'
+            'SKIP'
             '9df9ed03f0396ef0e07cb19d6e083b8aee0dea55456296dfa5d40de68d6610bc'
             '378cb1ab1662022b21d1bf5007ecdc7db1eb9a57a8245e037f849b042956bfdb')
 
@@ -41,6 +45,11 @@ prepare() {
 
   patch -Np1 < ../0001-Use-vector-calling-convention.patch
   patch -Np1 < ../0002-Only-use-__stdcall-for-exported-functions-on-32bit-x.patch
+
+  # sleef uses the tlfloat source in the submodule directory if it exists
+  # instead of downloading the pinned version.
+  rm -rf submodules/tlfloat
+  cp -a ../tlfloat submodules/tlfloat
 }
 
 build() {
