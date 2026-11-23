@@ -1,35 +1,42 @@
-From d3e853cf08bcf8e138e88ca85e55bc6aef2c4562 Mon Sep 17 00:00:00 2001
+From 0574446d7c4d5760ecd92e7084825e805dcdb488 Mon Sep 17 00:00:00 2001
 From: Yichao Yu <yyc1992@gmail.com>
 Date: Sun, 24 Feb 2019 21:03:18 -0500
-Subject: [PATCH] Use vector calling convention
+Subject: [PATCH 1/3] Use vector calling convention
 
 Only enabled when targeting x86 Windows with clang.
+The scalar functions keep the default calling convention.
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 ---
- src/common/misc.h                  |  20 ++++
+ src/common/misc.h                  |  26 +++++
  src/libm/dispatcher.h              |  60 +++++-----
  src/libm/dispavx.c.org             |  12 +-
- src/libm/dispscalar.c.org          |   4 +
+ src/libm/dispscalar.c.org          |   2 +
  src/libm/dispsse.c.org             |   6 +-
  src/libm/mkalias.c                 |  30 +++--
- src/libm/mkrename.c                |   2 +-
+ src/libm/mkrename.c                |   3 +-
  src/libm/sleeflibm_header.h.org.in |   6 +
  src/libm/sleefsimddp.c             | 146 ++++++++++++------------
  src/libm/sleefsimdsp.c             | 172 ++++++++++++++---------------
- 10 files changed, 250 insertions(+), 208 deletions(-)
+ 10 files changed, 255 insertions(+), 208 deletions(-)
 
 diff --git a/src/common/misc.h b/src/common/misc.h
-index 8d972e2..ffadde8 100644
+index 8d972e2..2a657e1 100644
 --- a/src/common/misc.h
 +++ b/src/common/misc.h
-@@ -317,6 +317,26 @@ typedef struct {
+@@ -317,6 +317,32 @@ typedef struct {
  
  #endif // #ifndef __MISC_H__
  
++// The scalar functions use the default calling convention.
++// The scalar dispatcher defines DISABLE_VECTOR_CC itself.
++#if defined(ENABLE_PUREC_SCALAR) || defined(ENABLE_PURECFMA_SCALAR)
++#define DISABLE_VECTOR_CC
++#endif
++
 +#if defined(ENABLE_AAVPCS)
 +#define VECTOR_CC __attribute__((aarch64_vector_pcs))
-+#elif defined(_WIN32) && defined(__clang__) && defined(__x86_64__)
++#elif defined(_WIN32) && defined(__clang__) && defined(__x86_64__) && !defined(DISABLE_VECTOR_CC)
 +#define ENABLE_VECTORCALL 1
 +#define VECTOR_CC __attribute__((vectorcall))
 +#else
@@ -191,20 +198,18 @@ index 12b6972..08aadab 100644
  
  #include "dispatcher.h"
 diff --git a/src/libm/dispscalar.c.org b/src/libm/dispscalar.c.org
-index c7f21e8..b662825 100644
+index c7f21e8..716b3ba 100644
 --- a/src/libm/dispscalar.c.org
 +++ b/src/libm/dispscalar.c.org
-@@ -13,6 +13,10 @@
+@@ -8,6 +8,8 @@
+ #include <signal.h>
+ #include <setjmp.h>
+ 
++// The scalar functions use the default calling convention.
++#define DISABLE_VECTOR_CC
+ #include "misc.h"
+ 
  #define SLEEF_IMPORT_IS_EXPORT
- #include "sleef.h"
- 
-+#if defined(ENABLE_ALIAS) && defined(ENABLE_VECTORCALL)
-+#  undef ENABLE_ALIAS
-+#endif
-+
- #include "dispatcher.h"
- 
- NOEXPORT double sleef_cpuid_SCALFMA;
 diff --git a/src/libm/dispsse.c.org b/src/libm/dispsse.c.org
 index 985c1d3..d244632 100644
 --- a/src/libm/dispsse.c.org
@@ -299,15 +304,16 @@ index e7f55bd..0923382 100644
  	}
        }
 diff --git a/src/libm/mkrename.c b/src/libm/mkrename.c
-index 09d2d10..14bdd96 100644
+index 09d2d10..605aec2 100644
 --- a/src/libm/mkrename.c
 +++ b/src/libm/mkrename.c
-@@ -87,7 +87,7 @@ int main(int argc, char **argv) {
+@@ -87,7 +87,8 @@ int main(int argc, char **argv) {
      if (strcmp(isaname, "sve") == 0)
        wdp = wsp = "x";
  
 -    char * vectorcc = "";
-+    char * vectorcc = " SLEEF_VECTORCALL";
++    // The scalar functions use the default calling convention.
++    char * vectorcc = strcmp(vdoublename, "double") == 0 ? "" : " SLEEF_VECTORCALL";
  
      printf("#ifdef %s\n", architecture);
  
@@ -1628,5 +1634,5 @@ index 89dc3f1..f741da1 100644
    vfloat2 u, d, x;
    a = vabs_vf_vf(a);
 -- 
-2.55.0
+2.56.1
 

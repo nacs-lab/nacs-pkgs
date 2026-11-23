@@ -1,0 +1,32 @@
+From 7ed88bc2ee67b90702e64e73079281940ccc89fb Mon Sep 17 00:00:00 2001
+From: Yichao Yu <yyc1992@gmail.com>
+Date: Mon, 23 Nov 2026 09:58:31 -0500
+Subject: [PATCH 3/3] Always build tlfloat as a static library
+
+tlfloat is installed at build time and is not part of the sleef installation.
+Building it as a shared library makes the shared sleef library depend
+on a tlfloat shared library that isn't installed with it.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ Configure.cmake | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/Configure.cmake b/Configure.cmake
+index 2434829..96b7ed6 100644
+--- a/Configure.cmake
++++ b/Configure.cmake
+@@ -108,7 +108,9 @@ if (SLEEF_ENABLE_TLFLOAT)
+   set(TLFLOAT_SOURCE_DIR "${PROJECT_SOURCE_DIR}/submodules/tlfloat")
+   set(TLFLOAT_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
+ 
+-  set(TLFLOAT_CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${TLFLOAT_INSTALL_DIR} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DBUILD_LIBS=True -DBUILD_UTILS=False -DBUILD_TESTS=False -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS})
++  # tlfloat is installed at build time and is not part of the sleef installation.
++  # Always build it as a static library so that it is linked into the sleef libraries.
++  set(TLFLOAT_CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${TLFLOAT_INSTALL_DIR} -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DBUILD_LIBS=True -DBUILD_UTILS=False -DBUILD_TESTS=False -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS:BOOL=OFF)
+ 
+   if (CMAKE_C_COMPILER)
+     list(APPEND TLFLOAT_CMAKE_ARGS -DCMAKE_C_COMPILER:PATH=${CMAKE_C_COMPILER})
+-- 
+2.56.1
+

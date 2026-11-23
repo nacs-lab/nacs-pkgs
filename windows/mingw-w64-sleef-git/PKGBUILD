@@ -25,11 +25,13 @@ makedepends=("git"
 source=("git+https://github.com/shibatch/sleef"
         "git+https://github.com/shibatch/tlfloat#commit=ccf5a8e1dd88e566852cea7778add527b6871460"
         0001-Use-vector-calling-convention.patch
-        0002-Only-use-__stdcall-for-exported-functions-on-32bit-x.patch)
+        0002-Only-use-__stdcall-for-exported-functions-on-32bit-x.patch
+        0003-Always-build-tlfloat-as-a-static-library.patch)
 sha256sums=('SKIP'
             'SKIP'
-            '9df9ed03f0396ef0e07cb19d6e083b8aee0dea55456296dfa5d40de68d6610bc'
-            '378cb1ab1662022b21d1bf5007ecdc7db1eb9a57a8245e037f849b042956bfdb')
+            '50de7000fe5bddb009dfd23c799e6ab13d790e3c85cbd515b59e0c855a7b5cd3'
+            '0bbdcc7356ea04a5ffa457fa7a1fabd0effc59efd17f811ed4ffec52bd8a8c83'
+            'c03fc376a3fcd0c50323e7bdabc412ea021f8d70d812194105a0d7a633dcdf7f')
 
 pkgver() {
   cd sleef
@@ -45,6 +47,7 @@ prepare() {
 
   patch -Np1 < ../0001-Use-vector-calling-convention.patch
   patch -Np1 < ../0002-Only-use-__stdcall-for-exported-functions-on-32bit-x.patch
+  patch -Np1 < ../0003-Always-build-tlfloat-as-a-static-library.patch
 
   # sleef uses the tlfloat source in the submodule directory if it exists
   # instead of downloading the pinned version.

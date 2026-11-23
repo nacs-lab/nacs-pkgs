@@ -3,4 +3,4 @@
   use_commit: true
 # Change to rebuild the package manually
 - source: manual
-  manual: '1'
+  manual: '2'

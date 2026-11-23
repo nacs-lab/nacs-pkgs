@@ -1,7 +1,7 @@
-From 2316ee0389697986fa9cc130d3b86d67fa1ade43 Mon Sep 17 00:00:00 2001
+From 2e2031c644c6c8460aa58cc805c6bdd904becc3e Mon Sep 17 00:00:00 2001
 From: Yichao Yu <yyc1992@gmail.com>
 Date: Mon, 23 Nov 2026 00:48:16 -0500
-Subject: [PATCH 2/2] Only use __stdcall for exported functions on 32bit x86
+Subject: [PATCH 2/3] Only use __stdcall for exported functions on 32bit x86
 
 __stdcall has no effect on 64bit, but clang treats it as the default
 calling convention on x86_64, which conflicts with vectorcall.
@@ -12,7 +12,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
  1 file changed, 5 insertions(+)
 
 diff --git a/src/common/misc.h b/src/common/misc.h
-index ffadde8..96bd4af 100644
+index 2a657e1..b7a97fd 100644
 --- a/src/common/misc.h
 +++ b/src/common/misc.h
 @@ -218,7 +218,12 @@ typedef struct {
