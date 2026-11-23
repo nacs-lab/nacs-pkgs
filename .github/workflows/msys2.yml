@@ -36,14 +36,17 @@ jobs:
           # platform: name of the platform in the update workflow and the artifacts
           # repo: directory of the package repository under `msys2/`
           # suppress: deprecation warnings to suppress in setup-msys2
+          # openlibm: whether openlibm is available (dropped from MINGW64)
           all='[
             {"msystem": "MINGW64", "prefix": "mingw-w64-x86_64", "repo": "mingw64",
              "platform": "msys2", "cc": "gcc", "cxx": "g++",
-             "suppress": "msystem-mingw64"},
+             "suppress": "msystem-mingw64", "openlibm": false},
             {"msystem": "UCRT64", "prefix": "mingw-w64-ucrt-x86_64", "repo": "ucrt64",
-             "platform": "msys2-ucrt64", "cc": "gcc", "cxx": "g++", "suppress": ""},
+             "platform": "msys2-ucrt64", "cc": "gcc", "cxx": "g++", "suppress": "",
+             "openlibm": true},
             {"msystem": "CLANG64", "prefix": "mingw-w64-clang-x86_64", "repo": "clang64",
-             "platform": "msys2-clang64", "cc": "clang", "cxx": "clang++", "suppress": ""}
+             "platform": "msys2-clang64", "cc": "clang", "cxx": "clang++", "suppress": "",
+             "openlibm": true}
           ]'
           matrix=$(jq -c --arg m "$MSYSTEM" '[.[] | select($m == "" or .msystem == $m)]' <<< "$all")
           if [[ $matrix = '[]' ]]; then
@@ -137,7 +140,7 @@ jobs:
           tbb:p
           libwinpthread:p
           llvm:p
-          openlibm:p
+          ${{ matrix.openlibm && 'openlibm:p' || '' }}
           polly:p
           yaml-cpp:p
           zeromq:p

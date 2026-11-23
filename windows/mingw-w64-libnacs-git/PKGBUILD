@@ -18,7 +18,8 @@ depends=($([[ ${MINGW_PACKAGE_PREFIX} == *-clang-* ]] || echo "${MINGW_PACKAGE_P
          "${MINGW_PACKAGE_PREFIX}-tbb"
          "${MINGW_PACKAGE_PREFIX}-libwinpthread"
          "${MINGW_PACKAGE_PREFIX}-llvm"
-         "${MINGW_PACKAGE_PREFIX}-openlibm"
+         # openlibm (optional) was dropped from the MINGW64 environment
+         $([[ ${MINGW_PACKAGE_PREFIX} == mingw-w64-x86_64 ]] || echo "${MINGW_PACKAGE_PREFIX}-openlibm")
          "${MINGW_PACKAGE_PREFIX}-polly"
          # The official sleef package (in some environments) doesn't have
          # the patch for the calling convention.
