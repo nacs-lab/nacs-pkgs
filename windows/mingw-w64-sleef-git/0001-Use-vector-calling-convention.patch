@@ -7,6 +7,7 @@ Only enabled when targeting x86 Windows with clang.
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 ---
+ Configure.cmake                    |   1 +
  src/common/misc.h                  |  20 ++++
  src/libm/dispatcher.h              |  60 +++++-----
  src/libm/dispavx.c.org             |  12 +-
@@ -17,8 +18,15 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
  src/libm/sleeflibm_header.h.org.in |   6 +
  src/libm/sleefsimddp.c             | 146 ++++++++++++------------
  src/libm/sleefsimdsp.c             | 172 ++++++++++++++---------------
- 10 files changed, 250 insertions(+), 208 deletions(-)
+ 11 files changed, 251 insertions(+), 208 deletions(-)
 
+diff --git a/Configure.cmake b/Configure.cmake
+--- a/Configure.cmake
++++ b/Configure.cmake
+@@ -118,2 +118,3 @@
+     list(APPEND TLFLOAT_CMAKE_ARGS -DCMAKE_CXX_COMPILER:PATH=${CMAKE_CXX_COMPILER})
++    list(APPEND TLFLOAT_CMAKE_ARGS -DCMAKE_CXX_STANDARD=20)
+   endif()
 diff --git a/src/common/misc.h b/src/common/misc.h
 index 8d972e2..ffadde8 100644
 --- a/src/common/misc.h
@@ -72,7 +80,7 @@ index 804423d..e9a16e5 100644
 -  static CONST fptype (*pfn)(fptype arg0) = dfn;		\
 -  EXPORT CONST fptype funcName(fptype arg0) { return (*pfn)(arg0); } \
 +  static CONST VECTOR_CC fptype (*pfn)(fptype arg0) = dfn;		\
-+  EXPORT CONST VECTOR_CC fptype funcName(fptype arg0) { return (*pfn)(arg0); } \
++  EXPORT CONST fptype funcName(fptype arg0) VECTOR_CC { return (*pfn)(arg0); } \
    VECALIAS_vf_vf(fptype, funcNameS, funcName, veclen)			\
    VECALIAS_vf_vf(fptype, funcNameS2, funcName, veclen)
  
@@ -91,7 +99,7 @@ index 804423d..e9a16e5 100644
 -  static CONST fptype (*pfn)(fptype arg0, fptype arg1) = dfn; \
 -  EXPORT CONST fptype funcName(fptype arg0, fptype arg1) { return (*pfn)(arg0, arg1); } \
 +  static CONST VECTOR_CC fptype (*pfn)(fptype arg0, fptype arg1) = dfn; \
-+  EXPORT CONST VECTOR_CC fptype funcName(fptype arg0, fptype arg1) { return (*pfn)(arg0, arg1); } \
++  EXPORT CONST fptype funcName(fptype arg0, fptype arg1) VECTOR_CC { return (*pfn)(arg0, arg1); } \
    VECALIAS_vf_vf_vf(fptype, funcNameS, funcName, veclen)		\
    VECALIAS_vf_vf_vf(fptype, funcNameS2, funcName, veclen)
  
@@ -110,7 +118,7 @@ index 804423d..e9a16e5 100644
 -  static CONST fptype2 (*pfn)(fptype arg0) = dfn;		\
 -  EXPORT CONST fptype2 funcName(fptype arg0) { return (*pfn)(arg0); }
 +  static CONST VECTOR_CC fptype2 (*pfn)(fptype arg0) = dfn;		\
-+  EXPORT CONST VECTOR_CC fptype2 funcName(fptype arg0) { return (*pfn)(arg0); }
++  EXPORT CONST fptype2 funcName(fptype arg0) VECTOR_CC { return (*pfn)(arg0); }
  
  #define DISPATCH_vf_vf_vi(fptype, itype, veclen, funcNameS, funcNameS2, funcName, pfn, dfn, funcExt0, funcExt1, funcExt2) \
 -  static CONST fptype (*pfn)(fptype arg0, itype arg1);	\
@@ -127,7 +135,7 @@ index 804423d..e9a16e5 100644
 -  static CONST fptype (*pfn)(fptype arg0, itype arg1) = dfn;	\
 -  EXPORT CONST fptype funcName(fptype arg0, itype arg1) { return (*pfn)(arg0, arg1); }
 +  static CONST VECTOR_CC fptype (*pfn)(fptype arg0, itype arg1) = dfn;	\
-+  EXPORT CONST VECTOR_CC fptype funcName(fptype arg0, itype arg1) { return (*pfn)(arg0, arg1); }
++  EXPORT CONST fptype funcName(fptype arg0, itype arg1) VECTOR_CC { return (*pfn)(arg0, arg1); }
  
  #define DISPATCH_vi_vf(fptype, itype, veclen, funcNameS, funcNameS2, funcName, pfn, dfn, funcExt0, funcExt1, funcExt2) \
 -  static CONST itype (*pfn)(fptype arg0);			\
@@ -144,7 +152,7 @@ index 804423d..e9a16e5 100644
 -  static CONST itype (*pfn)(fptype arg0) = dfn;		\
 -  EXPORT CONST itype funcName(fptype arg0) { return (*pfn)(arg0); }
 +  static CONST VECTOR_CC itype (*pfn)(fptype arg0) = dfn;		\
-+  EXPORT CONST VECTOR_CC itype funcName(fptype arg0) { return (*pfn)(arg0); }
++  EXPORT CONST itype funcName(fptype arg0) VECTOR_CC { return (*pfn)(arg0); }
  
  #define DISPATCH_vf_vf_vf_vf(fptype, veclen, funcNameS, funcNameS2, funcName, pfn, dfn, funcExt0, funcExt1, funcExt2) \
 -  static CONST fptype (*pfn)(fptype arg0, fptype arg1, fptype arg2); \
@@ -161,7 +169,7 @@ index 804423d..e9a16e5 100644
 -  static CONST fptype (*pfn)(fptype arg0, fptype arg1, fptype arg2) = dfn; \
 -  EXPORT CONST fptype funcName(fptype arg0, fptype arg1, fptype arg2) { return (*pfn)(arg0, arg1, arg2); } \
 +  static CONST VECTOR_CC fptype (*pfn)(fptype arg0, fptype arg1, fptype arg2) = dfn; \
-+  EXPORT CONST VECTOR_CC fptype funcName(fptype arg0, fptype arg1, fptype arg2) { return (*pfn)(arg0, arg1, arg2); } \
++  EXPORT CONST fptype funcName(fptype arg0, fptype arg1, fptype arg2) VECTOR_CC { return (*pfn)(arg0, arg1, arg2); } \
    VECALIAS_vf_vf_vf_vf(fptype, funcNameS, funcName, veclen)		\
    VECALIAS_vf_vf_vf_vf(fptype, funcNameS2, funcName, veclen)
  
@@ -1629,4 +1637,3 @@ index 89dc3f1..f741da1 100644
    a = vabs_vf_vf(a);
 -- 
 2.55.0
-
