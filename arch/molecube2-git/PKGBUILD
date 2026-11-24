@@ -1,6 +1,6 @@
 pkgname=molecube2-git
 pkgver=403.ba53c19
-pkgrel=4
+pkgrel=5
 pkgdesc='NaCs control'
 arch=(x86_64 armv7h aarch64)
 url='http://github.com/nacs-lab/molecube2'
