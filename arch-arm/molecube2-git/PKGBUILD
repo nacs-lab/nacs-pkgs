@@ -1,6 +1,6 @@
 pkgname=molecube2-git
 pkgver=403.ba53c19
-pkgrel=4
+pkgrel=5
 pkgdesc='NaCs control'
 arch=('armv7h')
 url='harvard.edu'
